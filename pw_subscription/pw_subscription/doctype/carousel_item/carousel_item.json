@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "creation": "2026-06-12 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "image",
+  "title",
+  "subtitle"
+ ],
+ "fields": [
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Slide Image",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "subtitle",
+   "fieldtype": "Small Text",
+   "label": "Subtitle",
+   "in_list_view": 1
+  }
+ ],
+ "idx": 0,
+ "istable": 1,
+ "module": "PW Subscription",
+ "modified": "2026-06-12 00:00:00",
+ "modified_by": "Administrator",
+ "name": "Carousel Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0
+}

@@ -1,0 +1,122 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"shortcuts\",\"type\":\"shortcut\"},{\"id\":\"subscription\",\"type\":\"card\",\"data\":{\"card_name\":\"Subscription\",\"col\":4}},{\"id\":\"provisioning\",\"type\":\"card\",\"data\":{\"card_name\":\"Provisioning\",\"col\":4}},{\"id\":\"settings\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
+ "creation": "2026-01-01 00:00:00",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Subscription",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subscription",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subscriptions",
+   "link_count": 0,
+   "link_to": "PW Subscription",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subscription Logs",
+   "link_count": 0,
+   "link_to": "PW Subscription Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Provisioning",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Site Provisioning Requests",
+   "link_count": 0,
+   "link_to": "Site Provisioning Request",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subscription Settings",
+   "link_count": 0,
+   "link_to": "PW Subscription Settings",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-06-11 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PW Subscription",
+ "name": "Subscription",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {"role": "System Manager"}
+ ],
+ "sequence_id": 2.0,
+ "shortcuts": [
+  {
+   "color": "Green",
+   "format": "%(count)s",
+   "label": "Active Subscriptions",
+   "link_to": "PW Subscription",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "format": "%(count)s",
+   "label": "Subscription Logs",
+   "link_to": "PW Subscription Log",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "format": "%(count)s",
+   "label": "Provisioning Requests",
+   "link_to": "Site Provisioning Request",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "format": "",
+   "label": "Settings",
+   "link_to": "PW Subscription Settings",
+   "type": "DocType"
+  }
+ ],
+ "title": "Subscription"
+}

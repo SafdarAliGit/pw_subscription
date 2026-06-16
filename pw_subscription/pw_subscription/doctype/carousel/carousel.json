@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "creation": "2026-06-12 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_settings",
+  "delay_time",
+  "sb_slides",
+  "carousel_items"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_settings",
+   "fieldtype": "Section Break",
+   "label": "Carousel Settings"
+  },
+  {
+   "fieldname": "delay_time",
+   "fieldtype": "Int",
+   "label": "Slide Delay (seconds)",
+   "default": "4",
+   "reqd": 1,
+   "description": "Time in seconds each slide is shown before auto-advancing"
+  },
+  {
+   "fieldname": "sb_slides",
+   "fieldtype": "Section Break",
+   "label": "Slides"
+  },
+  {
+   "fieldname": "carousel_items",
+   "fieldtype": "Table",
+   "label": "Carousel Items",
+   "options": "Carousel Item"
+  }
+ ],
+ "idx": 0,
+ "issingle": 1,
+ "module": "PW Subscription",
+ "modified": "2026-06-12 00:00:00",
+ "modified_by": "Administrator",
+ "name": "Carousel",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0
+}

@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ app_name }} — Subscription</title>
+<script>window.frappe = window.frappe || {};</script>
+<!-- csrf_token -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  /* hide frappe defaults */
+  .navbar, .web-footer, footer.web-footer, .footer-main { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2563EB;
+    --primary-dark: #1d4ed8;
+    --primary-light: #eff6ff;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --dark: #0F172A;
+    --dark-2: #1E293B;
+    --dark-3: #334155;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --light: #F8FAFC;
+    --white: #FFFFFF;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -2px rgba(0,0,0,.05);
+    --shadow-lg: 0 20px 40px rgba(0,0,0,.12);
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--light); color: var(--dark); line-height: 1.6; }
+
+  /* ── NAVBAR ── */
+  .pw-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%; height: 64px;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(226,232,240,0.6);
+  }
+  .pw-nav-logo { font-size: 1.2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+  .pw-nav-logo span { color: var(--dark); }
+  .pw-nav-links { display: flex; gap: 2rem; }
+  .pw-nav-links a { text-decoration: none; color: var(--dark-3); font-size: 0.9rem; font-weight: 500; transition: color .2s; }
+  .pw-nav-links a:hover { color: var(--primary); }
+  .pw-nav-cta { background: var(--primary); color: #fff; border: none; padding: .55rem 1.3rem; border-radius: 8px; font-weight: 600; font-size: .9rem; cursor: pointer; text-decoration: none; transition: background .2s, transform .1s; }
+  .pw-nav-cta:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  @media (max-width:768px) { .pw-nav-links { display:none; } }
+
+  /* ── CAROUSEL HERO ── */
+  /* ── HERO TWO-COLUMN LAYOUT ── */
+  .pw-hero {
+    position: relative;
+    min-height: calc(100vh - 150px);
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .pw-hero-inner {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    padding: 130px 5% 80px;
+    gap: 5%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .pw-hero-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .pw-hero-left h1 {
+    font-size: clamp(2rem,4vw,3.4rem);
+    font-weight: 900; color: #fff; line-height: 1.1;
+    letter-spacing: -1px; margin-bottom: 1.2rem;
+  }
+
+  .pw-hero-left p {
+    font-size: clamp(1rem,1.5vw,1.2rem);
+    color: rgba(255,255,255,.72);
+    line-height: 1.7; max-width: 520px; margin-bottom: 2.2rem;
+  }
+
+  /* carousel window — full height minus 150px vertical inset */
+  .pw-hero-right {
+    width: 52%; flex-shrink: 0;
+    position: relative; border-radius: 0; overflow: hidden;
+    align-self: flex-start;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    min-height: 380px;
+  }
+
+  .pw-hero-right--fallback {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
+  }
+
+  /* slides container — fills .pw-hero-right */
+  .pw-carousel {
+    position: absolute; inset: 0;
+    display: flex; transition: none;
+  }
+
+  .pw-slide {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #1a2744 0%, #0F172A 100%);
+    opacity: 0; transition: opacity .9s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .pw-slide.active { opacity: 1; }
+
+  .pw-slide-caption {
+    display: flex; flex-direction: row;
+    align-items: center;
+    padding: 2.5rem;
+    color: #fff; text-align: left;
+    gap: 1.5rem; width: 100%;
+  }
+  .pw-slide-icon {
+    width: 88px; height: 88px; flex-shrink: 0;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid rgba(255,255,255,.25);
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+    margin-left: 1.5rem;
+  }
+  .pw-slide-text { display: flex; flex-direction: column; min-width: 0; }
+  .pw-slide-caption h3 {
+    font-size: clamp(1.1rem,1.8vw,1.5rem);
+    font-weight: 800; line-height: 1.3; margin: 0 0 .5rem;
+    letter-spacing: -.5px;
+  }
+  .pw-slide-caption p {
+    font-size: clamp(.82rem,1.1vw,1rem);
+    color: rgba(255,255,255,.75); line-height: 1.6; margin: 0;
+  }
+
+  .pw-hero-orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: .25;
+  }
+  .pw-hero-orb-1 { width: 300px; height: 300px; background: #3b82f6; top: -50px; right: -50px; }
+  .pw-hero-orb-2 { width: 250px; height: 250px; background: #10b981; bottom: -30px; left: -30px; }
+
+  @media (max-width: 900px) {
+    .pw-hero-inner { flex-direction: column; padding: 100px 5% 90px; gap: 2.5rem; }
+    .pw-hero-right { width: 100%; aspect-ratio: 16/9; }
+  }
+
+  /* shared hero bottom stats bar */
+  .pw-hero-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+    display: flex; justify-content: center;
+    padding-bottom: 2.5rem;
+  }
+  .pw-hero-stats { display: flex; gap: 3rem; justify-content: center; flex-wrap: wrap; }
+  .pw-stat { text-align: center; }
+  .pw-stat-num { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
+  .pw-stat-label { font-size: .82rem; color: rgba(255,255,255,.6); margin-top: .25rem; }
+
+  /* hero badge */
+  .pw-hero-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.1); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2); color: #fff;
+    padding: .4rem 1rem; border-radius: 100px; font-size: .82rem; font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+  .pw-hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #10B981; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+  /* hero buttons — left-aligned */
+  .pw-hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary { background: var(--primary); color: #fff; padding: .85rem 2rem; border-radius: 10px; font-weight: 700; font-size: 1rem; text-decoration: none; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 8px 24px rgba(37,99,235,.4); }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,99,235,.5); }
+  .btn-ghost { background: rgba(255,255,255,.1); backdrop-filter: blur(8px); color: #fff; padding: .85rem 2rem; border-radius: 10px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 1px solid rgba(255,255,255,.3); cursor: pointer; transition: all .2s; }
+  .btn-ghost:hover { background: rgba(255,255,255,.2); }
+
+  /* ── CAROUSEL CONTROLS — positioned within .pw-hero-right ── */
+  .pw-carousel-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 20; width: 36px; height: 36px;
+    background: rgba(255,255,255,.18); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.25); border-radius: 50%;
+    color: #fff; font-size: 1rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .2s, transform .2s;
+    user-select: none;
+  }
+  .pw-carousel-arrow:hover { background: rgba(255,255,255,.3); transform: translateY(-50%) scale(1.08); }
+  .pw-carousel-arrow.prev { left: 8px; }
+  .pw-carousel-arrow.next { right: 8px; }
+
+  .pw-carousel-dots {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    z-index: 20; display: flex; gap: .5rem; align-items: center;
+  }
+  .pw-carousel-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.5);
+    cursor: pointer; transition: all .3s;
+  }
+  .pw-carousel-dot.active {
+    background: #fff; width: 28px; border-radius: 5px;
+  }
+
+  /* ── SECTION COMMONS ── */
+  section { padding: 80px 5%; }
+  .section-tag { display: inline-block; background: var(--primary-light); color: var(--primary); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .35rem .8rem; border-radius: 100px; margin-bottom: 1rem; }
+  .section-title { font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--dark); letter-spacing: -1px; margin-bottom: .75rem; }
+  .section-sub { font-size: 1.05rem; color: var(--muted); max-width: 600px; margin: 0 auto; }
+  .text-center { text-align: center; }
+
+  /* ── FEATURES ── */
+  .pw-features { background: var(--white); }
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3.5rem; }
+  .feature-card {
+    background: var(--light); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 2rem;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+  .feature-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.2rem; }
+  .feature-img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 1.2rem; display: block; }
+  .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: .5rem; }
+  .feature-card p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+
+  /* ── HOW IT WORKS ── */
+  .pw-howitworks { background: var(--light); }
+  .steps-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; margin-top: 3.5rem; position: relative; }
+  .step-card { background: var(--white); border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; box-shadow: var(--shadow); position: relative; }
+  .step-num { width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+  .step-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: .6rem; }
+  .step-card p { font-size: .9rem; color: var(--muted); }
+
+  /* ── PRICING ── */
+  .pw-pricing { background: var(--white); }
+  .pricing-wrap { display: flex; justify-content: center; margin-top: 3.5rem; }
+  .pricing-card {
+    background: var(--dark); border-radius: var(--radius-lg);
+    padding: 3rem; max-width: 480px; width: 100%; position: relative;
+    overflow: hidden; box-shadow: 0 32px 64px rgba(0,0,0,.2);
+  }
+  .pricing-card::before { content:''; position:absolute; top:-80px; right:-80px; width:300px; height:300px; background: radial-gradient(circle, rgba(37,99,235,.4), transparent 70%); border-radius:50%; }
+  .pricing-badge { display: inline-block; background: linear-gradient(135deg, #10B981, #059669); color: #fff; font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .35rem .9rem; border-radius: 100px; margin-bottom: 1.5rem; }
+  .pricing-name { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: .25rem; }
+  .pricing-desc { font-size: .9rem; color: rgba(255,255,255,.6); margin-bottom: 2rem; }
+  .pricing-amount { display: flex; align-items: flex-end; gap: .25rem; margin-bottom: .5rem; }
+  .pricing-currency { font-size: 1.4rem; font-weight: 700; color: rgba(255,255,255,.7); align-self: flex-start; margin-top: .5rem; }
+  .pricing-price { font-size: 4rem; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -2px; }
+  .pricing-period { font-size: 1rem; color: rgba(255,255,255,.5); margin-bottom: .5rem; }
+  .pricing-trial { background: rgba(16,185,129,.15); border: 1px solid rgba(16,185,129,.3); color: #10B981; padding: .6rem 1rem; border-radius: 8px; font-size: .88rem; font-weight: 600; text-align: center; margin: 1.5rem 0; }
+  .pricing-features { list-style: none; margin: 2rem 0; display: flex; flex-direction: column; gap: .9rem; }
+  .pricing-features li { display: flex; align-items: center; gap: .75rem; color: rgba(255,255,255,.85); font-size: .9rem; }
+  .pricing-features li::before { content: '\2713'; width: 20px; height: 20px; background: rgba(16,185,129,.2); border: 1px solid rgba(16,185,129,.4); color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 800; flex-shrink: 0; }
+  .pricing-cta { display: block; background: var(--primary); color: #fff; text-align: center; padding: 1rem; border-radius: 10px; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all .2s; margin-top: 2rem; }
+  .pricing-cta:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,.5); }
+
+  /* ── PAYMENT ── */
+  .pw-payment { background: var(--light); }
+  .payment-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+  @media(max-width:768px) { .payment-wrap { grid-template-columns: 1fr; } }
+  .payment-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
+  .payment-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+  .payment-card p, .payment-card li { font-size: .9rem; color: var(--muted); line-height: 1.8; }
+  .payment-card ol { padding-left: 1.2rem; }
+  .bank-details { background: var(--light); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; font-size: .88rem; color: var(--dark-3); white-space: pre-line; line-height: 2; font-family: 'Courier New', monospace; }
+  .contact-row { display: flex; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .contact-row:last-child { border: none; }
+  .contact-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .contact-row a { color: var(--primary); text-decoration: none; font-weight: 500; font-size: .9rem; }
+
+  /* ── FAQ ── */
+  .pw-faq { background: linear-gradient(180deg, var(--white) 0%, var(--light) 100%); }
+  .faq-list { margin: 3.5rem 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; align-items: start; }
+  @media (max-width: 1050px) { .faq-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 580px)  { .faq-list { grid-template-columns: 1fr; } }
+  .faq-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; flex-direction: column; gap: 0; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .faq-item:hover { border-color: var(--primary); box-shadow: 0 8px 28px rgba(37,99,235,.08); }
+  .faq-item.open { border-color: var(--primary); box-shadow: 0 8px 28px rgba(37,99,235,.12); }
+  .faq-q-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: .9rem; }
+  .faq-q-icon svg { width: 17px; height: 17px; color: var(--primary); }
+  .faq-q { display: flex; justify-content: space-between; align-items: flex-start; gap: .6rem; font-weight: 700; font-size: .92rem; color: var(--dark); line-height: 1.4; user-select: none; }
+  .faq-item.open .faq-q { color: var(--primary); }
+  .faq-chevron { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; color: var(--muted); transition: transform .3s ease, color .2s; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--primary); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
+  .faq-a-inner { padding-top: .9rem; margin-top: .9rem; border-top: 1px solid var(--border); font-size: .85rem; color: var(--muted); line-height: 1.8; }
+  .faq-item.open .faq-a { max-height: 320px; }
+  .faq-item.open .faq-a-inner { border-color: rgba(37,99,235,.15); }
+  .faq-a-inner strong { color: var(--dark-3); }
+  .faq-cta { margin: 2.5rem 0 0; background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 100%); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+  .faq-cta h3 { font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; }
+  .faq-cta p { font-size: .92rem; color: rgba(255,255,255,.6); margin: 0; }
+  .faq-cta-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: .75rem; }
+
+  /* ── FOOTER ── */
+  .pw-footer { background: var(--dark); padding: 3rem 5%; text-align: center; }
+  .pw-footer-logo { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: .75rem; }
+  .pw-footer-logo span { color: #60a5fa; }
+  .pw-footer p { font-size: .85rem; color: rgba(255,255,255,.4); }
+
+  /* ── REGISTRATION MODAL ── */
+  .reg-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(15,23,42,.65); backdrop-filter: blur(7px);
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .reg-overlay.open { opacity: 1; pointer-events: auto; }
+  .reg-modal {
+    background: #fff; border-radius: 24px; width: 100%; max-width: 600px;
+    max-height: 92vh; overflow-y: auto; position: relative;
+    box-shadow: 0 40px 100px rgba(0,0,0,.4);
+    transform: scale(.93) translateY(24px);
+    transition: transform .38s cubic-bezier(.34,1.4,.64,1);
+    scrollbar-width: thin; scrollbar-color: #CBD5E1 transparent;
+  }
+  .reg-overlay.open .reg-modal { transform: scale(1) translateY(0); }
+  .reg-close {
+    position: absolute; top: 1rem; right: 1rem; z-index: 10;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,.15); color: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .reg-close:hover { background: rgba(255,255,255,.3); }
+  .reg-close svg { width: 16px; height: 16px; }
+  .reg-head {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 55%, #2563EB 100%);
+    border-radius: 24px 24px 0 0; padding: 2.25rem 2.25rem 2rem; text-align: center;
+  }
+  .reg-head-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(16,185,129,.18); border: 1px solid rgba(16,185,129,.4);
+    color: #6EE7B7; padding: .3rem .85rem; border-radius: 100px;
+    font-size: .75rem; font-weight: 600; margin-bottom: 1rem;
+  }
+  .reg-head-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; flex-shrink: 0; }
+  .reg-head-logo { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -.5px; margin-bottom: .55rem; }
+  .reg-head-logo span { color: #60a5fa; }
+  .reg-head h2 { font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0 0 .4rem; letter-spacing: -.5px; }
+  .reg-head p { font-size: .88rem; color: rgba(255,255,255,.6); margin: 0; }
+  .reg-body { padding: 1.85rem 2.25rem 2.25rem; }
+  .reg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.2rem; }
+  .reg-field { display: flex; flex-direction: column; gap: .35rem; }
+  .reg-field.full { grid-column: 1 / -1; }
+  .reg-label { font-size: .72rem; font-weight: 700; color: #475569; letter-spacing: .06em; text-transform: uppercase; }
+  .reg-label .req { color: #EF4444; }
+  .reg-iw { position: relative; }
+  .reg-iw input, .reg-iw textarea {
+    width: 100%; padding: .78rem 1rem; border: 1.5px solid #E2E8F0;
+    border-radius: 10px; font-size: .94rem; color: #0F172A; font-family: inherit;
+    background: #F8FAFC; transition: border-color .2s, box-shadow .2s, background .2s;
+    outline: none; box-sizing: border-box; line-height: 1.5;
+  }
+  .reg-iw input:focus, .reg-iw textarea:focus { border-color: #2563EB; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .reg-iw input.has-badge { padding-right: 7rem; }
+  .reg-iw input.f-err  { border-color: #EF4444 !important; background: #FFF5F5; box-shadow: 0 0 0 3px rgba(239,68,68,.07) !important; }
+  .reg-iw input.f-ok   { border-color: #10B981 !important; background: #F0FDF4; box-shadow: 0 0 0 3px rgba(16,185,129,.07) !important; }
+  .reg-iw textarea { resize: vertical; min-height: 74px; }
+  .reg-iw textarea.f-err { border-color: #EF4444 !important; background: #FFF5F5; }
+  .reg-pw-wrap input { padding-right: 2.8rem; }
+  .reg-pw-btn {
+    position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 0; cursor: pointer; color: #94A3B8;
+    display: flex; transition: color .2s;
+  }
+  .reg-pw-btn:hover { color: #2563EB; }
+  .reg-pw-btn svg { width: 18px; height: 18px; }
+  .reg-avail {
+    position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .72rem; font-weight: 700; pointer-events: none; white-space: nowrap;
+  }
+  .reg-avail.spin { color: #94A3B8; }
+  .reg-avail.ok   { color: #10B981; }
+  .reg-avail.err  { color: #EF4444; }
+  .reg-spinner { width: 12px; height: 12px; border: 2px solid #E2E8F0; border-top-color: #94A3B8; border-radius: 50%; animation: regSpin .6s linear infinite; }
+  @keyframes regSpin { to { transform: rotate(360deg); } }
+  .reg-hint { font-size: .76rem; min-height: .95rem; line-height: 1.3; }
+  .reg-hint.ok    { color: #10B981; }
+  .reg-hint.err   { color: #EF4444; }
+  .reg-hint.muted { color: #94A3B8; }
+  .reg-err-box {
+    grid-column: 1 / -1; background: #FEF2F2; border: 1px solid #FECACA;
+    border-radius: 10px; padding: .75rem 1rem; font-size: .84rem; color: #DC2626; display: none;
+  }
+  /* ── Provisioning progress panel ── */
+  .reg-prov { display: none; flex-direction: column; animation: regFadeUp .35s ease; }
+  /* Header row: ring + info */
+  .reg-prov-hd {
+    display: flex; align-items: center; gap: 1.2rem;
+    padding: 1.6rem 2.25rem 0;
+  }
+  .reg-prov-ring { width: 72px; height: 72px; position: relative; flex-shrink: 0; }
+  .reg-prov-ring svg { width: 72px; height: 72px; }
+  .reg-prov-ring .ring-track { fill: none; stroke: #E2E8F0; stroke-width: 5; }
+  .reg-prov-ring .ring-fill {
+    fill: none; stroke: #2563EB; stroke-width: 5;
+    stroke-linecap: round; stroke-dasharray: 175.93; stroke-dashoffset: 175.93;
+    transform-origin: center; transform: rotate(-90deg);
+    transition: stroke-dashoffset .65s ease, stroke .35s;
+  }
+  .reg-prov-ring.done .ring-fill { stroke: #10B981; }
+  .reg-prov-ring.fail .ring-fill { stroke: #EF4444; }
+  .reg-ring-pct {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 800; color: #1E293B; line-height: 1;
+    pointer-events: none;
+  }
+  .reg-prov-info { flex: 1; min-width: 0; }
+  .reg-prov-title { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin: 0 0 .2rem; line-height: 1.3; }
+  .reg-prov-sub { font-size: .81rem; color: #64748B; margin: 0 0 .18rem; line-height: 1.5; }
+  .reg-prov-elapsed { font-size: .7rem; color: #94A3B8; margin: 0; font-variant-numeric: tabular-nums; }
+  /* Linear progress bar */
+  .reg-prov-bar-wrap {
+    margin: 1rem 2.25rem 0;
+    background: #E2E8F0; border-radius: 100px; height: 5px; overflow: hidden;
+  }
+  .reg-prov-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #2563EB, #60A5FA);
+    border-radius: 100px; transition: width .65s ease, background .4s;
+  }
+  .reg-prov-bar-fill.done { background: linear-gradient(90deg, #10B981, #34D399); }
+  .reg-prov-bar-fill.fail { background: #EF4444; }
+  /* Steps — vertical stepper */
+  .reg-steps { display: flex; flex-direction: column; padding: 1rem 2.25rem 0; }
+  .reg-step { display: none; align-items: flex-start; }
+  .reg-step.s-visible {
+    display: flex;
+    animation: stepReveal .3s cubic-bezier(.22,.68,0,1.2) both;
+  }
+  @keyframes stepReveal {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  /* Left col: icon + connector line */
+  .reg-step-lhs {
+    display: flex; flex-direction: column; align-items: center;
+    width: 28px; flex-shrink: 0; margin-right: .9rem;
+  }
+  .reg-step-icon {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 700;
+    transition: background .25s, color .25s, border-color .25s;
+  }
+  .reg-step-icon.i-wait { background: #F1F5F9; color: #94A3B8; border: 2px solid #E2E8F0; }
+  .reg-step-icon.i-spin {
+    background: #DBEAFE; color: transparent;
+    border: 3px solid #BFDBFE; border-top-color: #2563EB;
+    animation: regSpin .7s linear infinite;
+  }
+  .reg-step-icon.i-done { background: #D1FAE5; color: #059669; border: 2px solid #A7F3D0; }
+  .reg-step-icon.i-fail { background: #FEE2E2; color: #DC2626; border: 2px solid #FECACA; }
+  .reg-step-line {
+    width: 2px; flex: 1; min-height: 14px;
+    background: #E2E8F0; margin: 2px 0; transition: background .4s;
+  }
+  .reg-step.s-done .reg-step-line { background: #A7F3D0; }
+  .reg-step:last-child .reg-step-line { display: none; }
+  /* Right col: text */
+  .reg-step-rhs { flex: 1; min-width: 0; padding-bottom: .85rem; }
+  .reg-step-name { font-size: .86rem; font-weight: 600; color: #334155; line-height: 1.4; }
+  .reg-step.s-active .reg-step-name { color: #1D4ED8; }
+  .reg-step.s-done   .reg-step-name { color: #065F46; }
+  .reg-step.s-fail   .reg-step-name { color: #991B1B; }
+  .reg-step-desc { font-size: .73rem; color: #94A3B8; margin-top: .15rem; line-height: 1.5; }
+  .reg-step.s-active .reg-step-desc { color: #475569; }
+  /* Error + actions */
+  .reg-prov-err {
+    display: none; margin: .7rem 2.25rem 0;
+    background: #FEF2F2; border: 1px solid #FECACA;
+    border-radius: 10px; padding: .8rem 1rem; font-size: .82rem;
+    color: #991B1B; line-height: 1.5;
+  }
+  .reg-prov-actions {
+    display: flex; gap: .75rem; justify-content: center;
+    padding: 1rem 2.25rem 1.75rem;
+  }
+  .reg-prov-retry {
+    display: none; padding: .65rem 1.6rem; background: #EF4444; color: #fff;
+    border: none; border-radius: 10px; font-size: .88rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background .2s;
+  }
+  .reg-prov-retry:hover { background: #DC2626; }
+  .reg-submit {
+    grid-column: 1 / -1; width: 100%; padding: .95rem; margin-top: .25rem;
+    background: linear-gradient(135deg, #2563EB, #1d4ed8); color: #fff;
+    border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; letter-spacing: -.01em;
+    transition: all .2s; box-shadow: 0 8px 24px rgba(37,99,235,.35);
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+  }
+  .reg-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(37,99,235,.45); }
+  .reg-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; box-shadow: none; }
+  .reg-note { grid-column: 1 / -1; text-align: center; font-size: .74rem; color: #94A3B8; }
+  /* Success */
+  .reg-success {
+    padding: 2.75rem 2.25rem; flex-direction: column; align-items: center;
+    gap: 1.1rem; text-align: center; display: none;
+    animation: regFadeUp .4s ease;
+  }
+  @keyframes regFadeUp { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
+  .reg-success-icon {
+    width: 78px; height: 78px; border-radius: 50%;
+    background: linear-gradient(135deg, #10B981, #059669);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 14px 36px rgba(16,185,129,.35);
+  }
+  .reg-success-icon svg { width: 40px; height: 40px; color: #fff; }
+  .reg-success h3 { font-size: 1.55rem; font-weight: 800; color: #0F172A; margin: 0; }
+  .reg-success > p { font-size: .92rem; color: #64748B; margin: 0; max-width: 360px; line-height: 1.65; }
+  .reg-success-card {
+    width: 100%; background: #F0FDF4; border: 1px solid #A7F3D0;
+    border-radius: 14px; padding: 1.1rem 1.4rem; text-align: left;
+  }
+  .reg-success-card div {
+    font-size: .86rem; color: #065F46; line-height: 2.1;
+    display: flex; justify-content: space-between; gap: 1rem;
+    border-bottom: 1px solid rgba(16,185,129,.12);
+  }
+  .reg-success-card div:last-child { border: none; }
+  .reg-success-card strong { color: #047857; flex-shrink: 0; }
+  @media (max-width: 540px) {
+    .reg-grid { grid-template-columns: 1fr; }
+    .reg-body { padding: 1.5rem; }
+    .reg-head { padding: 1.75rem 1.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="pw-nav">
+  <div class="pw-nav-logo">Cure<span>Desk</span></div>
+  <div class="pw-nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#payment">Payment</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="#" class="pw-nav-cta" data-open-reg>Get Started</a>
+</nav>
+
+<!-- HERO / CAROUSEL -->
+<section class="pw-hero" id="home">
+
+  <div class="pw-hero-inner">
+
+  {% if carousel_items %}
+
+    <!-- Left: static hero text -->
+    <div class="pw-hero-left">
+      <div class="pw-hero-badge">
+        <span class="pw-hero-badge-dot"></span>
+        Now with {{ trial_days }}-day free trial
+      </div>
+      <h1>The <span style="color:#60a5fa">Smartest</span> Way to Write Prescriptions</h1>
+      <p>{{ tagline }} — built for busy doctors who need speed, accuracy, and professionalism in every prescription.</p>
+      <div class="pw-hero-buttons">
+        <a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>
+        <a href="#features" class="btn-ghost">See Features</a>
+      </div>
+    </div>
+
+    <!-- Right: carousel window — full image + title/subtitle overlay -->
+    <div class="pw-hero-right">
+      <div class="pw-carousel" id="pwCarousel">
+        {% for slide in carousel_items %}
+        <div class="pw-slide {% if loop.first %}active{% endif %}">
+          <div class="pw-slide-caption">
+            {% if slide.image %}<img class="pw-slide-icon" src="{{ slide.image }}" alt="{{ slide.title }}">{% endif %}
+            <div class="pw-slide-text">
+              <h3>{{ slide.title }}</h3>
+              {% if slide.subtitle %}<p>{{ slide.subtitle }}</p>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button class="pw-carousel-arrow prev" id="pwPrev" aria-label="Previous slide">&#8592;</button>
+      <button class="pw-carousel-arrow next" id="pwNext" aria-label="Next slide">&#8594;</button>
+      <div class="pw-carousel-dots" id="pwDots">
+        {% for slide in carousel_items %}
+        <div class="pw-carousel-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></div>
+        {% endfor %}
+      </div>
+    </div>
+
+  {% else %}
+
+    <!-- Fallback: no carousel items configured -->
+    <div class="pw-hero-left">
+      <div class="pw-hero-badge">
+        <span class="pw-hero-badge-dot"></span>
+        Now with {{ trial_days }}-day free trial
+      </div>
+      <h1>
+        The <span style="color:#60a5fa">Smartest</span> Way to Write Prescriptions
+      </h1>
+      <p>
+        {{ tagline }} — built for busy doctors who need speed, accuracy, and professionalism in every prescription.
+      </p>
+      <div class="pw-hero-buttons">
+        <a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>
+        <a href="#features" class="btn-ghost">See Features</a>
+      </div>
+    </div>
+    <div class="pw-hero-right pw-hero-right--fallback">
+      <div class="pw-hero-orb pw-hero-orb-1"></div>
+      <div class="pw-hero-orb pw-hero-orb-2"></div>
+    </div>
+
+  {% endif %}
+
+  </div>
+
+  <!-- Stats bar — always visible -->
+  <div class="pw-hero-bottom">
+    <div class="pw-hero-stats">
+      <div class="pw-stat"><div class="pw-stat-num">{{ trial_days }}</div><div class="pw-stat-label">Day Free Trial</div></div>
+      <div class="pw-stat"><div class="pw-stat-num">&#8734;</div><div class="pw-stat-label">Patients &amp; Records</div></div>
+      <div class="pw-stat"><div class="pw-stat-num">3</div><div class="pw-stat-label">Languages Supported</div></div>
+      <div class="pw-stat"><div class="pw-stat-num">24/7</div><div class="pw-stat-label">Access Anywhere</div></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- FEATURES -->
+<section class="pw-features" id="features">
+  <div class="text-center">
+    <span class="section-tag">Features</span>
+    <h2 class="section-title">Everything a clinic needs</h2>
+    <p class="section-sub">From patient registration to prescription printing — all in one professional platform.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/smart-prescriptions.jpg" alt="Smart Prescriptions">
+      <h3>Smart Prescriptions</h3>
+      <p>Write prescriptions in seconds with intelligent medicine search, dose auto-fill, and multi-language printing (English, Urdu, Arabic).</p>
+    </div>
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/patient-management.jpg" alt="Patient Management">
+      <h3>Patient Management</h3>
+      <p>Complete patient profiles with visit history, diagnosis records, and instant access to previous prescriptions.</p>
+    </div>
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/queue-and-tokens.jpg" alt="Queue &amp; Tokens">
+      <h3>Queue &amp; Tokens</h3>
+      <p>Digital queue management with pre-visit tokens. Patients check in before seeing the doctor — no more waiting room chaos.</p>
+    </div>
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/tests-and-diagnosis.jpg" alt="Tests &amp; Diagnosis">
+      <h3>Tests &amp; Diagnosis</h3>
+      <p>Categorized medical tests and diagnosis library. Add multiple diagnoses per visit with category-based organization.</p>
+    </div>
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/invoicing-and-finance.jpg" alt="Invoicing &amp; Finance">
+      <h3>Invoicing &amp; Finance</h3>
+      <p>Professional invoices, daily vouchers, and financial tracking — all integrated with the patient visit workflow.</p>
+    </div>
+    <div class="feature-card">
+      <img class="feature-img" src="/assets/pw_subscription/images/clinic-branding.jpg" alt="Clinic Branding">
+      <h3>Clinic Branding</h3>
+      <p>Fully customizable clinic header, doctor info, stamp, and footer on every printed prescription and invoice.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="pw-howitworks" id="how-it-works">
+  <div class="text-center">
+    <span class="section-tag">Process</span>
+    <h2 class="section-title">Get started in 3 simple steps</h2>
+    <p class="section-sub">No complicated setup. No technical knowledge required. Be running in minutes.</p>
+  </div>
+  <div class="steps-wrap">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Contact Us</h3>
+      <p>Reach out via email or phone. Tell us your clinic name and we will set up your dedicated instance.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>{{ trial_days }}-Day Free Trial</h3>
+      <p>Start using the full app immediately — no payment needed for the first {{ trial_days }} days. Explore all features.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Subscribe &amp; Continue</h3>
+      <p>Happy with the app? Pay the monthly fee via bank transfer and we activate your subscription instantly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pw-pricing" id="pricing">
+  <div class="text-center">
+    <span class="section-tag">Pricing</span>
+    <h2 class="section-title">Simple, transparent pricing</h2>
+    <p class="section-sub">One flat monthly fee. No hidden charges. No per-doctor fees. No limits.</p>
+  </div>
+  <div class="pricing-wrap">
+    <div class="pricing-card">
+      <span class="pricing-badge">&#10022; All-Inclusive Plan</span>
+      <div class="pricing-name">Professional Clinic Plan</div>
+      <div class="pricing-desc">Everything you need to run a modern, efficient clinic</div>
+      <div class="pricing-amount">
+        <span class="pricing-currency">PKR</span>
+        <span class="pricing-price">{{ monthly_fee | int }}</span>
+      </div>
+      <div class="pricing-period">per month / per clinic</div>
+      <div class="pricing-trial">&#127873; First {{ trial_days }} days completely FREE — no payment required</div>
+      <ul class="pricing-features">
+        <li>Unlimited patients &amp; visits</li>
+        <li>Smart prescription writing</li>
+        <li>Multi-language printing (EN / UR / AR)</li>
+        <li>Patient queue &amp; token system</li>
+        <li>Medical tests &amp; diagnosis library</li>
+        <li>Invoicing &amp; daily vouchers</li>
+        <li>Clinic branding &amp; custom header</li>
+        <li>Medicines database &amp; dose library</li>
+        <li>Full data ownership &amp; privacy</li>
+        <li>Dedicated support via phone &amp; email</li>
+      </ul>
+      <a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT -->
+<section class="pw-payment" id="payment">
+  <div class="text-center">
+    <span class="section-tag">Payment</span>
+    <h2 class="section-title">Simple bank transfer</h2>
+    <p class="section-sub">No online payment gateway. Just transfer to our bank account and we activate your subscription.</p>
+  </div>
+  <div class="payment-wrap">
+    <div class="payment-card">
+      <h3>&#128203; How to Pay</h3>
+      <ol>
+        <li>Transfer the monthly fee to our bank account below</li>
+        <li>Take a screenshot of your transaction</li>
+        <li>Send the screenshot + your clinic name to us via WhatsApp or email</li>
+        <li>We will activate your subscription within a few hours</li>
+      </ol>
+      {% if bank_details %}
+      <div style="margin-top:1.25rem">
+        <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Bank Account Details</div>
+        <div class="bank-details">{{ bank_details }}</div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="payment-card">
+      <h3>&#128222; Contact Us</h3>
+      {% if contact_email %}
+      <div class="contact-row">
+        <div class="contact-icon">&#9993;&#65039;</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Email</div><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></div>
+      </div>
+      {% endif %}
+      {% if contact_phone %}
+      <div class="contact-row">
+        <div class="contact-icon">&#128241;</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Phone / WhatsApp</div><a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></div>
+      </div>
+      {% endif %}
+      <div class="contact-row">
+        <div class="contact-icon">&#128336;</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Response Time</div><span style="font-size:.9rem;color:var(--dark-3)">Within a few hours on business days</span></div>
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:var(--primary-light);border-radius:8px;">
+        <div style="font-size:.82rem;color:var(--primary);font-weight:600">&#128161; Tip</div>
+        <div style="font-size:.85rem;color:var(--dark-3);margin-top:.25rem">Log into your app and visit <strong>/subscription-portal</strong> to check your current subscription status anytime.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="pw-faq" id="faq">
+  <div class="text-center">
+    <span class="section-tag">FAQ</span>
+    <h2 class="section-title">Frequently asked questions</h2>
+    <p class="section-sub">Everything you need to know about CureDesk. Can't find the answer? <a href="#payment" style="color:var(--primary);font-weight:600;text-decoration:none;">Reach out to us.</a></p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">What happens after the free trial ends? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">After your <strong>{{ trial_days }}-day free trial</strong>, you receive a <strong>{{ grace_period }}</strong> grace period with on-screen warnings before the app is locked. Transfer the monthly fee and share your screenshot — we reactivate access within a few hours.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">Can I use the app on multiple devices? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes — the app is fully web-based. Access it simultaneously from any <strong>desktop, tablet, or mobile</strong> device using your clinic's unique URL and login credentials. No installation required.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">Is my patient data safe and private? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Absolutely. Every clinic runs on its own <strong>dedicated database instance</strong> — your records are never co-mingled with other clinics. You have <strong>100% ownership</strong> and can request a full data export at any time.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">How quickly is my subscription activated? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">We typically activate within <strong>a few hours</strong> of receiving payment confirmation on business days. Send your bank transfer screenshot via <strong>WhatsApp</strong> for the fastest response.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">Can I cancel my subscription at any time? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. There are <strong>no long-term contracts</strong> and no cancellation fees. Subscriptions are month-to-month — stop paying whenever you like. Your access continues until the end of your paid period.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">Is there a per-doctor or per-user fee? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">No. The flat monthly fee covers the <strong>entire clinic</strong> — unlimited doctors, staff accounts, patients, and visits. You will never be charged extra for adding more users or growing your practice.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <div class="faq-q">What prescription languages are supported? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Prescriptions can be printed in <strong>English, Urdu, and Arabic</strong>. The language is selectable per-prescription, making it easy to serve patients from different linguistic backgrounds in one clinic.</div></div>
+    </div>
+  </div>
+
+  <div class="faq-cta">
+    <h3>Still have questions?</h3>
+    <p>Our team is here to help. Reach out and we'll get back to you the same day.</p>
+    <div class="faq-cta-links">
+      {% if contact_email %}<a href="mailto:{{ contact_email }}" class="btn-primary" style="font-size:.9rem;padding:.7rem 1.6rem;">&#9993;&nbsp; Email Us</a>{% endif %}
+      {% if contact_phone %}<a href="tel:{{ contact_phone }}" class="btn-ghost" style="font-size:.9rem;padding:.7rem 1.6rem;">&#128241;&nbsp; WhatsApp</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="pw-footer">
+  <div class="pw-footer-logo">Cure<span>Desk</span></div>
+  <p>{{ app_name }} — Professional Clinic Management System</p>
+  <p style="margin-top:.5rem">&copy; {{ frappe.utils.now()[:4] }} Safdar Ali. All rights reserved.</p>
+</footer>
+
+<!-- REGISTRATION MODAL -->
+<div class="reg-overlay" id="regOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+  <div class="reg-modal">
+    <button class="reg-close" id="regClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <!-- Header -->
+    <div class="reg-head">
+      <div class="reg-head-badge"><span class="reg-head-badge-dot"></span>Free for {{ trial_days }} days &mdash; no payment required</div>
+      <div class="reg-head-logo">Cure<span>Desk</span></div>
+      <h2 id="regTitle">Start Your Free Trial</h2>
+      <p>Set up your clinic in under 2 minutes.</p>
+    </div>
+
+    <!-- Form -->
+    <div id="regFormWrap" class="reg-body">
+      <form id="regForm" novalidate autocomplete="off">
+        <div class="reg-grid">
+
+          <!-- Clinic Name — full width with live availability -->
+          <div class="reg-field full">
+            <label class="reg-label" for="regClinicName">Clinic Name <span class="req">*</span></label>
+            <div class="reg-iw">
+              <input type="text" id="regClinicName" class="has-badge" placeholder="e.g. Sunrise Medical Clinic" autocomplete="off">
+              <div class="reg-avail" id="regAvail"></div>
+            </div>
+          </div>
+
+          <!-- Physician Name -->
+          <div class="reg-field">
+            <label class="reg-label" for="regPhysician">Physician Name <span class="req">*</span></label>
+            <div class="reg-iw">
+              <input type="text" id="regPhysician" placeholder="Dr. Ahmed Khan">
+            </div>
+            <div class="reg-hint" id="regPhysicianHint"></div>
+          </div>
+
+          <!-- Contact -->
+          <div class="reg-field">
+            <label class="reg-label" for="regContact">Contact / WhatsApp <span class="req">*</span></label>
+            <div class="reg-iw">
+              <input type="tel" id="regContact" placeholder="+92 300 1234567">
+            </div>
+            <div class="reg-hint" id="regContactHint"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="reg-field">
+            <label class="reg-label" for="regEmail">Email Address <span class="req">*</span></label>
+            <div class="reg-iw">
+              <input type="email" id="regEmail" placeholder="doctor@clinic.com">
+            </div>
+            <div class="reg-hint" id="regEmailHint"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="reg-field">
+            <label class="reg-label" for="regPassword">Password <span class="req">*</span></label>
+            <div class="reg-iw reg-pw-wrap">
+              <input type="password" id="regPassword" placeholder="Min. 8 characters">
+              <button type="button" class="reg-pw-btn" id="regPwBtn" aria-label="Toggle visibility">
+                <svg id="regEyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg id="regEyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+            <div class="reg-hint" id="regPasswordHint"></div>
+          </div>
+
+          <!-- Address — full width -->
+          <div class="reg-field full">
+            <label class="reg-label" for="regAddress">Clinic Address <span class="req">*</span></label>
+            <div class="reg-iw">
+              <textarea id="regAddress" placeholder="Street, City, Province"></textarea>
+            </div>
+            <div class="reg-hint" id="regAddressHint"></div>
+          </div>
+
+          <div class="reg-err-box" id="regErrBox"></div>
+
+          <button type="submit" class="reg-submit" id="regSubmit">Complete Registration & Create Application &rarr;</button>
+          <p class="reg-note">By registering you agree to our terms of service.</p>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Provisioning Progress Panel -->
+    <div id="regProvisioning" class="reg-prov">
+
+      <!-- Header: ring + title/sub/elapsed -->
+      <div class="reg-prov-hd">
+        <div class="reg-prov-ring" id="regProvRing">
+          <svg viewBox="0 0 64 64">
+            <circle class="ring-track" cx="32" cy="32" r="28"/>
+            <circle class="ring-fill"  cx="32" cy="32" r="28" id="regRingFill"/>
+          </svg>
+          <div class="reg-ring-pct" id="regRingPct">0%</div>
+        </div>
+        <div class="reg-prov-info">
+          <p class="reg-prov-title" id="regProvTitle">Setting Up Your Clinic&hellip;</p>
+          <p class="reg-prov-sub"   id="regProvSub">This takes 3&ndash;5 minutes. Please keep this window open.</p>
+          <p class="reg-prov-elapsed" id="regProvElapsed"></p>
+        </div>
+      </div>
+
+      <!-- Linear progress bar -->
+      <div class="reg-prov-bar-wrap">
+        <div class="reg-prov-bar-fill" id="regProgressFill"></div>
+      </div>
+
+      <!-- Step list — vertical stepper -->
+      <div class="reg-steps" id="regSteps">
+
+        <div class="reg-step" id="provStep1">
+          <div class="reg-step-lhs">
+            <div class="reg-step-icon i-wait" id="provIcon1">1</div>
+            <div class="reg-step-line"></div>
+          </div>
+          <div class="reg-step-rhs">
+            <div class="reg-step-name" id="provName1">Creating system backup</div>
+            <div class="reg-step-desc" id="provDesc1">Creating Fresh Backup</div>
+          </div>
+        </div>
+
+        <div class="reg-step" id="provStep2">
+          <div class="reg-step-lhs">
+            <div class="reg-step-icon i-wait" id="provIcon2">2</div>
+            <div class="reg-step-line"></div>
+          </div>
+          <div class="reg-step-rhs">
+            <div class="reg-step-name" id="provName2">Setting up your clinic</div>
+            <div class="reg-step-desc" id="provDesc2">Creating a dedicated site for you</div>
+          </div>
+        </div>
+
+        <div class="reg-step" id="provStep3">
+          <div class="reg-step-lhs">
+            <div class="reg-step-icon i-wait" id="provIcon3">3</div>
+            <div class="reg-step-line"></div>
+          </div>
+          <div class="reg-step-rhs">
+            <div class="reg-step-name" id="provName3">Loading clinic data</div>
+            <div class="reg-step-desc" id="provDesc3">Medicines, templates &amp; settings</div>
+          </div>
+        </div>
+
+        <div class="reg-step" id="provStep4">
+          <div class="reg-step-lhs">
+            <div class="reg-step-icon i-wait" id="provIcon4">4</div>
+            <div class="reg-step-line"></div>
+          </div>
+          <div class="reg-step-rhs">
+            <div class="reg-step-name" id="provName4">Securing your account</div>
+            <div class="reg-step-desc" id="provDesc4">Configuring your password</div>
+          </div>
+        </div>
+
+        <div class="reg-step" id="provStep5">
+          <div class="reg-step-lhs">
+            <div class="reg-step-icon i-wait" id="provIcon5">5</div>
+            <div class="reg-step-line"></div>
+          </div>
+          <div class="reg-step-rhs">
+            <div class="reg-step-name" id="provName5">Sending welcome email</div>
+            <div class="reg-step-desc" id="provDesc5">Login details sent to your inbox</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Error message -->
+      <div class="reg-prov-err" id="regProvErr"></div>
+
+      <!-- Actions -->
+      <div class="reg-prov-actions">
+        <button type="button" class="reg-prov-retry" id="regRetryBtn">&#8635; Retry</button>
+      </div>
+
+    </div>
+
+    <!-- Success Screen -->
+    <div id="regSuccess" class="reg-success">
+      <div class="reg-success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h3>Your Clinic is Live!</h3>
+      <p>Your site is ready. Login credentials have been sent to your email address.</p>
+      <div class="reg-success-card">
+        <div><strong>Site URL</strong><a id="rsSiteUrl" href="#" target="_blank" style="color:#2563EB;word-break:break-all"></a></div>
+        <div><strong>User ID</strong><span>Administrator</span></div>
+        <div><strong>Password</strong><span id="rsPassword" style="font-family:monospace"></span></div>
+        <div><strong>Trial ends</strong><span id="rsTrial"></span></div>
+      </div>
+      <p style="font-size:.8rem;color:#94A3B8">Login credentials have also been sent to <strong id="rsEmail"></strong></p>
+      <a id="rsSiteBtn" href="#" target="_blank" class="reg-submit" style="max-width:280px;text-decoration:none">Open My Clinic &rarr;</a>
+      <button class="reg-submit" style="max-width:200px;background:#64748B;box-shadow:none" onclick="document.getElementById('regOverlay').classList.remove('open');document.body.style.overflow='';">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll(".faq-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const wasOpen = item.classList.contains("open");
+      document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("open"));
+      if (!wasOpen) item.classList.add("open");
+    });
+  });
+
+  // Carousel
+  (function () {
+    const slides = document.querySelectorAll(".pw-slide");
+    const dots   = document.querySelectorAll(".pw-carousel-dot");
+    const prev   = document.getElementById("pwPrev");
+    const next   = document.getElementById("pwNext");
+    if (!slides.length) return;
+
+    const delay = {{ carousel_delay }};
+    let current = 0;
+    let timer;
+
+    function goTo(idx) {
+      slides[current].classList.remove("active");
+      dots[current].classList.remove("active");
+      current = (idx + slides.length) % slides.length;
+      slides[current].classList.add("active");
+      dots[current].classList.add("active");
+    }
+
+    function startAuto() {
+      clearInterval(timer);
+      timer = setInterval(() => goTo(current + 1), delay);
+    }
+
+    if (prev) prev.addEventListener("click", () => { goTo(current - 1); startAuto(); });
+    if (next) next.addEventListener("click", () => { goTo(current + 1); startAuto(); });
+    dots.forEach(dot => {
+      dot.addEventListener("click", () => { goTo(+dot.dataset.index); startAuto(); });
+    });
+
+    startAuto();
+  })();
+
+  // ── REGISTRATION MODAL ──
+  (function () {
+    function getCsrf() {
+      if (window.frappe && frappe.csrf_token) return frappe.csrf_token;
+      const m = document.querySelector('meta[name="csrf-token"]');
+      return m ? (m.getAttribute('content') || '') : '';
+    }
+
+    const overlay   = document.getElementById("regOverlay");
+    const closeBtn  = document.getElementById("regClose");
+    const form      = document.getElementById("regForm");
+    const formWrap  = document.getElementById("regFormWrap");
+    const success   = document.getElementById("regSuccess");
+    const submitBtn = document.getElementById("regSubmit");
+    const errBox    = document.getElementById("regErrBox");
+
+    const f = {
+      clinic:    document.getElementById("regClinicName"),
+      physician: document.getElementById("regPhysician"),
+      email:     document.getElementById("regEmail"),
+      password:  document.getElementById("regPassword"),
+      contact:   document.getElementById("regContact"),
+      address:   document.getElementById("regAddress"),
+    };
+
+    // Open
+    document.querySelectorAll("[data-open-reg]").forEach(el => {
+      el.addEventListener("click", e => {
+        e.preventDefault();
+        overlay.classList.add("open");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => f.clinic.focus(), 350);
+      });
+    });
+
+    // Close
+    function closeModal() {
+      overlay.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    closeBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+    // Password toggle
+    const pwBtn     = document.getElementById("regPwBtn");
+    const eyeShow   = document.getElementById("regEyeShow");
+    const eyeHide   = document.getElementById("regEyeHide");
+    pwBtn.addEventListener("click", () => {
+      const isText = f.password.type === "text";
+      f.password.type = isText ? "password" : "text";
+      eyeShow.style.display = isText ? "" : "none";
+      eyeHide.style.display = isText ? "none" : "";
+    });
+
+    // ── Clinic name availability check ──
+    const avail     = document.getElementById("regAvail");
+    let checkTimer  = null;
+    let clinicOk    = false;
+
+    function setAvail(state, text) {
+      avail.className = "reg-avail " + state;
+      avail.innerHTML = state === "spin"
+        ? '<div class="reg-spinner"></div>' + text
+        : text;
+    }
+
+    function checkName() {
+      const val = f.clinic.value.trim();
+      clinicOk = false;
+      if (!val) {
+        avail.className = "reg-avail"; avail.innerHTML = "";
+        f.clinic.classList.remove("f-ok", "f-err");
+        return;
+      }
+      setAvail("spin", " Checking…");
+      fetch("/api/method/pw_subscription.api.check_clinic_name?clinic_name=" + encodeURIComponent(val))
+        .then(r => r.json())
+        .then(data => {
+          const d = data.message;
+          if (d.available) {
+            clinicOk = true;
+            setAvail("ok", "✓ Available");
+            f.clinic.classList.remove("f-err"); f.clinic.classList.add("f-ok");
+          } else {
+            clinicOk = false;
+            setAvail("err", "✗ Taken");
+            f.clinic.classList.remove("f-ok"); f.clinic.classList.add("f-err");
+          }
+        })
+        .catch(() => {
+          avail.className = "reg-avail"; avail.innerHTML = "";
+          clinicOk = false;
+        });
+    }
+
+    f.clinic.addEventListener("input", () => {
+      clearTimeout(checkTimer);
+      checkTimer = setTimeout(checkName, 480);
+    });
+    f.clinic.addEventListener("blur", () => {
+      clearTimeout(checkTimer);
+      if (f.clinic.value.trim()) checkName();
+    });
+
+    // ── Field validation helpers ──
+    function markField(input, hintId, msg, isErr) {
+      input.classList.toggle("f-err", isErr);
+      const h = document.getElementById(hintId);
+      if (h) { h.className = "reg-hint " + (isErr ? "err" : ""); h.textContent = msg || ""; }
+      return !isErr;
+    }
+
+    function validateAll() {
+      let ok = true;
+      if (!f.clinic.value.trim()) {
+        f.clinic.classList.add("f-err");
+        ok = false;
+      } else if (!clinicOk) {
+        f.clinic.classList.add("f-err");
+        ok = false;
+      }
+      if (!markField(f.physician, "regPhysicianHint", "Physician name is required.", !f.physician.value.trim())) ok = false;
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!f.email.value.trim()) {
+        markField(f.email, "regEmailHint", "Email is required.", true); ok = false;
+      } else if (!emailRe.test(f.email.value.trim())) {
+        markField(f.email, "regEmailHint", "Enter a valid email address.", true); ok = false;
+      }
+      if (f.password.value.length < 8) {
+        markField(f.password, "regPasswordHint", "Password must be at least 8 characters.", true); ok = false;
+      }
+      if (!markField(f.contact, "regContactHint", "Contact number is required.", !f.contact.value.trim())) ok = false;
+      if (!markField(f.address, "regAddressHint", "Address is required.", !f.address.value.trim())) ok = false;
+      return ok;
+    }
+
+    // Clear error on input
+    Object.values(f).forEach(input => {
+      input.addEventListener("input", () => {
+        if (input !== f.clinic) input.classList.remove("f-err");
+      });
+    });
+
+    // ── Provisioning panel refs ──
+    const provPanel    = document.getElementById("regProvisioning");
+    const provRing     = document.getElementById("regProvRing");
+    const ringFill     = document.getElementById("regRingFill");
+    const ringPct      = document.getElementById("regRingPct");
+    const progressFill = document.getElementById("regProgressFill");
+    const provTitle    = document.getElementById("regProvTitle");
+    const provSub      = document.getElementById("regProvSub");
+    const elapsedEl    = document.getElementById("regProvElapsed");
+    const provErr      = document.getElementById("regProvErr");
+    const retryBtn     = document.getElementById("regRetryBtn");
+    let pollTimer    = null;
+    let elapsedTimer = null;
+    let elapsedSecs  = 0;
+    let currentReqName = null;
+    let savedPassword  = "";
+    let savedTrialEnd  = "";
+    let lastStep       = -99;
+    let pollCount      = 0;
+
+    // Ring radius = 28, circumference ≈ 175.93
+    const RING_CIRC = 2 * Math.PI * 28;
+
+    function setRingProgress(fraction) {
+      const clamped = Math.min(1, Math.max(0, fraction));
+      const offset  = RING_CIRC * (1 - clamped);
+      ringFill.style.strokeDashoffset = offset;
+      ringFill.style.strokeDasharray  = RING_CIRC;
+      if (ringPct)      ringPct.textContent      = Math.round(clamped * 100) + "%";
+      if (progressFill) progressFill.style.width = Math.round(clamped * 100) + "%";
+    }
+
+    // ── Elapsed timer ──
+    function startElapsed() {
+      stopElapsed();
+      elapsedSecs = 0;
+      if (elapsedEl) elapsedEl.textContent = "0:00 elapsed";
+      elapsedTimer = setInterval(() => {
+        elapsedSecs++;
+        const m = Math.floor(elapsedSecs / 60);
+        const s = String(elapsedSecs % 60).padStart(2, "0");
+        if (elapsedEl) elapsedEl.textContent = `${m}:${s} elapsed`;
+      }, 1000);
+    }
+    function stopElapsed() {
+      if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+    }
+
+    function updateActiveDesc(rawLine) {
+      if (!rawLine) return;
+      const clean = rawLine.replace(/^\[\d{2}:\d{2}:\d{2}\]\s*/, "").trim();
+      for (let i = 1; i <= 5; i++) {
+        const icon = document.getElementById(`provIcon${i}`);
+        if (icon && icon.classList.contains("i-spin")) {
+          if (i === 1) break; // keep static desc for backup step
+          const desc = document.getElementById(`provDesc${i}`);
+          if (desc && clean) desc.textContent = clean;
+          break;
+        }
+      }
+    }
+
+    function revealStep(num) {
+      const step = document.getElementById(`provStep${num}`);
+      if (step && !step.classList.contains("s-visible")) step.classList.add("s-visible");
+    }
+
+    function resetSteps() {
+      for (let i = 1; i <= 5; i++) {
+        const step = document.getElementById(`provStep${i}`);
+        const icon = document.getElementById(`provIcon${i}`);
+        if (!step) continue;
+        step.className = "reg-step";
+        if (icon) { icon.className = "reg-step-icon i-wait"; icon.textContent = String(i); }
+      }
+      lastStep = -99;
+      setRingProgress(0);
+      if (progressFill) { progressFill.classList.remove("done","fail"); progressFill.style.width = "0%"; }
+    }
+
+    function setStepState(num, state) {
+      const icon = document.getElementById(`provIcon${num}`);
+      const step = document.getElementById(`provStep${num}`);
+      if (!icon || !step) return;
+      const ICONS = { wait: String(num), spin: "", done: "✓", fail: "✗" };
+      icon.className   = `reg-step-icon i-${state}`;
+      icon.textContent = ICONS[state] !== undefined ? ICONS[state] : "";
+      step.classList.remove("s-active", "s-done", "s-fail");
+      if (state === "spin") step.classList.add("s-active");
+      if (state === "done") step.classList.add("s-done");
+      if (state === "fail") step.classList.add("s-fail");
+    }
+
+    function applyStep(current) {
+      if (current === lastStep) return;
+      lastStep = current;
+
+      if (current === -1) {
+        for (let i = 1; i <= 5; i++) {
+          const icon = document.getElementById(`provIcon${i}`);
+          if (icon && icon.classList.contains("i-spin")) setStepState(i, "fail");
+        }
+        if (progressFill) progressFill.classList.add("fail");
+        return;
+      }
+
+      const display = Math.max(1, current);
+      for (let i = 1; i <= 5; i++) {
+        if (i < display)       { revealStep(i); setStepState(i, "done"); }
+        else if (i === display){ revealStep(i); setStepState(i, "spin"); }
+      }
+      if (current >= 6) {
+        for (let i = 1; i <= 5; i++) { revealStep(i); setStepState(i, "done"); }
+        if (progressFill) progressFill.classList.add("done");
+      }
+      setRingProgress(current / 6);
+    }
+
+    // ── Polling ──
+    function startPolling(requestName) {
+      currentReqName = requestName;
+      stopPolling();
+      pollCount = 0;
+      applyStep(0);
+      setRingProgress(0);
+      startElapsed();
+      pollTimer = setInterval(() => pollStatus(requestName), 2500);
+      pollStatus(requestName);
+    }
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    function pollStatus(requestName) {
+      pollCount++;
+      if (pollCount === 12 && lastStep <= 0) {
+        provSub.textContent = "Still starting up — worker may be initialising. Please wait…";
+      }
+
+      fetch("/api/method/pw_subscription.site_provisioning.get_provisioning_status?request_name=" + encodeURIComponent(requestName))
+        .then(r => r.json())
+        .then(data => {
+          if (data.exc || !data.message) return;
+          const d = data.message;
+          const step = parseInt(d.current_step, 10) || 0;
+          applyStep(step);
+          if (d.last_line) updateActiveDesc(d.last_line);
+          if (d.status === "Success") { stopPolling(); onProvisioningSuccess(d); }
+          else if (d.status === "Failed") { stopPolling(); onProvisioningFailed(d); }
+        })
+        .catch(() => {});
+    }
+
+    function onProvisioningSuccess(d) {
+      stopElapsed();
+      provRing.classList.add("done");
+      if (progressFill) { progressFill.classList.remove("fail"); progressFill.classList.add("done"); }
+      setRingProgress(1);
+      provTitle.textContent = "Your Clinic is Live!";
+      provSub.textContent   = "All set — opening your site now.";
+      setTimeout(() => {
+        provPanel.style.display = "none";
+        success.style.display   = "flex";
+        const url = d.site_url || "";
+        document.getElementById("rsSiteUrl").textContent  = url;
+        document.getElementById("rsSiteUrl").href         = url;
+        document.getElementById("rsSiteBtn").href         = url;
+        document.getElementById("rsPassword").textContent = savedPassword;
+        document.getElementById("rsTrial").textContent    = savedTrialEnd;
+        document.getElementById("rsEmail").textContent    = d.contact_email || "";
+      }, 1400);
+    }
+
+    function onProvisioningFailed(d) {
+      stopElapsed();
+      provRing.classList.add("fail");
+      if (progressFill) progressFill.classList.add("fail");
+      provTitle.textContent = "Setup Failed";
+      provSub.textContent   = "Something went wrong. You can retry below or contact support.";
+      applyStep(-1);
+      if (d.error_message) { provErr.style.display = "block"; provErr.textContent = d.error_message; }
+      retryBtn.style.display = "block";
+    }
+
+    // ── Retry ──
+    retryBtn.addEventListener("click", () => {
+      if (!currentReqName) return;
+      retryBtn.style.display = "none";
+      provErr.style.display  = "none";
+      provRing.className     = "reg-prov-ring";
+      provTitle.textContent = "Retrying…";
+      provSub.textContent   = "This takes 3–5 minutes. Please keep this window open.";
+      pollCount = 0;
+      resetSteps();
+
+      const csrf = getCsrf();
+      fetch("/api/method/pw_subscription.site_provisioning.retry_site_creation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": csrf },
+        body: JSON.stringify({ request_name: currentReqName }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.exc) {
+            const msg = (data._server_messages
+              ? JSON.parse(JSON.parse(data._server_messages)[0]).message
+              : null) || "Retry failed.";
+            onProvisioningFailed({ error_message: msg });
+            return;
+          }
+          startPolling(currentReqName);
+        })
+        .catch(() => onProvisioningFailed({ error_message: "Could not connect. Please refresh and try again." }));
+    });
+
+    // ── Submit ──
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      if (!validateAll()) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="reg-spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff"></div> Registering…';
+
+      savedPassword = f.password.value;
+
+      const csrf = getCsrf();
+      fetch("/api/method/pw_subscription.api.register_clinic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frappe-CSRF-Token": csrf,
+        },
+        body: JSON.stringify({
+          clinic_name:    f.clinic.value.trim(),
+          physician_name: f.physician.value.trim(),
+          email:          f.email.value.trim(),
+          password:       f.password.value,
+          contact:        f.contact.value.trim(),
+          address:        f.address.value.trim(),
+        }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.exc) throw new Error(
+            (data._server_messages
+              ? JSON.parse(JSON.parse(data._server_messages)[0]).message
+              : null) || "Registration failed."
+          );
+          const d = data.message;
+          if (d && d.success) {
+            savedTrialEnd = d.trial_end || "";
+            // Switch to provisioning view and start polling
+            formWrap.style.display = "none";
+            provPanel.style.display = "flex";
+            startPolling(d.request_name);
+          } else {
+            showError("Registration failed. Please try again.");
+          }
+        })
+        .catch(err => showError(err.message || "Something went wrong. Please try again."));
+    });
+
+    function showError(msg) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Complete Registration &rarr;";
+      errBox.textContent = msg;
+      errBox.style.display = "block";
+    }
+  })();
+
+</script>
+</body>
+</html>

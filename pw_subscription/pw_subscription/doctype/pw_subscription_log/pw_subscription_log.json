@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "subscription",
+  "action",
+  "action_date",
+  "cb_top",
+  "action_by",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname":"subscription","fieldtype":"Link","in_list_view":1,"label":"Subscription","options":"PW Subscription","reqd":1,"search_index":1},
+  {"fieldname":"action","fieldtype":"Select","in_list_view":1,"label":"Action","options":"Trial Started\nActivated\nRenewed\nGrace Period\nExpired\nCancelled\nExtended","reqd":1},
+  {"fieldname":"action_date","fieldtype":"Datetime","in_list_view":1,"label":"Date"},
+  {"fieldname":"cb_top","fieldtype":"Column Break"},
+  {"fieldname":"action_by","fieldtype":"Link","label":"By","options":"User"},
+  {"fieldname":"notes","fieldtype":"Small Text","label":"Notes"}
+ ],
+ "idx": 0,
+ "module": "PW Subscription",
+ "modified": "2026-06-11 00:00:00",
+ "modified_by": "Administrator",
+ "name": "PW Subscription Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "sort_field": "action_date",
+ "sort_order": "DESC",
+ "track_changes": 0
+}
