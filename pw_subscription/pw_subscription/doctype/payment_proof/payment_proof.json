@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "autoname": "PP-.YYYY.-.#####",
+ "creation": "2026-06-16 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "subscription",
+  "clinic_name",
+  "physician_name",
+  "cb_top",
+  "contact_email",
+  "site_name",
+  "sb_plan",
+  "selected_plan",
+  "duration_months",
+  "cb_plan",
+  "amount_paid",
+  "status",
+  "sb_proof",
+  "screenshot",
+  "notes",
+  "sb_review",
+  "submitted_on",
+  "reviewed_by",
+  "cb_review",
+  "reviewed_on",
+  "admin_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Subscription",
+   "options": "PW Subscription",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "clinic_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Clinic Name",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "physician_name",
+   "fieldtype": "Data",
+   "label": "Physician",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_top",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "label": "Site Name",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "sb_plan",
+   "fieldtype": "Section Break",
+   "label": "Plan & Payment"
+  },
+  {
+   "fieldname": "selected_plan",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Selected Plan"
+  },
+  {
+   "fieldname": "duration_months",
+   "fieldtype": "Int",
+   "label": "Duration (Months)"
+  },
+  {
+   "fieldname": "cb_plan",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount_paid",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount Paid (PKR)",
+   "options": "PKR"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nApproved\nRejected",
+   "default": "Pending",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_proof",
+   "fieldtype": "Section Break",
+   "label": "Payment Proof"
+  },
+  {
+   "fieldname": "screenshot",
+   "fieldtype": "Attach Image",
+   "label": "Payment Screenshot",
+   "reqd": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Customer Notes"
+  },
+  {
+   "fieldname": "sb_review",
+   "fieldtype": "Section Break",
+   "label": "Review Details"
+  },
+  {
+   "fieldname": "submitted_on",
+   "fieldtype": "Datetime",
+   "label": "Submitted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_review",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Datetime",
+   "label": "Reviewed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "admin_notes",
+   "fieldtype": "Text",
+   "label": "Admin Notes"
+  }
+ ],
+ "idx": 0,
+ "in_create": 0,
+ "module": "PW Subscription",
+ "modified": "2026-06-16 00:00:00",
+ "modified_by": "Administrator",
+ "name": "Payment Proof",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "submitted_on",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

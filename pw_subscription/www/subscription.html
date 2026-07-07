@@ -50,6 +50,9 @@
   .pw-nav-links a:hover { color: var(--primary); }
   .pw-nav-cta { background: var(--primary); color: #fff; border: none; padding: .55rem 1.3rem; border-radius: 8px; font-weight: 600; font-size: .9rem; cursor: pointer; text-decoration: none; transition: background .2s, transform .1s; }
   .pw-nav-cta:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .pw-nav-signin { color: var(--dark-3); font-size: .9rem; font-weight: 600; text-decoration: none; transition: color .2s; padding: .4rem 0; }
+  .pw-nav-signin:hover { color: var(--primary); }
+  .pw-nav-right { display: flex; align-items: center; gap: .75rem; }
   @media (max-width:768px) { .pw-nav-links { display:none; } }
 
   /* ── CAROUSEL HERO ── */
@@ -245,11 +248,16 @@
 
   /* ── PRICING ── */
   .pw-pricing { background: var(--white); }
-  .pricing-wrap { display: flex; justify-content: center; margin-top: 3.5rem; }
+  .pricing-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 2rem; margin-top: 3.5rem;
+  }
   .pricing-card {
     background: var(--dark); border-radius: var(--radius-lg);
-    padding: 3rem; max-width: 480px; width: 100%; position: relative;
+    padding: 2.5rem; width: 100%; position: relative;
     overflow: hidden; box-shadow: 0 32px 64px rgba(0,0,0,.2);
+    display: flex; flex-direction: column;
   }
   .pricing-card::before { content:''; position:absolute; top:-80px; right:-80px; width:300px; height:300px; background: radial-gradient(circle, rgba(37,99,235,.4), transparent 70%); border-radius:50%; }
   .pricing-badge { display: inline-block; background: linear-gradient(135deg, #10B981, #059669); color: #fff; font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .35rem .9rem; border-radius: 100px; margin-bottom: 1.5rem; }
@@ -540,6 +548,66 @@
     .reg-body { padding: 1.5rem; }
     .reg-head { padding: 1.75rem 1.5rem 1.5rem; }
   }
+
+  /* ── GLOBAL RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .pricing-wrap { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 1.5rem; }
+  }
+  @media (max-width: 768px) {
+    section { padding: 60px 5%; }
+    .pw-footer { padding: 2.5rem 5%; }
+    .pricing-card { padding: 2rem 1.75rem; }
+    .pricing-price { font-size: 3.2rem; }
+    .pw-hero-stats { gap: 1.5rem; }
+    .pw-stat-num { font-size: 1.7rem; }
+    .pw-nav-right .pw-nav-signin { display: none; }
+  }
+  @media (max-width: 480px) {
+    section { padding: 48px 1.25rem; }
+    .pw-footer { padding: 2rem 1.25rem; }
+    .pricing-wrap { grid-template-columns: 1fr; }
+    .pricing-card { padding: 1.75rem 1.5rem; }
+    .pricing-price { font-size: 2.8rem; }
+    .section-title { font-size: 1.7rem; }
+    .pw-hero-stats { gap: 1.25rem; }
+    .pw-stat-num { font-size: 1.5rem; }
+    .pw-stat-label { font-size: .75rem; }
+    .faq-cta { padding: 1.75rem 1.25rem; }
+    .payment-card { padding: 1.5rem; }
+    .reg-success-card { padding: .85rem 1rem; }
+  }
+
+  /* ── Searchable Select (Country / City) ── */
+  .reg-search-wrap { position: relative; }
+  .reg-search-input {
+    width: 100%; padding: .78rem 2.5rem .78rem 1rem;
+    border: 1.5px solid #E2E8F0; border-radius: 10px;
+    font-size: .94rem; color: #0F172A; font-family: inherit;
+    background: #F8FAFC; outline: none; box-sizing: border-box;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+    cursor: pointer;
+  }
+  .reg-search-input:focus { border-color: #2563EB; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .reg-search-input.f-err { border-color: #EF4444 !important; background: #FFF5F5; box-shadow: 0 0 0 3px rgba(239,68,68,.07) !important; }
+  .reg-search-input:disabled { opacity: .55; cursor: not-allowed; }
+  .reg-search-arrow {
+    position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: #94A3B8;
+  }
+  .reg-search-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 9999;
+    background: #fff; border: 1.5px solid #CBD5E1; border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.14); max-height: 220px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: #CBD5E1 transparent;
+  }
+  .reg-search-dropdown.hidden { display: none; }
+  .reg-dropdown-item {
+    padding: .6rem 1rem; cursor: pointer; font-size: .88rem; color: #1E293B;
+    transition: background .1s; border-bottom: 1px solid #F1F5F9;
+  }
+  .reg-dropdown-item:last-child { border-bottom: none; }
+  .reg-dropdown-item:hover, .reg-dropdown-item.highlighted { background: #EFF6FF; color: #2563EB; }
+  .reg-dropdown-empty { padding: .75rem 1rem; font-size: .84rem; color: #94A3B8; text-align: center; }
 </style>
 </head>
 <body>
@@ -554,7 +622,10 @@
     <a href="#payment">Payment</a>
     <a href="#faq">FAQ</a>
   </div>
-  <a href="#" class="pw-nav-cta" data-open-reg>Get Started</a>
+  <div class="pw-nav-right">
+    <a href="/subscription-portal" class="pw-nav-cta">Subscription Portal</a>
+    <a href="#" class="pw-nav-cta" data-open-reg>Get Started</a>
+  </div>
 </nav>
 
 <!-- HERO / CAROUSEL -->
@@ -714,9 +785,48 @@
   <div class="text-center">
     <span class="section-tag">Pricing</span>
     <h2 class="section-title">Simple, transparent pricing</h2>
-    <p class="section-sub">One flat monthly fee. No hidden charges. No per-doctor fees. No limits.</p>
+    <p class="section-sub">One flat fee. No hidden charges. No per-doctor fees. No limits.</p>
   </div>
   <div class="pricing-wrap">
+    {% if subscription_plans %}
+      {% for plan in subscription_plans %}
+      <div class="pricing-card">
+        <span class="pricing-badge">
+          {%- if plan.badge == 'best' -%}&#127942; Best Value
+          {%- elif plan.badge == 'popular' -%}&#128293; Popular
+          {%- else -%}&#10022; Plan{%- endif -%}
+        </span>
+        <div class="pricing-name">{{ plan.plan_label }}</div>
+        <div class="pricing-desc">
+          {%- if plan.duration_months > 1 -%}{{ plan.duration_months }}-month package{%- else -%}Monthly plan{%- endif -%}
+        </div>
+        <div class="pricing-amount">
+          <span class="pricing-currency">PKR</span>
+          <span class="pricing-price">{{ plan.price | int }}</span>
+        </div>
+        <div class="pricing-period">
+          {%- if plan.duration_months > 1 -%}for {{ plan.duration_months }} months{%- else -%}per month / per clinic{%- endif -%}
+        </div>
+        {% if plan.savings_pct > 0 %}
+        <div class="pricing-trial">&#128176; Save {{ plan.savings_pct }}% vs monthly &middot; PKR {{ plan.monthly_equiv }}/mo</div>
+        {% endif %}
+        <div class="pricing-trial">&#127873; First {{ trial_days }} days completely FREE — no payment required</div>
+        <ul class="pricing-features">
+          <li>Unlimited patients &amp; visits</li>
+          <li>Smart prescription writing</li>
+          <li>Multi-language printing (EN / UR / AR)</li>
+          <li>Patient queue &amp; token system</li>
+          <li>Medical tests &amp; diagnosis library</li>
+          <li>Invoicing &amp; daily vouchers</li>
+          <li>Clinic branding &amp; custom header</li>
+          <li>Medicines database &amp; dose library</li>
+          <li>Full data ownership &amp; privacy</li>
+          <li>Dedicated support via phone &amp; email</li>
+        </ul>
+        <a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>
+      </div>
+      {% endfor %}
+    {% else %}
     <div class="pricing-card">
       <span class="pricing-badge">&#10022; All-Inclusive Plan</span>
       <div class="pricing-name">Professional Clinic Plan</div>
@@ -741,6 +851,7 @@
       </ul>
       <a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>
     </div>
+    {% endif %}
   </div>
 </section>
 
@@ -924,6 +1035,30 @@
             <div class="reg-hint" id="regPasswordHint"></div>
           </div>
 
+          <!-- Country (searchable) -->
+          <div class="reg-field">
+            <label class="reg-label" for="regCountryInput">Country</label>
+            <div class="reg-iw reg-search-wrap">
+              <input type="text" id="regCountryInput" class="reg-search-input" placeholder="Search country..." autocomplete="off">
+              <input type="hidden" id="regCountry">
+              <span class="reg-search-arrow">▾</span>
+              <div class="reg-search-dropdown hidden" id="regCountryDropdown"></div>
+            </div>
+            <div class="reg-hint" id="regCountryHint"></div>
+          </div>
+
+          <!-- City (searchable, populated after country select) -->
+          <div class="reg-field">
+            <label class="reg-label" for="regCityInput">City</label>
+            <div class="reg-iw reg-search-wrap">
+              <input type="text" id="regCityInput" class="reg-search-input" placeholder="Select country first..." autocomplete="off" disabled>
+              <input type="hidden" id="regCity">
+              <span class="reg-search-arrow">▾</span>
+              <div class="reg-search-dropdown hidden" id="regCityDropdown"></div>
+            </div>
+            <div class="reg-hint" id="regCityHint"></div>
+          </div>
+
           <!-- Address — full width -->
           <div class="reg-field full">
             <label class="reg-label" for="regAddress">Clinic Address <span class="req">*</span></label>
@@ -1045,8 +1180,13 @@
       <p>Your site is ready. Login credentials have been sent to your email address.</p>
       <div class="reg-success-card">
         <div><strong>Site URL</strong><a id="rsSiteUrl" href="#" target="_blank" style="color:#2563EB;word-break:break-all"></a></div>
-        <div><strong>User ID</strong><span>Administrator</span></div>
-        <div><strong>Password</strong><span id="rsPassword" style="font-family:monospace"></span></div>
+        <div><strong>Login Email</strong><span id="rsUserId" style="font-family:monospace"></span></div>
+        <div><strong>Password</strong>
+          <span style="display:flex;align-items:center;gap:.5rem">
+            <span id="rsPassword" style="font-family:monospace;letter-spacing:.12em"></span>
+            <button type="button" id="rsPassToggle" onclick="toggleRsPass()" style="font-size:.7rem;padding:.15rem .5rem;border-radius:5px;border:1px solid #6EE7B7;background:rgba(16,185,129,.1);cursor:pointer;color:#047857;font-weight:700;white-space:nowrap">Show</button>
+          </span>
+        </div>
         <div><strong>Trial ends</strong><span id="rsTrial"></span></div>
       </div>
       <p style="font-size:.8rem;color:#94A3B8">Login credentials have also been sent to <strong id="rsEmail"></strong></p>
@@ -1126,12 +1266,109 @@
       address:   document.getElementById("regAddress"),
     };
 
+    // ── Country / City searchable selects ──────────────────────────────────────
+    let allCountries = [];
+    let allCities    = [];
+    let countriesLoaded = false;
+
+    function buildDropdown(inputEl, dropdownEl, hiddenEl, items, labelKey, onSelect) {
+      function render(filter) {
+        const lc = (filter || "").toLowerCase();
+        const filtered = lc
+          ? items.filter(i => (labelKey ? i[labelKey] : i).toLowerCase().includes(lc))
+          : items;
+        if (!filtered.length) {
+          dropdownEl.innerHTML = `<div class="reg-dropdown-empty">No results</div>`;
+        } else {
+          dropdownEl.innerHTML = filtered.slice(0, 80).map((item, idx) => {
+            const label = labelKey ? item[labelKey] : item;
+            return `<div class="reg-dropdown-item" data-idx="${idx}" data-label="${label.replace(/"/g,'&quot;')}">${label}</div>`;
+          }).join('');
+          dropdownEl.querySelectorAll('.reg-dropdown-item').forEach(el => {
+            el.addEventListener('mousedown', e => {
+              e.preventDefault();
+              const val = el.dataset.label;
+              inputEl.value = val;
+              hiddenEl.value = val;
+              inputEl.classList.remove('f-err');
+              dropdownEl.classList.add('hidden');
+              if (onSelect) onSelect(val);
+            });
+          });
+        }
+        dropdownEl.classList.remove('hidden');
+      }
+
+      inputEl.addEventListener('input', () => {
+        hiddenEl.value = '';
+        render(inputEl.value);
+      });
+      inputEl.addEventListener('focus', () => render(inputEl.value));
+      inputEl.addEventListener('blur', () => {
+        setTimeout(() => dropdownEl.classList.add('hidden'), 180);
+        // If typed text doesn't match a valid option, clear
+        const val = inputEl.value.trim();
+        if (val && hiddenEl.value !== val) {
+          const match = items.find(i => (labelKey ? i[labelKey] : i).toLowerCase() === val.toLowerCase());
+          if (match) {
+            const label = labelKey ? match[labelKey] : match;
+            inputEl.value = label;
+            hiddenEl.value = label;
+            if (onSelect) onSelect(label);
+          } else {
+            inputEl.value = '';
+            hiddenEl.value = '';
+          }
+        }
+      });
+    }
+
+    async function loadCountries() {
+      if (countriesLoaded) return;
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.get_countries');
+        const data = await resp.json();
+        allCountries = data.message || [];
+        countriesLoaded = true;
+        const inp = document.getElementById('regCountryInput');
+        const drop = document.getElementById('regCountryDropdown');
+        const hid  = document.getElementById('regCountry');
+        buildDropdown(inp, drop, hid, allCountries, null, onCountrySelect);
+      } catch (e) {
+        console.warn('Could not load countries', e);
+      }
+    }
+
+    async function onCountrySelect(country) {
+      const cityInp  = document.getElementById('regCityInput');
+      const cityDrop = document.getElementById('regCityDropdown');
+      const cityHid  = document.getElementById('regCity');
+      cityInp.value = '';
+      cityHid.value = '';
+      cityDrop.classList.add('hidden');
+      cityInp.disabled = true;
+      cityInp.placeholder = 'Loading cities…';
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.get_cities_by_country?country=' + encodeURIComponent(country));
+        const data = await resp.json();
+        allCities = data.message || [];
+        cityInp.disabled = false;
+        cityInp.placeholder = allCities.length ? 'Search city…' : 'No cities — type manually';
+        buildDropdown(cityInp, cityDrop, cityHid, allCities, 'city_name', null);
+      } catch (e) {
+        cityInp.disabled = false;
+        cityInp.placeholder = 'Search city…';
+        allCities = [];
+      }
+    }
+
     // Open
     document.querySelectorAll("[data-open-reg]").forEach(el => {
       el.addEventListener("click", e => {
         e.preventDefault();
         overlay.classList.add("open");
         document.body.style.overflow = "hidden";
+        loadCountries();
         setTimeout(() => f.clinic.focus(), 350);
       });
     });
@@ -1385,7 +1622,7 @@
         provSub.textContent = "Still starting up — worker may be initialising. Please wait…";
       }
 
-      fetch("/api/method/pw_subscription.site_provisioning.get_provisioning_status?request_name=" + encodeURIComponent(requestName))
+      fetch("/api/method/pw_subscription.api.get_provisioning_status?request_name=" + encodeURIComponent(requestName))
         .then(r => r.json())
         .then(data => {
           if (data.exc || !data.message) return;
@@ -1413,9 +1650,12 @@
         document.getElementById("rsSiteUrl").textContent  = url;
         document.getElementById("rsSiteUrl").href         = url;
         document.getElementById("rsSiteBtn").href         = url;
-        document.getElementById("rsPassword").textContent = savedPassword;
+        document.getElementById("rsUserId").textContent   = d.contact_email || f.email.value.trim() || "";
+        const rsPassEl = document.getElementById("rsPassword");
+        rsPassEl.dataset.pass = savedPassword;
+        rsPassEl.textContent  = "•".repeat(Math.min(savedPassword.length, 12) || 8);
         document.getElementById("rsTrial").textContent    = savedTrialEnd;
-        document.getElementById("rsEmail").textContent    = d.contact_email || "";
+        document.getElementById("rsEmail").textContent    = d.contact_email || f.email.value.trim() || "";
       }, 1400);
     }
 
@@ -1442,7 +1682,7 @@
       resetSteps();
 
       const csrf = getCsrf();
-      fetch("/api/method/pw_subscription.site_provisioning.retry_site_creation", {
+      fetch("/api/method/pw_subscription.api.retry_site_creation", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": csrf },
         body: JSON.stringify({ request_name: currentReqName }),
@@ -1485,6 +1725,8 @@
           email:          f.email.value.trim(),
           password:       f.password.value,
           contact:        f.contact.value.trim(),
+          country:        document.getElementById('regCountry').value.trim(),
+          city:           document.getElementById('regCity').value.trim(),
           address:        f.address.value.trim(),
         }),
       })
@@ -1516,6 +1758,17 @@
       errBox.style.display = "block";
     }
   })();
+
+  let _rsPassVisible = false;
+  function toggleRsPass() {
+    _rsPassVisible = !_rsPassVisible;
+    const el  = document.getElementById("rsPassword");
+    const btn = document.getElementById("rsPassToggle");
+    if (!el || !btn) return;
+    const pass = el.dataset.pass || "";
+    el.textContent  = _rsPassVisible ? pass : "•".repeat(Math.min(pass.length, 12) || 8);
+    btn.textContent = _rsPassVisible ? "Hide" : "Show";
+  }
 
 </script>
 </body>

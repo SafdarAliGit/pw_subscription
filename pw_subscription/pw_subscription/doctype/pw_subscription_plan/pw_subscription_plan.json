@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "creation": "2026-06-16 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "plan_label",
+  "duration_months",
+  "price",
+  "is_active"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plan Label",
+   "reqd": 1,
+   "bold": 1,
+   "description": "e.g. 1 Month, 3 Months, 6 Months, 1 Year"
+  },
+  {
+   "fieldname": "duration_months",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Duration (Months)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price (PKR)",
+   "reqd": 1,
+   "options": "PKR"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Active",
+   "default": "1"
+  }
+ ],
+ "idx": 0,
+ "istable": 1,
+ "module": "PW Subscription",
+ "modified": "2026-06-16 00:00:00",
+ "modified_by": "Administrator",
+ "name": "PW Subscription Plan",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

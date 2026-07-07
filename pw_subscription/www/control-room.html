@@ -1,0 +1,2521 @@
+{% extends "templates/web.html" %}
+{% block title %}Control Room — {{ app_name }}{% endblock %}
+
+{% block head_include %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  .navbar,.web-footer,footer.web-footer,.footer-main{display:none!important}
+  *,*::before,*::after{box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#0F172A;min-height:100vh;color:#E2E8F0}
+
+  /* Break out of Frappe's container max-width */
+  .page-content,.website-page-container,.container{max-width:100%!important;padding-left:0!important;padding-right:0!important;margin-left:0!important;margin-right:0!important}
+
+  :root{
+    --primary:#3B82F6;--success:#10B981;--warning:#F59E0B;--danger:#EF4444;
+    --info:#8B5CF6;--dark:#0F172A;--card:#1E293B;--border:#334155;
+    --text:#E2E8F0;--muted:#94A3B8;--radius:12px;
+  }
+
+  /* ── Layout ── */
+  .cr-wrap{margin:0;padding:1.5rem 2rem 4rem}
+
+  /* ── Header ── */
+  .cr-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 0 2rem;flex-wrap:wrap;gap:1rem}
+  .cr-logo{display:flex;align-items:center;gap:.75rem}
+  .cr-logo-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:blink 2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .cr-title{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+  .cr-subtitle{font-size:.82rem;color:var(--muted)}
+  .cr-actions-bar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:8px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#2563EB;color:#fff}
+  .btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#059669;color:#fff}
+  .btn-warning{background:var(--warning);color:#1E293B}.btn-warning:hover{background:#D97706;color:#1E293B}
+  .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#DC2626;color:#fff}
+  .btn-ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{background:rgba(255,255,255,.14);color:var(--text)}
+  .btn-sm{padding:.35rem .75rem;font-size:.78rem}
+  .btn-xs{padding:.25rem .6rem;font-size:.74rem}
+
+  /* ── Stats Dashboard ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;transition:.2s}
+  .stat-card:hover{border-color:#475569;transform:translateY(-1px)}
+  .stat-val{font-size:2rem;font-weight:900;line-height:1;margin-bottom:.3rem}
+  .stat-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .stat-card.s-total .stat-val{color:#fff}
+  .stat-card.s-active .stat-val{color:var(--success)}
+  .stat-card.s-trial .stat-val{color:var(--primary)}
+  .stat-card.s-grace .stat-val{color:var(--warning)}
+  .stat-card.s-expired .stat-val{color:var(--danger)}
+  .stat-card.s-suspended .stat-val{color:#94A3B8}
+  .stat-card.s-revenue .stat-val{color:#A78BFA}
+  .stat-card.s-pending .stat-val{color:var(--warning)}
+
+  /* ── Tab Container ── */
+  .cr-tabs-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+
+  /* ── Tab Bar ── */
+  .cr-tabs-bar{display:flex;border-bottom:1px solid var(--border);background:#0F172A;padding:0 .5rem;gap:.25rem;overflow-x:auto;scrollbar-width:none}
+  .cr-tabs-bar::-webkit-scrollbar{display:none}
+  .tab-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.25rem;font-size:.88rem;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:-1px}
+  .tab-btn:hover{color:var(--text)}
+  .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+  .tab-count{padding:.1rem .55rem;border-radius:100px;font-size:.7rem;font-weight:700;line-height:1.4}
+  .tab-count-blue{background:rgba(59,130,246,.2);color:var(--primary)}
+  .tab-count-red{background:rgba(239,68,68,.2);color:var(--danger)}
+
+  /* ── Tab Panels ── */
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  /* ── Panel inner header bar ── */
+  .panel-bar{padding:.85rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+  .panel-title{font-size:.9rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:.6rem}
+
+  /* ── Payment proofs ── */
+  .proofs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;padding:1.25rem}
+  .proof-card{background:#0F172A;border:1px solid var(--border);border-radius:10px;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+  .proof-header{display:flex;justify-content:space-between;align-items:flex-start}
+  .proof-clinic{font-weight:700;color:#fff;font-size:.9rem}
+  .proof-site{font-size:.75rem;color:var(--muted);font-family:monospace;margin-top:.2rem}
+  .proof-plan{background:rgba(59,130,246,.15);color:var(--primary);padding:.2rem .6rem;border-radius:6px;font-size:.78rem;font-weight:600}
+  .proof-amount{font-size:1.2rem;font-weight:800;color:var(--success)}
+  .proof-img{width:100%;height:140px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:.2s}
+  .proof-img:hover{opacity:.9;border-color:var(--primary)}
+  .proof-meta{font-size:.76rem;color:var(--muted)}
+  .proof-actions{display:flex;gap:.5rem;margin-top:.25rem}
+
+  /* ── Sites table ── */
+  .table-controls{padding:1rem 1.5rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+  .search-input{background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.5rem .85rem;color:var(--text);font-size:.85rem;width:260px;outline:none}
+  .search-input:focus{border-color:var(--primary)}
+  .filter-select{background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);font-size:.85rem;outline:none}
+
+  .sites-table-wrap{overflow-x:auto}
+  table.sites-tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+  table.sites-tbl th{background:#0F172A;color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.75rem 1rem;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
+  table.sites-tbl td{padding:.75rem 1rem;border-bottom:1px solid rgba(51,65,85,.5);vertical-align:middle}
+  table.sites-tbl tr:hover td{background:rgba(255,255,255,.02)}
+  table.sites-tbl tr:last-child td{border:none}
+
+  .clinic-name{font-weight:700;color:#fff}
+  .site-url{font-size:.74rem;color:var(--muted);font-family:monospace;margin-top:.15rem}
+  .physician{font-size:.78rem;color:var(--muted)}
+
+  /* Status badges */
+  .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .65rem;border-radius:100px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+  .badge-trial{background:rgba(59,130,246,.15);color:#60A5FA}
+  .badge-active{background:rgba(16,185,129,.15);color:#34D399}
+  .badge-grace{background:rgba(245,158,11,.15);color:#FCD34D}
+  .badge-expired{background:rgba(239,68,68,.15);color:#F87171}
+  .badge-cancelled{background:rgba(100,116,139,.15);color:#94A3B8}
+  .badge-suspended{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.3)}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  /* Online/offline */
+  .ping-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.74rem;font-weight:600}
+  .ping-online{color:var(--success)}
+  .ping-offline{color:var(--danger)}
+  .ping-loading{color:var(--muted)}
+  .ping-disabled{color:var(--muted)}
+  .ping-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+  /* Days pill */
+  .days-pill{font-size:.8rem;font-weight:700;padding:.15rem .6rem;border-radius:6px}
+  .days-ok{background:rgba(16,185,129,.15);color:#34D399}
+  .days-warn{background:rgba(245,158,11,.15);color:#FCD34D}
+  .days-bad{background:rgba(239,68,68,.15);color:#F87171}
+
+  /* Actions dropdown */
+  .action-wrap{position:relative}
+  .action-btn{background:#0F172A;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+  .action-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .action-menu{position:absolute;right:0;top:calc(100% + 4px);background:#1E293B;border:1px solid var(--border);border-radius:10px;min-width:200px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden}
+  .action-item{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;font-size:.82rem;color:var(--text);cursor:pointer;transition:.12s}
+  .action-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .action-item.danger:hover{background:rgba(239,68,68,.1);color:var(--danger)}
+  .action-sep{border-top:1px solid var(--border);margin:.3rem 0}
+
+  /* ── Modals ── */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem}
+  .modal-backdrop.open{display:flex}
+  .modal{display:block!important;height:auto!important;background:#1E293B;border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative!important}
+  .modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .modal-title{font-size:1.05rem;font-weight:700;color:#fff}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:0}
+  .modal-close:hover{color:#fff}
+  .modal-body{padding:1.5rem}
+  .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.75rem}
+  .form-group{margin-bottom:1.1rem}
+  .form-label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+  .form-control{width:100%;background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;color:var(--text);font-size:.88rem;outline:none}
+  .form-control:focus{border-color:var(--primary)}
+  .form-select{width:100%;background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;color:var(--text);font-size:.88rem;outline:none}
+  .form-select:focus{border-color:var(--primary)}
+  .form-hint{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+  .info-box{background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:1rem}
+  .info-box-row{display:flex;justify-content:space-between;padding:.3rem 0;font-size:.84rem}
+  .info-box-label{color:var(--muted)}
+  .info-box-val{font-weight:600;color:#fff}
+
+  /* Log modal */
+  .log-pre{background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:monospace;font-size:.75rem;color:#A3B8C8;white-space:pre-wrap;max-height:380px;overflow-y:auto;line-height:1.8}
+
+  /* ── Toast ── */
+  .toast-wrap{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.6rem;pointer-events:none}
+  .toast{background:#1E293B;border:1px solid var(--border);border-radius:14px;min-width:300px;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);overflow:hidden;pointer-events:all;animation:toastIn .28s cubic-bezier(.34,1.4,.64,1)}
+  @keyframes toastIn{from{opacity:0;transform:translateX(48px) scale(.93)}to{opacity:1;transform:none}}
+  @keyframes toastOut{to{opacity:0;transform:translateX(48px) scale(.93)}}
+  .toast-inner{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem}
+  .toast-icon-wrap{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem}
+  .toast-body{flex:1;min-width:0}
+  .toast-title{font-size:.85rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:.18rem}
+  .toast-msg{font-size:.78rem;color:#94A3B8;line-height:1.5;word-break:break-word}
+  .toast-close{flex-shrink:0;background:rgba(255,255,255,.06);border:none;color:#64748B;font-size:.9rem;cursor:pointer;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:.12s;margin-top:.08rem}
+  .toast-close:hover{background:rgba(255,255,255,.12);color:#fff}
+  .toast-progress{height:3px;width:100%;border-radius:0 0 14px 14px;animation:toastProg linear forwards}
+  @keyframes toastProg{from{width:100%}to{width:0%}}
+  .toast.success .toast-icon-wrap{background:rgba(16,185,129,.15)}
+  .toast.success .toast-progress{background:var(--success)}
+  .toast.success{border-color:rgba(16,185,129,.25)}
+  .toast.error   .toast-icon-wrap{background:rgba(239,68,68,.15)}
+  .toast.error   .toast-progress{background:var(--danger)}
+  .toast.error  {border-color:rgba(239,68,68,.25)}
+  .toast.info    .toast-icon-wrap{background:rgba(59,130,246,.15)}
+  .toast.info    .toast-progress{background:var(--primary)}
+  .toast.info   {border-color:rgba(59,130,246,.25)}
+  .toast.warning .toast-icon-wrap{background:rgba(245,158,11,.15)}
+  .toast.warning .toast-progress{background:var(--warning)}
+  .toast.warning{border-color:rgba(245,158,11,.25)}
+  .toast.loading .toast-icon-wrap{background:rgba(139,92,246,.15)}
+  .toast.loading .toast-progress{background:var(--info);animation:toastPulse 1.4s ease-in-out infinite}
+  .toast.loading{border-color:rgba(139,92,246,.25)}
+  @keyframes toastPulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+  /* Image lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:none;align-items:center;justify-content:center;cursor:pointer}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+
+  /* Prov badge */
+  .prov-success{color:var(--success)}
+  .prov-failed{color:var(--danger)}
+  .prov-progress{color:var(--warning)}
+  .prov-pending{color:var(--muted)}
+
+  /* Loading state */
+  .loading-row td{text-align:center;color:var(--muted);padding:2rem}
+
+  /* Empty state */
+  .empty-state{text-align:center;padding:3rem;color:var(--muted)}
+  .empty-state p{margin-top:.5rem;font-size:.88rem}
+
+  /* Live badge */
+  .live-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--success);padding:.25rem .75rem;border-radius:100px;font-size:.74rem;font-weight:700;letter-spacing:.05em}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#94A3B8;transition:background .4s,box-shadow .4s}
+  .live-dot.on{background:var(--success)}
+  .live-dot.pulse{background:#fff;box-shadow:0 0 0 3px var(--success)}
+
+  @media(max-width:768px){
+    .stats-grid{grid-template-columns:repeat(2,1fr)}
+    .search-input{width:100%}
+    .cr-wrap{padding:1.5rem 1rem 4rem}
+    .proofs-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    .cr-header{flex-direction:column;align-items:flex-start;gap:.75rem}
+    .cr-actions-bar{width:100%;flex-wrap:wrap}
+    .panel-bar{flex-direction:column;align-items:flex-start;gap:.5rem}
+    .table-controls{flex-direction:column;align-items:stretch}
+    .modal{max-width:calc(100vw - 2rem)!important;margin:.5rem}
+    .modal-footer{flex-direction:column-reverse;gap:.5rem}
+    .modal-footer .btn{width:100%;justify-content:center}
+  }
+  @media(max-width:480px){
+    .cr-wrap{padding:1rem 1rem 3rem}
+    .stats-grid{grid-template-columns:1fr 1fr}
+    .cr-title{font-size:1.2rem}
+    .cr-subtitle{font-size:.78rem}
+    .proof-actions{flex-wrap:wrap}
+    .stat-val{font-size:1.6rem}
+    .sites-table-wrap table.sites-tbl th,.sites-table-wrap table.sites-tbl td{padding:.6rem .75rem}
+    .tab-btn{padding:.75rem .85rem;font-size:.8rem}
+  }
+
+  /* ── Server Stats & Monitoring ───────────────────────────────── */
+  .sm-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:900px){.sm-grid{grid-template-columns:1fr}}
+  .sm-card{background:#0F172A;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .sm-card-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.03)}
+  .sm-card-title{font-size:.85rem;font-weight:700;color:#fff}
+  .sm-sub-label{padding:.45rem 1rem .2rem;font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);background:rgba(255,255,255,.02)}
+  .sm-sub-label:first-child{border-top:none}
+  .sm-table{width:100%;border-collapse:collapse;font-size:.8rem}
+  .sm-table thead th{background:rgba(51,65,85,.5);color:var(--muted);font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.42rem .9rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+  .sm-table tbody td{padding:.52rem .9rem;border-bottom:1px solid rgba(51,65,85,.4);color:var(--text);vertical-align:middle}
+  .sm-table tbody tr:last-child td{border-bottom:none}
+  .sm-table.sm-kv tbody td:first-child{color:var(--muted);width:136px}
+  .sm-bar-wrap{display:inline-block;width:80px;height:6px;background:rgba(51,65,85,.8);border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:6px}
+  .sm-bar{height:100%;border-radius:3px;transition:width .5s ease;background:var(--primary)}
+  .sm-bar.warn{background:var(--warning)}
+  .sm-bar.danger{background:var(--danger)}
+  .sm-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;font-size:.71rem;font-weight:600}
+  .sm-badge.online{background:rgba(16,185,129,.15);color:var(--success)}
+  .sm-badge.offline{background:rgba(239,68,68,.15);color:var(--danger)}
+  .sm-live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:sm-pulse 2s infinite;flex-shrink:0}
+  .sm-live-dot.off{background:var(--danger);animation:none}
+  @keyframes sm-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ── Backup cards ── */
+  .backup-card{background:#0F172A;border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.75rem}
+  .backup-card:last-child{margin-bottom:0}
+  .backup-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.65rem}
+  .backup-ts{font-size:.88rem;font-weight:700;color:#fff;font-family:monospace}
+  .backup-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem}
+  .bchip{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .55rem;border-radius:100px;font-size:.72rem;font-weight:600}
+  .bchip-ok{background:rgba(16,185,129,.12);color:var(--success);border:1px solid rgba(16,185,129,.25)}
+  .bchip-no{background:rgba(51,65,85,.4);color:var(--muted);border:1px solid var(--border)}
+  .backup-dl{display:flex;gap:.4rem;flex-wrap:wrap;padding-top:.65rem;border-top:1px solid rgba(51,65,85,.5)}
+  /* restore checkbox */
+  .restore-file-row{display:flex;align-items:center;gap:.65rem;padding:.35rem 0;cursor:pointer;font-size:.85rem;color:var(--text)}
+  .restore-file-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+  .restore-file-row.disabled{opacity:.55;cursor:not-allowed}
+  .restore-file-meta{font-size:.74rem;color:var(--muted);margin-left:auto}
+  /* external restore upload */
+  .upload-slot{display:flex;flex-direction:column;gap:.35rem}
+  .upload-slot label{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .upload-input-wrap{display:flex;align-items:center;gap:.6rem;background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;cursor:pointer;transition:border-color .15s}
+  .upload-input-wrap:focus-within,.upload-input-wrap:hover{border-color:var(--primary)}
+  .upload-input-wrap input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+  .upload-file-btn{flex-shrink:0;font-size:.75rem;padding:.28rem .7rem;border-radius:6px;background:rgba(99,102,241,.15);color:var(--primary);border:1px solid rgba(99,102,241,.3);cursor:pointer;white-space:nowrap}
+  .upload-file-name{font-size:.8rem;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .upload-file-clear{flex-shrink:0;font-size:.8rem;color:var(--muted);cursor:pointer;padding:0 .2rem;line-height:1}
+  .upload-file-clear:hover{color:var(--danger)}
+  .upload-required-badge{font-size:.7rem;background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25);border-radius:4px;padding:.08rem .4rem}
+  .upload-optional-badge{font-size:.7rem;background:rgba(51,65,85,.4);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:.08rem .4rem}
+  .ext-upload-progress{display:none;margin-top:.5rem}
+  .ext-upload-bar{height:4px;background:rgba(99,102,241,.15);border-radius:2px;overflow:hidden}
+  .ext-upload-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .2s}
+
+  /* ── Job Progress Modal ── */
+  .job-terminal{background:#060D18;border:1px solid rgba(51,65,85,.8);border-radius:8px;padding:.85rem 1rem;font-family:'Courier New',Courier,monospace;font-size:.73rem;color:#8BAFC8;max-height:340px;overflow-y:auto;line-height:1.75;white-space:pre-wrap;word-break:break-all;scrollbar-width:thin;scrollbar-color:#334155 transparent}
+  .job-terminal::-webkit-scrollbar{width:5px}.job-terminal::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+  .log-err{color:#F87171!important}.log-ok{color:#34D399!important}.log-dim{color:#334155!important}.log-warn{color:#FCD34D!important}
+  .job-progress-bar{height:5px;background:rgba(51,65,85,.6);border-radius:3px;overflow:hidden;margin:.85rem 0;position:relative}
+  .job-progress-fill{height:100%;border-radius:3px;background:var(--primary);transition:width .4s ease}
+  .job-progress-fill.jp-indeterminate{width:35%!important;animation:jpSlide 1.6s ease-in-out infinite}
+  @keyframes jpSlide{0%{margin-left:-35%;width:35%}55%{margin-left:100%;width:35%}100%{margin-left:100%;width:35%}}
+  .job-progress-fill.jp-done{background:var(--success);width:100%!important;animation:none;transition:background .3s}
+  .job-progress-fill.jp-error{background:var(--danger);width:100%!important;animation:none;transition:background .3s}
+  .jp-status-bar{display:flex;align-items:center;gap:.65rem;padding:.55rem .9rem;border-radius:8px;font-size:.82rem;font-weight:600;margin-bottom:.8rem;border:1px solid}
+  .jp-status-bar.jp-running{background:rgba(139,92,246,.08);color:#A78BFA;border-color:rgba(139,92,246,.2)}
+  .jp-status-bar.jp-done{background:rgba(16,185,129,.08);color:var(--success);border-color:rgba(16,185,129,.2)}
+  .jp-status-bar.jp-error{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.2)}
+  .jp-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:jpSpin .75s linear infinite;flex-shrink:0}
+  @keyframes jpSpin{to{transform:rotate(360deg)}}
+  .jp-elapsed{margin-left:auto;font-size:.72rem;font-weight:400;opacity:.7;font-family:monospace}
+
+  /* ── App Management ── */
+  .app-item{background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+  .app-item:last-child{margin-bottom:0}
+  .app-name{font-weight:700;color:#fff;font-size:.88rem;font-family:monospace}
+  .app-version{font-size:.74rem;color:var(--muted);margin-top:.15rem}
+  .app-core-badge{display:inline-flex;align-items:center;padding:.1rem .5rem;border-radius:100px;font-size:.68rem;font-weight:700;background:rgba(59,130,246,.12);color:var(--primary);border:1px solid rgba(59,130,246,.2);margin-left:.5rem}
+
+  /* ── Create New Site modal ── */
+  .cns-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
+  .cns-full{grid-column:1/-1}
+  .cns-input-wrap{position:relative}
+  .cns-avail{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);font-size:.78rem;font-weight:700;pointer-events:none}
+  .cns-avail.ok{color:var(--success)}.cns-avail.err{color:var(--danger)}.cns-avail.spin{color:var(--muted)}
+  .cns-form-control-pr{padding-right:2.5rem}
+  .cns-prov-box{background:#060D18;border:1px solid rgba(51,65,85,.8);border-radius:8px;padding:.75rem 1rem;font-family:'Courier New',Courier,monospace;font-size:.76rem;color:#8BAFC8;max-height:180px;overflow-y:auto;line-height:1.75;white-space:pre-wrap;word-break:break-all}
+  .cns-bar-wrap{height:5px;background:rgba(51,65,85,.6);border-radius:3px;overflow:hidden;margin:.75rem 0}
+  .cns-bar-fill{height:100%;border-radius:3px;background:var(--primary);transition:width .4s ease}
+  .cns-bar-fill.done{background:var(--success)}.cns-bar-fill.fail{background:var(--danger)}
+  .cns-status-row{display:flex;align-items:center;gap:.6rem;font-size:.83rem;font-weight:600;margin-bottom:.6rem}
+  .cns-spinner{width:13px;height:13px;border:2px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:jpSpin .75s linear infinite;flex-shrink:0}
+  @media(max-width:540px){.cns-grid{grid-template-columns:1fr}.cns-full{grid-column:auto}}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="cr-cfg" data-ping-enabled="{{ 'true' if enable_site_ping else 'false' }}" data-ping-timeout="{{ ping_timeout }}" hidden></div>
+<div class="cr-wrap">
+
+  <!-- Header -->
+  <div class="cr-header">
+    <div class="cr-logo">
+      <div class="cr-logo-dot"></div>
+      <div>
+        <div class="cr-title">{{ app_name }} Control Room</div>
+        <div class="cr-subtitle">Real-time site management & monitoring</div>
+      </div>
+    </div>
+    <div class="cr-actions-bar">
+      <span class="live-badge"><span class="live-dot" id="liveDot"></span> LIVE</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadData();smFetch()">⟳ Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="openCreateSite()">+ Create New Site</button>
+      <a href="/app/pw-subscription-settings" class="btn btn-ghost btn-sm">⚙ Settings</a>
+      <a href="/subscription" class="btn btn-ghost btn-sm">↗ Portal</a>
+    </div>
+  </div>
+
+  <!-- Stats Dashboard -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card s-total"><div class="stat-val" id="st-total">—</div><div class="stat-label">Total Sites</div></div>
+    <div class="stat-card s-active"><div class="stat-val" id="st-active">—</div><div class="stat-label">Active</div></div>
+    <div class="stat-card s-trial"><div class="stat-val" id="st-trial">—</div><div class="stat-label">Trial</div></div>
+    <div class="stat-card s-grace"><div class="stat-val" id="st-grace">—</div><div class="stat-label">Grace Period</div></div>
+    <div class="stat-card s-expired"><div class="stat-val" id="st-expired">—</div><div class="stat-label">Expired</div></div>
+    <div class="stat-card s-suspended"><div class="stat-val" id="st-suspended">—</div><div class="stat-label">Suspended</div></div>
+    <div class="stat-card s-revenue"><div class="stat-val" id="st-revenue">—</div><div class="stat-label">Est. Monthly Revenue</div></div>
+    <div class="stat-card s-pending"><div class="stat-val" id="st-pending">—</div><div class="stat-label">Pending Approvals</div></div>
+  </div>
+
+  <!-- Tabbed Content -->
+  <div class="cr-tabs-wrap">
+
+    <!-- Tab Bar -->
+    <div class="cr-tabs-bar">
+      <button class="tab-btn active" id="tabBtn-sites" onclick="switchTab('sites', this)">
+        🌐 Sites
+        <span class="tab-count tab-count-blue" id="sitesCount">0</span>
+      </button>
+      <button class="tab-btn" id="tabBtn-payments" onclick="switchTab('payments', this)">
+        💳 Payments
+        <span class="tab-count tab-count-red" id="proofsCount" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" id="tabBtn-server" onclick="switchTab('server', this)">
+        🖥️ Server
+      </button>
+    </div>
+
+    <!-- ── Tab: Sites ── -->
+    <div class="tab-panel active" id="tab-sites">
+      <div class="table-controls">
+        <input class="search-input" id="searchInput" placeholder="Search clinic, site, physician..." oninput="filterTable()">
+        <select class="filter-select" id="statusFilter" onchange="filterTable()">
+          <option value="">All Statuses</option>
+          <option value="Trial">Trial</option>
+          <option value="Active">Active</option>
+          <option value="Grace Period">Grace Period</option>
+          <option value="Expired">Expired</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="sites-table-wrap">
+        <table class="sites-tbl">
+          <thead>
+            <tr>
+              <th>Clinic / Site</th>
+              <th>Status</th>
+              <th>Days Left</th>
+              <th>Online</th>
+              <th>Expiry</th>
+              <th>Provisioning</th>
+              <th>Created</th>
+              <th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sitesBody">
+            <tr class="loading-row"><td colspan="8">Loading sites...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Tab: Payments ── -->
+    <div class="tab-panel" id="tab-payments">
+      <div id="proofsEmpty" class="empty-state" style="display:none">
+        <div style="font-size:2rem">✅</div>
+        <p>No pending payment approvals.</p>
+      </div>
+      <div class="proofs-grid" id="proofsGrid"></div>
+    </div>
+
+    <!-- ── Tab: Server ── -->
+    <div class="tab-panel" id="tab-server">
+      <div class="panel-bar">
+        <div class="panel-title">🖥️ Server Stats &amp; Monitoring</div>
+        <div style="display:flex;align-items:center;gap:.75rem;font-size:.78rem;color:var(--muted)">
+          <span class="sm-live-dot" id="smDot"></span>
+          <span id="smLastUpdate">Connecting…</span>
+          <button class="btn btn-ghost btn-sm" onclick="smFetch()">↻ Refresh</button>
+        </div>
+      </div>
+      <div style="padding:1rem">
+        <div class="sm-grid">
+
+          <!-- ① CPU & RAM -->
+          <div class="sm-card">
+            <div class="sm-card-hdr"><span>⚡</span><span class="sm-card-title">CPU &amp; Memory</span></div>
+            <div class="sm-sub-label">CPU</div>
+            <table class="sm-table sm-kv"><tbody id="sm-cpu"><tr><td colspan="2" style="text-align:center;color:var(--muted);padding:.7rem">Loading…</td></tr></tbody></table>
+            <div class="sm-sub-label">RAM</div>
+            <table class="sm-table sm-kv"><tbody id="sm-ram"></tbody></table>
+          </div>
+
+          <!-- ② Network I/O -->
+          <div class="sm-card">
+            <div class="sm-card-hdr"><span>🌐</span><span class="sm-card-title">Network I/O</span></div>
+            <table class="sm-table sm-kv"><tbody id="sm-net"><tr><td colspan="2" style="text-align:center;color:var(--muted);padding:.7rem">Loading…</td></tr></tbody></table>
+          </div>
+
+          <!-- ③ Disk Usage -->
+          <div class="sm-card">
+            <div class="sm-card-hdr"><span>💾</span><span class="sm-card-title">Disk Usage</span></div>
+            <table class="sm-table">
+              <thead><tr><th>Mount</th><th>Device</th><th>FS</th><th>Total</th><th>Used</th><th>Free</th><th>Usage</th></tr></thead>
+              <tbody id="sm-disk"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:.7rem">Loading…</td></tr></tbody>
+            </table>
+          </div>
+
+          <!-- ④ Services -->
+          <div class="sm-card">
+            <div class="sm-card-hdr"><span>🔧</span><span class="sm-card-title">Services</span></div>
+            <div class="sm-sub-label">Redis Cache</div>
+            <table class="sm-table sm-kv"><tbody id="sm-redis"><tr><td colspan="2" style="text-align:center;color:var(--muted);padding:.7rem">Loading…</td></tr></tbody></table>
+            <div class="sm-sub-label">MariaDB</div>
+            <table class="sm-table sm-kv"><tbody id="sm-db"></tbody></table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.cr-tabs-wrap -->
+
+</div>
+
+<!-- ── Toast container ── -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ── Image Lightbox ── -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Payment Screenshot">
+</div>
+
+<!-- ── Modals ── -->
+
+<!-- Activate Modal -->
+<div class="modal-backdrop" id="modalActivate">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✅ Activate Subscription</div>
+      <button class="modal-close" onclick="closeModal('modalActivate')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="activateInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Select Plan</label>
+        <select class="form-select" id="activatePlan" onchange="onPlanChange()">
+          <option value="">— Custom End Date —</option>
+        </select>
+      </div>
+      <div class="form-group" id="activateDateGroup">
+        <label class="form-label">Subscription End Date</label>
+        <input type="date" class="form-control" id="activateEndDate">
+        <div class="form-hint">If a plan is selected, this is auto-calculated.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Reference</label>
+        <input type="text" class="form-control" id="activateRef" placeholder="Bank transaction ID or receipt number">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-control" id="activateNotes" rows="2" placeholder="Additional notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalActivate')">Cancel</button>
+      <button class="btn btn-success" onclick="doActivate()">✅ Activate Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Extend Trial Modal -->
+<div class="modal-backdrop" id="modalExtend">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⏰ Extend Trial</div>
+      <button class="modal-close" onclick="closeModal('modalExtend')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="extendInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Extra Days to Add</label>
+        <input type="number" class="form-control" id="extendDays" value="7" min="1" max="365">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalExtend')">Cancel</button>
+      <button class="btn btn-primary" onclick="doExtend()">⏰ Extend Trial</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-backdrop" id="modalCancel">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚫 Cancel Subscription</div>
+      <button class="modal-close" onclick="closeModal('modalCancel')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="cancelInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Reason for Cancellation</label>
+        <textarea class="form-control" id="cancelNotes" rows="3" placeholder="Reason..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalCancel')">Back</button>
+      <button class="btn btn-danger" onclick="doCancel()">🚫 Cancel Subscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal-backdrop" id="modalSuspend">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="suspendModalTitle">⛔ Suspend Site</div>
+      <button class="modal-close" onclick="closeModal('modalSuspend')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="suspendInfo"></div>
+      <div class="form-group" id="suspendReasonGroup">
+        <label class="form-label">Reason</label>
+        <input type="text" class="form-control" id="suspendReason" placeholder="Reason for suspension...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalSuspend')">Cancel</button>
+      <button class="btn btn-danger" id="suspendBtn" onclick="doSuspend()">⛔ Suspend</button>
+    </div>
+  </div>
+</div>
+
+<!-- Provisioning Log Modal -->
+<div class="modal-backdrop" id="modalLog">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div class="modal-title">📋 Provisioning Log</div>
+      <button class="modal-close" onclick="closeModal('modalLog')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="logInfo"></div>
+      <pre class="log-pre" id="logContent">Loading...</pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalLog')">Close</button>
+      <button class="btn btn-warning" id="retryBtn" onclick="doRetry()" style="display:none">↺ Retry Provisioning</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-backdrop" id="modalDelete">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)">🗑 Delete Site Permanently</div>
+      <button class="modal-close" onclick="closeModal('modalDelete')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="deleteInfo"></div>
+      <p style="color:var(--danger);font-size:.88rem;margin-bottom:1rem">
+        ⚠ This will <strong>permanently drop the site</strong> from the server and delete all records. This action is <strong>irreversible</strong>.
+      </p>
+      <div class="form-group">
+        <label class="form-label">Type DELETE to confirm</label>
+        <input type="text" class="form-control" id="deleteConfirm" placeholder="DELETE">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalDelete')">Cancel</button>
+      <button class="btn btn-danger" onclick="doDelete()">🗑 Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Proof Modal -->
+<div class="modal-backdrop" id="modalApprove">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✅ Approve Payment</div>
+      <button class="modal-close" onclick="closeModal('modalApprove')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="approveInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Admin Notes (optional)</label>
+        <textarea class="form-control" id="approveNotes" rows="2" placeholder="Optional notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalApprove')">Cancel</button>
+      <button class="btn btn-success" onclick="doApprove()">✅ Approve & Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Backups Modal -->
+<div class="modal-backdrop" id="modalBackups">
+  <div class="modal" style="max-width:740px">
+    <div class="modal-header">
+      <div class="modal-title">📂 Manage Backups</div>
+      <button class="modal-close" onclick="closeModal('modalBackups')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="backupsInfo"></div>
+      <div id="backupsList" style="margin-top:.75rem"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalBackups')">Close</button>
+      <button class="btn btn-primary btn-sm" onclick="openRestoreExternal()">↑ Restore from File</button>
+      <button class="btn btn-success btn-sm" onclick="doCreateBackup()">+ Create Backup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restore from External File Modal -->
+<div class="modal-backdrop" id="modalRestoreExternal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--primary)">↑ Restore from External File</div>
+      <button class="modal-close" onclick="closeModal('modalRestoreExternal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="extRestoreInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Upload Backup Files</label>
+        <div style="display:flex;flex-direction:column;gap:.85rem;background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem">
+
+          <!-- DB file -->
+          <div class="upload-slot">
+            <label>🗄 Database Backup <span class="upload-required-badge">required</span></label>
+            <div class="upload-input-wrap" onclick="document.getElementById('extDbFile').click()">
+              <input type="file" id="extDbFile" accept=".gz,.sql,.sql.gz,.mariadb.gz" onchange="setUploadName(this,'extDbName','extDbClear')">
+              <span class="upload-file-btn">Choose file</span>
+              <span class="upload-file-name" id="extDbName" style="color:var(--muted)">No file chosen</span>
+              <span class="upload-file-clear" id="extDbClear" style="display:none" onclick="clearUpload(event,'extDbFile','extDbName','extDbClear')">✕</span>
+            </div>
+          </div>
+
+          <!-- Public files -->
+          <div class="upload-slot">
+            <label>📁 Public Files Archive <span class="upload-optional-badge">optional</span></label>
+            <div class="upload-input-wrap" onclick="document.getElementById('extPubFile').click()">
+              <input type="file" id="extPubFile" accept=".tar,.tar.gz,.tgz" onchange="setUploadName(this,'extPubName','extPubClear')">
+              <span class="upload-file-btn">Choose file</span>
+              <span class="upload-file-name" id="extPubName" style="color:var(--muted)">No file chosen</span>
+              <span class="upload-file-clear" id="extPubClear" style="display:none" onclick="clearUpload(event,'extPubFile','extPubName','extPubClear')">✕</span>
+            </div>
+          </div>
+
+          <!-- Private files -->
+          <div class="upload-slot">
+            <label>🔒 Private Files Archive <span class="upload-optional-badge">optional</span></label>
+            <div class="upload-input-wrap" onclick="document.getElementById('extPrivFile').click()">
+              <input type="file" id="extPrivFile" accept=".tar,.tar.gz,.tgz" onchange="setUploadName(this,'extPrivName','extPrivClear')">
+              <span class="upload-file-btn">Choose file</span>
+              <span class="upload-file-name" id="extPrivName" style="color:var(--muted)">No file chosen</span>
+              <span class="upload-file-clear" id="extPrivClear" style="display:none" onclick="clearUpload(event,'extPrivFile','extPrivName','extPrivClear')">✕</span>
+            </div>
+          </div>
+
+          <!-- Upload progress -->
+          <div class="ext-upload-progress" id="extUploadProgress">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem" id="extUploadProgressLabel">Uploading…</div>
+            <div class="ext-upload-bar"><div class="ext-upload-fill" id="extUploadFill" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.1rem">
+        <p style="color:var(--warning);font-size:.84rem;margin:0">⚠ Restoring will <strong>permanently overwrite</strong> all current site data with the uploaded backup. This cannot be undone.</p>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Type RESTORE to confirm</label>
+        <input type="text" class="form-control" id="extRestoreConfirm" placeholder="RESTORE">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalRestoreExternal')">Cancel</button>
+      <button class="btn btn-warning" id="extRestoreBtn" onclick="doRestoreExternal()">↑ Upload & Restore</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restore Confirm Modal -->
+<div class="modal-backdrop" id="modalRestore">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--warning)">↩ Restore from Backup</div>
+      <button class="modal-close" onclick="closeModal('modalRestore')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="restoreInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Select Components to Restore</label>
+        <div id="restoreComponents" style="background:#0F172A;border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.6rem"></div>
+      </div>
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.1rem">
+        <p style="color:var(--warning);font-size:.84rem;margin:0">⚠ Restoring will <strong>permanently overwrite</strong> all current site data with the selected backup snapshot. This cannot be undone.</p>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Type RESTORE to confirm</label>
+        <input type="text" class="form-control" id="restoreConfirm" placeholder="RESTORE">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalRestore')">Cancel</button>
+      <button class="btn btn-warning" onclick="doRestore()">↩ Restore Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Job Progress Modal -->
+<div class="modal-backdrop" id="modalJobProgress">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header" style="padding:1.1rem 1.5rem">
+      <div>
+        <div class="modal-title" id="jpTitle">Running…</div>
+        <div style="font-size:.76rem;color:var(--muted);margin-top:.2rem;font-family:monospace" id="jpSite"></div>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:1.1rem 1.5rem">
+      <div class="jp-status-bar jp-running" id="jpStatusBar">
+        <div class="jp-spinner" id="jpSpinner"></div>
+        <span id="jpStatusText">Queuing job…</span>
+        <span class="jp-elapsed" id="jpElapsed"></span>
+      </div>
+      <div class="job-progress-bar">
+        <div class="job-progress-fill jp-indeterminate" id="jpBar"></div>
+      </div>
+      <div class="job-terminal" id="jpTerminal"><span class="log-dim">Waiting for output…</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="jpCloseBtn" onclick="closeJobProgress()" disabled style="opacity:.35;cursor:not-allowed">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Apps Modal -->
+<div class="modal-backdrop" id="modalApps">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title">📦 App Management</div>
+      <button class="modal-close" onclick="closeModal('modalApps')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="appsInfo"></div>
+      <div style="margin-top:.85rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Installed Apps</div>
+          <button class="btn btn-ghost btn-xs" onclick="refreshAppsList()">↻ Refresh</button>
+        </div>
+        <div id="appsList"><div style="text-align:center;padding:2rem;color:var(--muted)">Loading…</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalApps')">Close</button>
+      <button class="btn btn-warning btn-sm" onclick="doMigrateSite()">⟳ Run Migration</button>
+      <button class="btn btn-primary btn-sm" onclick="openInstallApp()">+ Install App</button>
+    </div>
+  </div>
+</div>
+
+<!-- Install App Modal -->
+<div class="modal-backdrop" id="modalInstallApp">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">+ Install App</div>
+      <button class="modal-close" onclick="closeModal('modalInstallApp')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="installAppInfo"></div>
+      <div class="form-group" style="margin-top:.85rem">
+        <label class="form-label">App Name <span style="color:var(--danger)">*</span></label>
+        <input type="text" class="form-control" id="installAppName" placeholder="e.g. erpnext, hrms, healthcare">
+        <div class="form-hint">The Frappe app identifier (lowercase, no spaces)</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Repository URL <span style="color:var(--muted);font-weight:400;font-size:.75rem">(optional — if not already in bench)</span></label>
+        <input type="text" class="form-control" id="installAppRepo" placeholder="https://github.com/frappe/erpnext">
+        <div class="form-hint">Leave empty if the app is already installed in bench</div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Branch <span style="color:var(--muted);font-weight:400;font-size:.75rem">(optional)</span></label>
+        <input type="text" class="form-control" id="installAppBranch" placeholder="e.g. version-15">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalInstallApp')">Cancel</button>
+      <button class="btn btn-primary" onclick="doInstallApp()">+ Install</button>
+    </div>
+  </div>
+</div>
+
+<!-- Uninstall App Confirm Modal -->
+<div class="modal-backdrop" id="modalUninstallApp">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)">🗑 Uninstall App</div>
+      <button class="modal-close" onclick="closeModal('modalUninstallApp');openModal('modalApps')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="uninstallAppInfo"></div>
+      <p style="color:var(--warning);font-size:.85rem;margin:.75rem 0 0">
+        ⚠ This will permanently remove all data and features provided by this app from the site. This cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalUninstallApp');openModal('modalApps')">Cancel</button>
+      <button class="btn btn-danger" onclick="doUninstallApp()">🗑 Yes, Uninstall</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Proof Modal -->
+<div class="modal-backdrop" id="modalReject">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">❌ Reject Payment</div>
+      <button class="modal-close" onclick="closeModal('modalReject')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="rejectInfo"></div>
+      <div class="form-group">
+        <label class="form-label">Reason for Rejection</label>
+        <textarea class="form-control" id="rejectNotes" rows="3" placeholder="Reason (sent to customer via email)..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalReject')">Cancel</button>
+      <button class="btn btn-danger" onclick="doReject()">❌ Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create New Site Modal -->
+<div class="modal-backdrop" id="modalCreateSite">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-header">
+      <div class="modal-title">+ Create New Site</div>
+      <button class="modal-close" onclick="closeCreateSite()">×</button>
+    </div>
+
+    <!-- ── Form panel ── -->
+    <div id="cnsFormPanel" class="modal-body">
+      <div class="cns-grid">
+
+        <!-- Clinic Name — full width with availability check -->
+        <div class="form-group cns-full">
+          <label class="form-label">Clinic Name <span style="color:var(--danger)">*</span></label>
+          <div class="cns-input-wrap">
+            <input type="text" class="form-control cns-form-control-pr" id="cnsClinicName"
+                   placeholder="e.g. sunrise-clinic" autocomplete="off" oninput="cnsDebouncedCheck()">
+            <span class="cns-avail" id="cnsAvail"></span>
+          </div>
+          <div class="form-hint" id="cnsClinicHint">Lowercase letters, numbers and hyphens only. Min 3 chars.</div>
+          <div class="form-hint" id="cnsSitePreview" style="margin-top:.2rem"></div>
+        </div>
+
+        <!-- Physician Name -->
+        <div class="form-group">
+          <label class="form-label">Physician Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="form-control" id="cnsPhysician" placeholder="Dr. Ahmed Khan">
+        </div>
+
+        <!-- Contact -->
+        <div class="form-group">
+          <label class="form-label">Contact / WhatsApp <span style="color:var(--danger)">*</span></label>
+          <input type="tel" class="form-control" id="cnsContact" placeholder="+92 300 1234567">
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
+          <input type="email" class="form-control" id="cnsEmail" placeholder="doctor@clinic.com">
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+          <input type="password" class="form-control" id="cnsPassword" placeholder="Min. 8 characters">
+        </div>
+
+        <!-- Country -->
+        <div class="form-group">
+          <label class="form-label">Country <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <input type="text" class="form-control" id="cnsCountry" placeholder="Pakistan">
+        </div>
+
+        <!-- City -->
+        <div class="form-group">
+          <label class="form-label">City <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <input type="text" class="form-control" id="cnsCity" placeholder="Lahore">
+        </div>
+
+        <!-- Address — full width -->
+        <div class="form-group cns-full">
+          <label class="form-label">Clinic Address <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-control" id="cnsAddress" rows="2" placeholder="Street, City, Province"></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer" id="cnsFormFooter">
+      <button class="btn btn-ghost" onclick="closeCreateSite()">Cancel</button>
+      <button class="btn btn-primary" id="cnsSubmitBtn" onclick="doCreateSite()">+ Create Site</button>
+    </div>
+
+    <!-- ── Provisioning progress panel ── -->
+    <div id="cnsProvPanel" style="display:none">
+      <div class="modal-body">
+        <div style="margin-bottom:.75rem">
+          <div style="font-weight:700;color:#fff;font-size:.92rem;margin-bottom:.15rem" id="cnsProvTitle"></div>
+          <div style="font-size:.76rem;color:var(--muted);font-family:monospace" id="cnsProvSite"></div>
+        </div>
+        <div class="cns-status-row">
+          <div class="cns-spinner" id="cnsSpinner"></div>
+          <span id="cnsProvStatus">Queued…</span>
+        </div>
+        <div class="cns-bar-wrap"><div class="cns-bar-fill" id="cnsBar" style="width:0%"></div></div>
+        <div class="cns-prov-box" id="cnsProvLog">Waiting for provisioning to start…</div>
+        <div id="cnsProvErrBox" style="display:none;margin-top:.75rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:.75rem 1rem;font-size:.83rem;color:var(--danger)"></div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-warning btn-sm" id="cnsRetryBtn" style="display:none" onclick="cnsRetry()">↺ Retry</button>
+        <button class="btn btn-ghost" id="cnsCloseBtn" onclick="closeCreateSite()" disabled style="opacity:.35;cursor:not-allowed">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let allSites = [], allProofs = [], plans = [];
+let currentSub = null, currentProof = null, currentProvReq = null;
+let isSuspendAction = false;
+let monthlyFee = 0, liveDotTimer = null;
+let currentAppsSub = null, currentUninstallApp = null;
+const _cfg = document.getElementById('cr-cfg').dataset;
+const pingEnabled = _cfg.pingEnabled === 'true';
+const pingTimeout = parseInt(_cfg.pingTimeout) || 5;
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  loadPlans();
+  setupRealtime();
+  const cnsInput = document.getElementById('cnsClinicName');
+  if (cnsInput) {
+    cnsInput.addEventListener('blur', () => {
+      clearTimeout(cnsCheckTimer);
+      if (cnsInput.value.trim()) cnsCheckName();
+    });
+  }
+});
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'server') smFetch();
+}
+
+// ── API call helper ──────────────────────────────────────────────────────────
+async function api(method, args = {}) {
+  const resp = await fetch(`/api/method/${method}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Frappe-CSRF-Token': frappe.csrf_token || '',
+    },
+    body: JSON.stringify(args),
+  });
+  const data = await resp.json();
+  if (data.exc) throw new Error(data._server_messages || data.exc);
+  return data.message !== undefined ? data.message : data;
+}
+
+// ── Load data ────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const d = await api('pw_subscription.api.get_control_room_data');
+    allSites = d.sites || [];
+    allProofs = d.pending_proofs || [];
+    monthlyFee = d.monthly_fee || 0;
+    updateStats(d.stats || {});
+    renderProofs(allProofs);
+    renderTable(allSites);
+    if (pingEnabled) pingAll(allSites);
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Failed to load dashboard');
+  }
+}
+
+async function loadPlans() {
+  try {
+    const d = await api('pw_subscription.api.get_subscription_plans');
+    plans = d.plans || [];
+    rebuildPlanSelect();
+  } catch (e) {}
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+function updateStats(s) {
+  setText('st-total', s.total || 0);
+  setText('st-active', s.active || 0);
+  setText('st-trial', s.trial || 0);
+  setText('st-grace', s.grace || 0);
+  setText('st-expired', s.expired || 0);
+  setText('st-suspended', s.suspended || 0);
+  setText('st-revenue', 'PKR ' + fmtNum(s.monthly_revenue || 0));
+  setText('st-pending', s.pending_approvals || 0);
+}
+
+// ── Payment Proofs ────────────────────────────────────────────────────────────
+function renderProofs(proofs) {
+  const badge = document.getElementById('proofsCount');
+  const empty = document.getElementById('proofsEmpty');
+  const grid  = document.getElementById('proofsGrid');
+  if (proofs.length) {
+    badge.textContent = proofs.length;
+    badge.style.display = '';
+    empty.style.display = 'none';
+    grid.innerHTML = proofs.map(p => `
+      <div class="proof-card">
+        <div class="proof-header">
+          <div>
+            <div class="proof-clinic">${esc(p.clinic_name)}</div>
+            <div class="proof-site">${esc(p.site_name || '')}</div>
+            <div style="font-size:.74rem;color:var(--muted);margin-top:.2rem">${esc(p.contact_email || '')}</div>
+          </div>
+          <div class="proof-plan">${esc(p.selected_plan || (p.duration_months + ' mo'))}</div>
+        </div>
+        <div class="proof-amount">PKR ${fmtNum(p.amount_paid || 0)}</div>
+        ${p.screenshot
+          ? `<img class="proof-img" src="${p.screenshot}" data-url="${esc(p.screenshot)}"
+                 alt="Payment Screenshot" onclick="openLightbox(this.dataset.url)"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+             ><div class="proof-img-err" style="height:80px;background:#0F172A;border-radius:8px;display:none;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem">Could not load image</div>`
+          : '<div style="height:80px;background:#0F172A;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem">No image</div>'}
+        <div class="proof-meta">Submitted: ${fmtDate(p.submitted_on)}</div>
+        ${p.notes ? `<div class="proof-meta">Note: ${esc(p.notes)}</div>` : ''}
+        <div class="proof-actions">
+          <button class="btn btn-success btn-sm" onclick="openApprove('${esc(p.name)}')">✅ Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="openReject('${esc(p.name)}')">❌ Reject</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    badge.style.display = 'none';
+    empty.style.display = '';
+    grid.innerHTML = '';
+  }
+}
+
+// ── Sites Table ──────────────────────────────────────────────────────────────
+function renderTable(sites) {
+  const badge = document.getElementById('sitesCount');
+  badge.textContent = sites.length;
+  const body = document.getElementById('sitesBody');
+  if (!sites.length) {
+    body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div style="font-size:2rem">🏥</div><p>No sites found.</p></div></td></tr>';
+    return;
+  }
+  body.innerHTML = sites.map(s => {
+    const statusBadge = statusB(s.status);
+    const suspBadge = s.is_suspended ? `<span class="badge badge-suspended" style="margin-left:.4rem">⛔ Suspended</span>` : '';
+    const expiry = s.subscription_end || s.trial_end || s.grace_end || '';
+    const provBadge = provB(s.provisioning_status);
+    return `
+    <tr data-name="${esc(s.name)}" data-status="${esc(s.status)}" data-search="${esc((s.clinic_name+s.site_name+s.physician_name+s.contact_email).toLowerCase())}">
+      <td>
+        <div class="clinic-name">${esc(s.clinic_name)}</div>
+        <div class="site-url"><a href="${esc(s.site_url)}" target="_blank" style="color:var(--muted)">${esc(s.site_name || '')}</a></div>
+        ${s.physician_name ? `<div class="physician">${esc(s.physician_name)}</div>` : ''}
+      </td>
+      <td>${statusBadge}${suspBadge}</td>
+      <td>${daysPill(s.days_remaining, s.status)}</td>
+      <td id="ping-${esc(s.name)}"><span class="ping-badge ping-loading"><span class="ping-dot"></span> —</span></td>
+      <td style="font-size:.8rem;color:var(--muted)">${expiry || '—'}</td>
+      <td>${provBadge}</td>
+      <td style="font-size:.78rem;color:var(--muted)">${s.creation || '—'}</td>
+      <td style="text-align:right">
+        <div class="action-wrap">
+          <button class="action-btn" onclick="toggleMenu(this, event)">Actions ▾</button>
+          <div class="action-menu" style="display:none">
+            <div class="action-item" onclick="openActivate('${esc(s.name)}');closeAllMenus()">✅ Activate Subscription</div>
+            <div class="action-item" onclick="openExtend('${esc(s.name)}');closeAllMenus()">⏰ Extend Trial</div>
+            <div class="action-sep"></div>
+            ${s.is_suspended
+              ? `<div class="action-item" onclick="openUnsuspend('${esc(s.name)}');closeAllMenus()">✅ Unsuspend Site</div>`
+              : `<div class="action-item" onclick="openSuspend('${esc(s.name)}');closeAllMenus()">⛔ Suspend Site</div>`
+            }
+            <div class="action-item" onclick="openCancel('${esc(s.name)}');closeAllMenus()">🚫 Cancel Subscription</div>
+            <div class="action-sep"></div>
+            <div class="action-item" onclick="sendReminder('${esc(s.name)}');closeAllMenus()">📧 Send Reminder</div>
+            ${s.provisioning_request
+              ? `<div class="action-item" onclick="openLog('${esc(s.name)}');closeAllMenus()">📋 Provisioning Log</div>`
+              : ''
+            }
+            <div class="action-sep"></div>
+            <div class="action-item" onclick="openManageApps('${esc(s.name)}');closeAllMenus()">📦 Manage Apps</div>
+            <div class="action-item" onclick="openManageBackups('${esc(s.name)}');closeAllMenus()">📂 Manage Backups</div>
+            <div class="action-sep"></div>
+            <div class="action-item danger" onclick="openDelete('${esc(s.name)}');closeAllMenus()">🗑 Delete Site</div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const st = document.getElementById('statusFilter').value;
+  const filtered = allSites.filter(s =>
+    (!q || (s.clinic_name+s.site_name+s.physician_name+s.contact_email).toLowerCase().includes(q)) &&
+    (!st || s.status === st)
+  );
+  renderTable(filtered);
+  document.getElementById('sitesCount').textContent = filtered.length;
+  if (pingEnabled) pingAll(filtered);
+}
+
+// ── Ping ──────────────────────────────────────────────────────────────────────
+async function pingAll(sites) {
+  for (const s of sites) {
+    if (!s.site_url) continue;
+    const el = document.getElementById('ping-' + s.name);
+    if (!el) continue;
+    el.innerHTML = '<span class="ping-badge ping-loading"><span class="ping-dot"></span> Checking...</span>';
+    pingOne(s);
+  }
+}
+
+async function pingOne(s) {
+  const el = document.getElementById('ping-' + s.name);
+  if (!el) return;
+  try {
+    const r = await api('pw_subscription.api.ping_site', {site_url: s.site_url, timeout: pingTimeout});
+    if (r.online === null) {
+      el.innerHTML = '<span class="ping-badge ping-disabled">— Disabled</span>';
+    } else if (r.online) {
+      el.innerHTML = `<span class="ping-badge ping-online"><span class="ping-dot"></span> Online ${r.response_ms ? r.response_ms+'ms' : ''}</span>`;
+    } else {
+      el.innerHTML = '<span class="ping-badge ping-offline"><span class="ping-dot"></span> Offline</span>';
+    }
+  } catch (e) {
+    el.innerHTML = '<span class="ping-badge ping-offline"><span class="ping-dot"></span> Error</span>';
+  }
+}
+
+// ── Action: Activate ──────────────────────────────────────────────────────────
+function openActivate(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s;
+  document.getElementById('activateInfo').innerHTML = infoBox(s);
+  onPlanChange();
+  openModal('modalActivate');
+}
+
+function rebuildPlanSelect() {
+  const sel = document.getElementById('activatePlan');
+  sel.innerHTML = '<option value="">— Custom End Date —</option>' +
+    plans.map(p => `<option value="${esc(p.plan_label)}" data-months="${p.duration_months}" data-price="${p.price}">${esc(p.plan_label)} — PKR ${fmtNum(p.price)} (${p.duration_months} months)</option>`).join('');
+}
+
+function onPlanChange() {
+  const sel = document.getElementById('activatePlan');
+  const opt = sel.options[sel.selectedIndex];
+  const dateGroup = document.getElementById('activateDateGroup');
+  if (opt && opt.dataset.months) {
+    const months = parseInt(opt.dataset.months);
+    const end = addMonths(new Date(), months);
+    document.getElementById('activateEndDate').value = formatDate(end);
+    dateGroup.style.opacity = '.6';
+    document.getElementById('activateEndDate').readOnly = true;
+  } else {
+    dateGroup.style.opacity = '1';
+    document.getElementById('activateEndDate').readOnly = false;
+  }
+}
+
+async function doActivate() {
+  if (!currentSub) return;
+  const sel = document.getElementById('activatePlan');
+  const opt = sel.options[sel.selectedIndex];
+  const endDate = document.getElementById('activateEndDate').value;
+  const ref = document.getElementById('activateRef').value.trim();
+  const notes = document.getElementById('activateNotes').value.trim();
+  const planLabel = opt && opt.dataset.months ? opt.value : '';
+  const months = opt && opt.dataset.months ? opt.dataset.months : null;
+
+  if (!endDate) { toast('Please select a plan or enter an end date first.', 'warning', 'Missing info'); return; }
+  try {
+    await api('pw_subscription.api.activate_subscription', {
+      subscription_name: currentSub.name,
+      end_date: endDate,
+      payment_reference: ref,
+      notes: notes,
+      plan_label: planLabel,
+      duration_months: months,
+    });
+    toast('Subscription is now active.', 'success', 'Activated');
+    closeModal('modalActivate');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Activation failed'); }
+}
+
+// ── Action: Extend Trial ──────────────────────────────────────────────────────
+function openExtend(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s;
+  document.getElementById('extendInfo').innerHTML = infoBox(s);
+  document.getElementById('extendDays').value = 7;
+  openModal('modalExtend');
+}
+
+async function doExtend() {
+  if (!currentSub) return;
+  const days = document.getElementById('extendDays').value;
+  try {
+    const r = await api('pw_subscription.api.extend_trial', {subscription_name: currentSub.name, extra_days: days});
+    toast(`Trial extended — new end date: ${r.new_end}.`, 'success', 'Trial extended');
+    closeModal('modalExtend');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Could not extend trial'); }
+}
+
+// ── Action: Cancel ────────────────────────────────────────────────────────────
+function openCancel(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s;
+  document.getElementById('cancelInfo').innerHTML = infoBox(s);
+  document.getElementById('cancelNotes').value = '';
+  openModal('modalCancel');
+}
+
+async function doCancel() {
+  if (!currentSub) return;
+  const notes = document.getElementById('cancelNotes').value.trim();
+  try {
+    await api('pw_subscription.api.cancel_subscription', {subscription_name: currentSub.name, notes});
+    toast('The subscription has been cancelled.', 'warning', 'Cancelled');
+    closeModal('modalCancel');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Could not cancel'); }
+}
+
+// ── Action: Suspend / Unsuspend ──────────────────────────────────────────────
+function openSuspend(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s; isSuspendAction = true;
+  document.getElementById('suspendModalTitle').textContent = '⛔ Suspend Site';
+  document.getElementById('suspendInfo').innerHTML = infoBox(s);
+  document.getElementById('suspendReasonGroup').style.display = '';
+  document.getElementById('suspendReason').value = '';
+  document.getElementById('suspendBtn').textContent = '⛔ Suspend';
+  document.getElementById('suspendBtn').onclick = doSuspend;
+  openModal('modalSuspend');
+}
+
+function openUnsuspend(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s; isSuspendAction = false;
+  document.getElementById('suspendModalTitle').textContent = '✅ Unsuspend Site';
+  document.getElementById('suspendInfo').innerHTML = infoBox(s) + '<p style="color:var(--success);font-size:.85rem;margin-top:.5rem">This will restore site access.</p>';
+  document.getElementById('suspendReasonGroup').style.display = 'none';
+  document.getElementById('suspendBtn').textContent = '✅ Unsuspend';
+  document.getElementById('suspendBtn').onclick = doUnsuspend;
+  openModal('modalSuspend');
+}
+
+async function doSuspend() {
+  if (!currentSub) return;
+  const reason = document.getElementById('suspendReason').value.trim();
+  try {
+    await api('pw_subscription.api.suspend_site', {subscription_name: currentSub.name, reason});
+    toast('Site access has been blocked.', 'warning', 'Site suspended');
+    closeModal('modalSuspend');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Could not suspend site'); }
+}
+
+async function doUnsuspend() {
+  if (!currentSub) return;
+  try {
+    await api('pw_subscription.api.unsuspend_site', {subscription_name: currentSub.name});
+    toast('Site access has been restored.', 'success', 'Site unsuspended');
+    closeModal('modalSuspend');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Could not unsuspend site'); }
+}
+
+// ── Action: Send Reminder ────────────────────────────────────────────────────
+async function sendReminder(name) {
+  try {
+    const r = await api('pw_subscription.api.send_reminder_manual', {subscription_name: name});
+    toast(r.message || 'Renewal reminder sent to the customer.', 'success', 'Reminder sent');
+  } catch (e) { toast(extractMsg(e), 'error', 'Could not send reminder'); }
+}
+
+// ── Action: Provisioning Log ─────────────────────────────────────────────────
+function openLog(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s;
+  currentProvReq = s.provisioning_request;
+  document.getElementById('logInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(s.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val">${esc(s.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Prov. Status</span><span class="info-box-val">${esc(s.provisioning_status)}</span></div>`;
+  document.getElementById('logContent').textContent = 'Loading...';
+  const retryBtn = document.getElementById('retryBtn');
+  retryBtn.style.display = (s.provisioning_status === 'Failed' || s.provisioning_status === 'Pending') ? '' : 'none';
+  openModal('modalLog');
+  loadLog(s.provisioning_request);
+}
+
+async function loadLog(req) {
+  try {
+    const d = await api('pw_subscription.api.get_provisioning_log', {request_name: req});
+    document.getElementById('logContent').textContent = d.progress_log || '(No log yet)';
+  } catch (e) {
+    document.getElementById('logContent').textContent = '⚠ ' + extractMsg(e);
+  }
+}
+
+async function doRetry() {
+  if (!currentProvReq) return;
+  try {
+    await api('pw_subscription.api.retry_site_creation', {request_name: currentProvReq});
+    toast('Site creation has been re-queued and will start shortly.', 'success', 'Retry queued');
+    closeModal('modalLog');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Retry failed'); }
+}
+
+// ── Action: Delete ────────────────────────────────────────────────────────────
+function openDelete(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentSub = s;
+  document.getElementById('deleteInfo').innerHTML = infoBox(s);
+  document.getElementById('deleteConfirm').value = '';
+  openModal('modalDelete');
+}
+
+async function doDelete() {
+  if (!currentSub) return;
+  const confirm = document.getElementById('deleteConfirm').value.trim();
+  if (confirm !== 'DELETE') { toast('Type DELETE in the box above to confirm this action.', 'warning', 'Confirmation required'); return; }
+  try {
+    const r = await api('pw_subscription.api.delete_site_permanently', {
+      subscription_name: currentSub.name, confirm_text: 'DELETE'
+    });
+    toast(r.message || 'Site and all associated records have been permanently removed.', 'success', 'Site deleted');
+    closeModal('modalDelete');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Deletion failed'); }
+}
+
+// ── Action: Approve / Reject Proof ────────────────────────────────────────────
+function openApprove(proofName) {
+  const proof = allProofs.find(x => x.name === proofName);
+  if (!proof) return;
+  currentProof = proof;
+  document.getElementById('approveInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(proof.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Plan</span><span class="info-box-val">${esc(proof.selected_plan || proof.duration_months + ' months')}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Amount</span><span class="info-box-val" style="color:var(--success)">PKR ${fmtNum(proof.amount_paid)}</span></div>`;
+  document.getElementById('approveNotes').value = '';
+  openModal('modalApprove');
+}
+
+async function doApprove() {
+  if (!currentProof) return;
+  const notes = document.getElementById('approveNotes').value.trim();
+  try {
+    const r = await api('pw_subscription.api.approve_payment', {proof_name: currentProof.name, admin_notes: notes});
+    toast(`Payment approved. Subscription is now active until ${r.new_end}.`, 'success', 'Payment approved');
+    closeModal('modalApprove');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Approval failed'); }
+}
+
+function openReject(proofName) {
+  const proof = allProofs.find(x => x.name === proofName);
+  if (!proof) return;
+  currentProof = proof;
+  document.getElementById('rejectInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(proof.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Plan</span><span class="info-box-val">${esc(proof.selected_plan || '')}</span></div>`;
+  document.getElementById('rejectNotes').value = '';
+  openModal('modalReject');
+}
+
+async function doReject() {
+  if (!currentProof) return;
+  const notes = document.getElementById('rejectNotes').value.trim();
+  if (!notes) { toast('Please provide a reason — it will be sent to the customer.', 'warning', 'Reason required'); return; }
+  try {
+    await api('pw_subscription.api.reject_payment', {proof_name: currentProof.name, admin_notes: notes});
+    toast('Payment proof rejected. The customer has been notified.', 'warning', 'Proof rejected');
+    closeModal('modalReject');
+    loadData();
+  } catch (e) { toast(extractMsg(e), 'error', 'Rejection failed'); }
+}
+
+// ── Realtime ─────────────────────────────────────────────────────────────────
+function setupRealtime() {
+  if (typeof frappe === 'undefined' || !frappe.realtime?.socket) {
+    setTimeout(setupRealtime, 300);
+    return;
+  }
+
+  const socket = frappe.realtime.socket;
+  const dot    = document.getElementById('liveDot');
+
+  socket.on('connect',    () => dot && dot.classList.add('on'));
+  socket.on('disconnect', () => dot && dot.classList.remove('on'));
+  if (socket.connected && dot) dot.classList.add('on');
+
+  if (!socket.connected) socket.connect();
+
+  frappe.realtime.on('pw_new_proof', function(data) {
+    if (allProofs.find(p => p.name === data.name)) return;
+    allProofs.unshift(data);
+    renderProofs(allProofs);
+    setText('st-pending', allProofs.length);
+    flashLive();
+    toast(`${data.clinic_name} submitted a payment proof for review.`, 'info', '💳 New payment received');
+  });
+
+  frappe.realtime.on('pw_sub_changed', function(data) {
+    const idx = allSites.findIndex(s => s.name === data.name);
+    if (idx !== -1) Object.assign(allSites[idx], data);
+    filterTable();
+    recalcStats();
+    flashLive();
+  });
+
+  frappe.realtime.on('pw_proof_done', function(data) {
+    allProofs = allProofs.filter(p => p.name !== data.proof_name);
+    renderProofs(allProofs);
+    setText('st-pending', allProofs.length);
+    flashLive();
+  });
+
+  frappe.realtime.on('pw_new_site', function(data) {
+    if (allSites.find(s => s.name === data.name)) return;
+    allSites.unshift(data);
+    filterTable();
+    recalcStats();
+    flashLive();
+    toast(`${data.clinic_name} just registered and is being provisioned.`, 'info', '🏥 New clinic registered');
+  });
+
+  frappe.realtime.on('pw_prov_updated', function(data) {
+    const idx = allSites.findIndex(s => s.provisioning_request === data.request_name);
+    if (idx !== -1) {
+      allSites[idx].provisioning_status = data.status;
+      if (data.site_url) allSites[idx].provisioning_url = data.site_url;
+      if (data.subscription && !allSites[idx].subscription)
+        allSites[idx].subscription = data.subscription;
+      filterTable();
+    }
+    flashLive();
+  });
+
+  frappe.realtime.on('pw_job_progress', function(data) {
+    if (!_jpJobId) {
+      // Job modal is open but HTTP response hasn't returned yet — auto-capture this job
+      const modal = document.getElementById('modalJobProgress');
+      if (!modal || !modal.classList.contains('open')) return;
+      _jpJobId = data.job_id;
+    } else if (data.job_id !== _jpJobId) {
+      return;
+    }
+    if (data.line) _jpLine(data.line);
+    if (data.status === 'success') _jpSucceed(data.line);
+    else if (data.status === 'error') _jpFail(data.line);
+  });
+
+  frappe.realtime.on('pw_server_stats', function(data) { smUpdateUI(data); });
+}
+
+function recalcStats() {
+  const s = { total: allSites.length, active: 0, trial: 0, grace: 0,
+              expired: 0, cancelled: 0, suspended: 0, monthly_revenue: 0,
+              pending_approvals: allProofs.length };
+  for (const site of allSites) {
+    if (site.status === 'Active')          { s.active++;   s.monthly_revenue += monthlyFee; }
+    else if (site.status === 'Trial')        s.trial++;
+    else if (site.status === 'Grace Period') s.grace++;
+    else if (site.status === 'Expired')      s.expired++;
+    else if (site.status === 'Cancelled')    s.cancelled++;
+    if (site.is_suspended) s.suspended++;
+  }
+  updateStats(s);
+}
+
+function flashLive() {
+  const dot = document.getElementById('liveDot');
+  if (!dot) return;
+  dot.classList.add('pulse');
+  clearTimeout(liveDotTimer);
+  liveDotTimer = setTimeout(() => dot.classList.remove('pulse'), 1200);
+}
+
+// ── Dropdown menus ────────────────────────────────────────────────────────────
+function toggleMenu(btn, e) {
+  e.stopPropagation();
+  closeAllMenus();
+  const menu = btn.nextElementSibling;
+  menu.style.display = menu.style.display === 'none' ? '' : 'none';
+}
+
+function closeAllMenus() {
+  document.querySelectorAll('.action-menu').forEach(m => m.style.display = 'none');
+}
+
+document.addEventListener('click', closeAllMenus);
+
+// ── Create New Site ──────────────────────────────────────────────────────────
+let cnsClinicOk = false;
+let cnsCheckTimer = null;
+let cnsPollTimer = null;
+let cnsReqName = null;
+let cnsSiteName = null;
+
+function openCreateSite() {
+  ['cnsClinicName','cnsPhysician','cnsContact','cnsEmail','cnsPassword','cnsCountry','cnsCity','cnsAddress'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const avail = document.getElementById('cnsAvail');
+  avail.textContent = ''; avail.className = 'cns-avail';
+  document.getElementById('cnsClinicHint').textContent = 'Lowercase letters, numbers and hyphens only. Min 3 chars.';
+  document.getElementById('cnsClinicHint').style.color = '';
+  document.getElementById('cnsSitePreview').textContent = '';
+  document.getElementById('cnsFormPanel').style.display = '';
+  document.getElementById('cnsFormFooter').style.display = '';
+  document.getElementById('cnsProvPanel').style.display = 'none';
+  const submitBtn = document.getElementById('cnsSubmitBtn');
+  submitBtn.disabled = false; submitBtn.textContent = '+ Create Site';
+  cnsClinicOk = false; cnsReqName = null; cnsSiteName = null;
+  if (cnsPollTimer) { clearInterval(cnsPollTimer); cnsPollTimer = null; }
+  openModal('modalCreateSite');
+  setTimeout(() => { const el = document.getElementById('cnsClinicName'); if (el) el.focus(); }, 150);
+}
+
+function closeCreateSite() {
+  if (cnsPollTimer) { clearInterval(cnsPollTimer); cnsPollTimer = null; }
+  closeModal('modalCreateSite');
+  if (cnsReqName) loadData();
+}
+
+function cnsDebouncedCheck() {
+  clearTimeout(cnsCheckTimer);
+  cnsCheckTimer = setTimeout(cnsCheckName, 480);
+}
+
+function cnsCheckName() {
+  const val = (document.getElementById('cnsClinicName').value || '').trim();
+  const avail = document.getElementById('cnsAvail');
+  const hint = document.getElementById('cnsClinicHint');
+  const preview = document.getElementById('cnsSitePreview');
+  cnsClinicOk = false;
+
+  if (!val) {
+    avail.textContent = ''; avail.className = 'cns-avail';
+    hint.textContent = 'Lowercase letters, numbers and hyphens only. Min 3 chars.';
+    hint.style.color = '';
+    preview.textContent = '';
+    return;
+  }
+
+  avail.textContent = '⋯'; avail.className = 'cns-avail spin';
+  hint.textContent = 'Checking availability…'; hint.style.color = '';
+
+  fetch('/api/method/pw_subscription.api.check_clinic_name?clinic_name=' + encodeURIComponent(val))
+    .then(r => r.json())
+    .then(data => {
+      const d = data.message || {};
+      if (d.available) {
+        cnsClinicOk = true;
+        avail.textContent = '✓'; avail.className = 'cns-avail ok';
+        hint.textContent = 'Name is available'; hint.style.color = 'var(--success)';
+        preview.textContent = 'Site: ' + val + '.<domain>';
+        preview.style.color = 'var(--muted)';
+      } else {
+        cnsClinicOk = false;
+        avail.textContent = '✗'; avail.className = 'cns-avail err';
+        hint.textContent = d.message || 'Name is not available'; hint.style.color = 'var(--danger)';
+        if (d.suggestions && d.suggestions.length) {
+          preview.textContent = 'Suggestions: ' + d.suggestions.join(', ');
+          preview.style.color = 'var(--muted)';
+        } else { preview.textContent = ''; }
+      }
+    })
+    .catch(() => {
+      avail.textContent = ''; avail.className = 'cns-avail';
+      hint.textContent = ''; cnsClinicOk = false;
+    });
+}
+
+async function doCreateSite() {
+  const clinic_name    = (document.getElementById('cnsClinicName').value || '').trim();
+  const physician_name = (document.getElementById('cnsPhysician').value || '').trim();
+  const email          = (document.getElementById('cnsEmail').value || '').trim();
+  const password       = document.getElementById('cnsPassword').value || '';
+  const contact        = (document.getElementById('cnsContact').value || '').trim();
+  const address        = (document.getElementById('cnsAddress').value || '').trim();
+  const country        = (document.getElementById('cnsCountry').value || '').trim();
+  const city           = (document.getElementById('cnsCity').value || '').trim();
+
+  if (!clinic_name || !cnsClinicOk) {
+    toast('Enter a valid, available clinic name.', 'warning', 'Invalid name'); return;
+  }
+  if (!physician_name) { toast('Physician name is required.', 'warning'); return; }
+  if (!email) { toast('Email is required.', 'warning'); return; }
+  if (password.length < 8) { toast('Password must be at least 8 characters.', 'warning'); return; }
+  if (!contact) { toast('Contact number is required.', 'warning'); return; }
+  if (!address) { toast('Address is required.', 'warning'); return; }
+
+  const btn = document.getElementById('cnsSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  try {
+    const result = await api('pw_subscription.api.register_clinic', {
+      clinic_name, physician_name, email, password, contact, address,
+      country: country || '', city: city || '',
+    });
+
+    if (result && result.success) {
+      cnsReqName   = result.request_name;
+      cnsSiteName  = result.site_name;
+      cnsShowProgress(result);
+    }
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Site creation failed');
+    btn.disabled = false; btn.textContent = '+ Create Site';
+  }
+}
+
+function cnsShowProgress(result) {
+  document.getElementById('cnsFormPanel').style.display = 'none';
+  document.getElementById('cnsFormFooter').style.display = 'none';
+  document.getElementById('cnsProvPanel').style.display = '';
+  document.getElementById('cnsProvTitle').textContent = (result.clinic_name || '') + ' — Setting up…';
+  document.getElementById('cnsProvSite').textContent   = result.site_name || '';
+  document.getElementById('cnsProvStatus').textContent = 'Queued';
+  document.getElementById('cnsBar').style.width = '0%';
+  document.getElementById('cnsBar').className = 'cns-bar-fill';
+  document.getElementById('cnsProvLog').textContent = 'Waiting for provisioning to start…';
+  document.getElementById('cnsProvErrBox').style.display = 'none';
+  document.getElementById('cnsRetryBtn').style.display = 'none';
+  document.getElementById('cnsSpinner').style.display = '';
+  const closeBtn = document.getElementById('cnsCloseBtn');
+  closeBtn.disabled = true; closeBtn.style.opacity = '.35'; closeBtn.style.cursor = 'not-allowed';
+  cnsPollTimer = setInterval(cnsPollStatus, 4000);
+  cnsPollStatus();
+}
+
+async function cnsPollStatus() {
+  if (!cnsReqName) return;
+  try {
+    const d = await api('pw_subscription.api.get_provisioning_status', {request_name: cnsReqName});
+    const status = d.status || 'Pending';
+    const step   = d.current_step || 0;
+    const pct    = Math.min(100, Math.round((step / 6) * 100));
+
+    document.getElementById('cnsBar').style.width = pct + '%';
+    if (d.last_line) document.getElementById('cnsProvLog').textContent = d.last_line;
+
+    if (status === 'Success') {
+      clearInterval(cnsPollTimer); cnsPollTimer = null;
+      document.getElementById('cnsProvStatus').textContent = '✓ Site is live!';
+      document.getElementById('cnsProvLog').textContent = 'Ready: ' + (d.site_url || cnsSiteName || '');
+      document.getElementById('cnsBar').style.width = '100%';
+      document.getElementById('cnsBar').className = 'cns-bar-fill done';
+      document.getElementById('cnsSpinner').style.display = 'none';
+      const closeBtn = document.getElementById('cnsCloseBtn');
+      closeBtn.disabled = false; closeBtn.style.opacity = '1'; closeBtn.style.cursor = 'pointer';
+      toast('Site created and live!', 'success', cnsSiteName || 'New site');
+      loadData();
+    } else if (status === 'Failed') {
+      clearInterval(cnsPollTimer); cnsPollTimer = null;
+      document.getElementById('cnsProvStatus').textContent = '✗ Failed';
+      document.getElementById('cnsBar').className = 'cns-bar-fill fail';
+      document.getElementById('cnsSpinner').style.display = 'none';
+      const errBox = document.getElementById('cnsProvErrBox');
+      errBox.style.display = ''; errBox.textContent = d.error_message || 'Provisioning failed.';
+      document.getElementById('cnsRetryBtn').style.display = '';
+      const closeBtn = document.getElementById('cnsCloseBtn');
+      closeBtn.disabled = false; closeBtn.style.opacity = '1'; closeBtn.style.cursor = 'pointer';
+      toast('Site provisioning failed.', 'error');
+    } else {
+      document.getElementById('cnsProvStatus').textContent = status;
+    }
+  } catch (_) { /* silent poll failure */ }
+}
+
+async function cnsRetry() {
+  if (!cnsReqName) return;
+  try {
+    await api('pw_subscription.api.retry_site_creation', {request_name: cnsReqName});
+    document.getElementById('cnsRetryBtn').style.display = 'none';
+    document.getElementById('cnsProvErrBox').style.display = 'none';
+    document.getElementById('cnsBar').className = 'cns-bar-fill';
+    document.getElementById('cnsBar').style.width = '0%';
+    document.getElementById('cnsSpinner').style.display = '';
+    document.getElementById('cnsProvStatus').textContent = 'Retrying…';
+    const closeBtn = document.getElementById('cnsCloseBtn');
+    closeBtn.disabled = true; closeBtn.style.opacity = '.35'; closeBtn.style.cursor = 'not-allowed';
+    cnsPollTimer = setInterval(cnsPollStatus, 4000);
+    cnsPollStatus();
+  } catch (e) { toast(extractMsg(e), 'error', 'Retry failed'); }
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+    document.body.style.overflow = '';
+  }
+});
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+const _TOAST_CFG = {
+  success: { icon: '✓',  title: 'Done',          ms: 4000 },
+  error:   { icon: '✕',  title: 'Something went wrong', ms: 7000 },
+  info:    { icon: 'i',  title: 'Info',           ms: 4000 },
+  warning: { icon: '!',  title: 'Heads up',       ms: 5000 },
+  loading: { icon: '⋯',  title: 'Working on it…', ms: 0    },
+};
+
+function toast(msg, type = 'info', title = null) {
+  const cfg  = _TOAST_CFG[type] || _TOAST_CFG.info;
+  const ms   = cfg.ms;
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <div class="toast-inner">
+      <div class="toast-icon-wrap"><strong style="font-family:monospace;font-size:.95rem">${cfg.icon}</strong></div>
+      <div class="toast-body">
+        <div class="toast-title">${esc(title || cfg.title)}</div>
+        <div class="toast-msg">${esc(msg)}</div>
+      </div>
+      <button class="toast-close" onclick="this.closest('.toast').remove()" title="Dismiss">×</button>
+    </div>
+    ${ms ? `<div class="toast-progress" style="animation-duration:${ms}ms"></div>` : '<div class="toast-progress"></div>'}`;
+  wrap.appendChild(el);
+  if (ms) setTimeout(() => {
+    el.style.animation = 'toastOut .2s ease forwards';
+    setTimeout(() => el.remove(), 200);
+  }, ms);
+  return el;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtNum(n) {
+  return Number(n || 0).toLocaleString();
+}
+
+function fmtDate(dt) {
+  if (!dt) return '—';
+  return dt.toString().substring(0, 16).replace('T', ' ');
+}
+
+function extractMsg(e) {
+  if (!e) return 'An unexpected error occurred. Please try again.';
+  const raw = e.message || String(e);
+
+  // Frappe wraps server errors as a JSON array of JSON strings
+  try {
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) {
+      const parts = arr.map(m => {
+        try { return JSON.parse(m).message || ''; } catch { return m || ''; }
+      }).map(s => s.trim()).filter(Boolean);
+      if (parts.length) return _humanizeErr(parts.join(' '));
+    }
+  } catch {}
+
+  // Sometimes it's a single JSON object
+  try {
+    const obj = JSON.parse(raw);
+    if (obj && obj.message) return _humanizeErr(obj.message);
+  } catch {}
+
+  return _humanizeErr(raw);
+}
+
+function _humanizeErr(msg) {
+  if (!msg) return 'An unexpected error occurred. Please try again.';
+  msg = String(msg)
+    // strip python exception class prefixes
+    .replace(/^(frappe\.[A-Za-z.]+|[A-Za-z]+Error|[A-Za-z]+Exception):\s*/i, '')
+    // strip html tags
+    .replace(/<[^>]+>/g, ' ')
+    // collapse whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Take only first sentence/line if very long
+  if (msg.length > 220) msg = msg.substring(0, 217).replace(/\s\S*$/, '') + '…';
+  // Sentence-case if all lowercase
+  if (msg && msg[0] === msg[0].toLowerCase()) msg = msg[0].toUpperCase() + msg.slice(1);
+  // Ensure it ends with punctuation
+  if (msg && !/[.!?]$/.test(msg)) msg += '.';
+  return msg || 'An unexpected error occurred. Please try again.';
+}
+
+function inlineError(msg) {
+  return `<div style="display:flex;align-items:flex-start;gap:.65rem;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:.85rem 1rem;margin:.25rem 0">
+    <span style="color:var(--danger);font-size:1rem;flex-shrink:0">✕</span>
+    <div><div style="font-size:.84rem;font-weight:700;color:var(--danger);margin-bottom:.2rem">Error</div><div style="font-size:.8rem;color:#94A3B8;line-height:1.5">${esc(msg)}</div></div>
+  </div>`;
+}
+
+function infoBox(s) {
+  return `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(s.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val">${esc(s.site_name || '')}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Status</span><span class="info-box-val">${esc(s.status)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Days Left</span><span class="info-box-val">${s.days_remaining}</span></div>`;
+}
+
+function statusB(status) {
+  const map = {
+    'Trial': 'badge-trial', 'Active': 'badge-active', 'Grace Period': 'badge-grace',
+    'Expired': 'badge-expired', 'Cancelled': 'badge-cancelled',
+  };
+  return `<span class="badge ${map[status]||'badge-cancelled'}"><span class="badge-dot"></span>${esc(status)}</span>`;
+}
+
+function daysPill(days, status) {
+  if (!days && status !== 'Trial' && status !== 'Active' && status !== 'Grace Period') return '<span style="color:var(--muted)">—</span>';
+  const cls = days > 7 ? 'days-ok' : days > 2 ? 'days-warn' : 'days-bad';
+  return `<span class="days-pill ${cls}">${days}d</span>`;
+}
+
+function provB(status) {
+  const map = {
+    'Success': ['prov-success', '✓'], 'Failed': ['prov-failed', '✗'],
+    'In Progress': ['prov-progress', '⟳'], 'Pending': ['prov-pending', '•'], 'None': ['prov-pending', '—'],
+  };
+  const [cls, icon] = map[status] || ['prov-pending', '—'];
+  return `<span class="${cls}" style="font-size:.82rem;font-weight:600">${icon} ${esc(status || 'None')}</span>`;
+}
+
+function addMonths(date, n) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + parseInt(n));
+  return d;
+}
+
+function formatDate(d) {
+  return d.toISOString().substring(0, 10);
+}
+
+// ── Server Stats & Monitoring ─────────────────────────────────────────────────
+function smFmtBytes(b) {
+  if (b==null) return '—';
+  if (b>=1073741824) return (b/1073741824).toFixed(2)+' GB';
+  if (b>=1048576)    return (b/1048576).toFixed(2)+' MB';
+  if (b>=1024)       return (b/1024).toFixed(1)+' KB';
+  return b+' B';
+}
+function smFmtRate(bps) { return bps ? smFmtBytes(bps)+'/s' : '—'; }
+function smFmtNum(n)    { return (n!=null) ? Number(n).toLocaleString() : '—'; }
+function smFmtUptime(s) {
+  s=parseInt(s)||0;
+  const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60);
+  if (d) return d+'d '+h+'h '+m+'m';
+  if (h) return h+'h '+m+'m';
+  return m+'m';
+}
+function smBar(pct) {
+  const cls=pct>=90?'danger':pct>=70?'warn':'';
+  return `<span class="sm-bar-wrap"><span class="sm-bar ${cls}" style="width:${pct}%"></span></span><strong>${pct}%</strong>`;
+}
+function smKV(label,val) { return `<tr><td>${label}</td><td>${val}</td></tr>`; }
+function smBadge(st) {
+  const ok=st==='online';
+  return `<span class="sm-badge ${ok?'online':'offline'}">${ok?'● Online':'● Offline'}</span>`;
+}
+
+function smUpdateUI(data) {
+  if (!data) return;
+  const {cpu,ram,network:net,disk,redis,db} = data;
+
+  document.getElementById('sm-cpu').innerHTML = [
+    smKV('Usage',         smBar(cpu.percent)),
+    smKV('Logical Cores', cpu.count),
+    smKV('Load Avg 1m',   cpu.load1),
+    smKV('Load Avg 5m',   cpu.load5),
+    smKV('Load Avg 15m',  cpu.load15),
+  ].join('');
+
+  document.getElementById('sm-ram').innerHTML = [
+    smKV('Total',     smFmtBytes(ram.total)),
+    smKV('Used',      smFmtBytes(ram.used)),
+    smKV('Available', smFmtBytes(ram.available)),
+    smKV('Usage',     smBar(ram.percent)),
+  ].join('');
+
+  document.getElementById('sm-net').innerHTML = [
+    smKV('Total Sent',       smFmtBytes(net.bytes_sent)),
+    smKV('Total Received',   smFmtBytes(net.bytes_recv)),
+    smKV('Packets Sent',     smFmtNum(net.packets_sent)),
+    smKV('Packets Received', smFmtNum(net.packets_recv)),
+    smKV('Upload Speed',     smFmtRate(net.tx_rate)),
+    smKV('Download Speed',   smFmtRate(net.rx_rate)),
+  ].join('');
+
+  document.getElementById('sm-disk').innerHTML = (!disk||!disk.length)
+    ? '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:.7rem">No disk data</td></tr>'
+    : disk.map(d=>`<tr>
+        <td>${d.mountpoint}</td>
+        <td style="color:var(--muted);font-size:.73rem">${d.device}</td>
+        <td style="color:var(--muted);font-size:.73rem">${d.fstype||'—'}</td>
+        <td>${smFmtBytes(d.total)}</td>
+        <td>${smFmtBytes(d.used)}</td>
+        <td>${smFmtBytes(d.free)}</td>
+        <td>${smBar(Math.round(d.percent))}</td>
+      </tr>`).join('');
+
+  document.getElementById('sm-redis').innerHTML = redis.status==='online' ? [
+    smKV('Status',   smBadge('online')),
+    smKV('Version',  redis.version||'—'),
+    smKV('Memory',   redis.used_memory_human||'—'),
+    smKV('Clients',  smFmtNum(redis.connected_clients)),
+    smKV('Commands', smFmtNum(redis.total_commands_processed)),
+    smKV('Uptime',   smFmtUptime(redis.uptime_in_seconds)),
+  ].join('') : smKV('Status', smBadge('offline'));
+
+  document.getElementById('sm-db').innerHTML = db.status==='online' ? [
+    smKV('Status',          smBadge('online')),
+    smKV('Version',         db.version||'—'),
+    smKV('Active Threads',  smFmtNum(db.Threads_connected)),
+    smKV('Total Queries',   smFmtNum(db.Questions)),
+    smKV('Slow Queries',    smFmtNum(db.Slow_queries)),
+    smKV('Max Connections', smFmtNum(db.Max_used_connections)),
+    smKV('Uptime',          smFmtUptime(db.Uptime)),
+  ].join('') : smKV('Status', smBadge('offline'));
+
+  const dot=document.getElementById('smDot');
+  if (dot) dot.classList.remove('off');
+  const el=document.getElementById('smLastUpdate');
+  if (el) el.textContent='Updated: '+new Date(data.ts*1000).toLocaleTimeString();
+}
+
+async function smFetch() {
+  if (_jpJobId && !_jpDone) return;
+  try {
+    const data = await api('pw_subscription.api.get_server_stats');
+    if (data) smUpdateUI(data);
+  } catch(e) {
+    const dot = document.getElementById('smDot');
+    if (dot) dot.classList.add('off');
+    const el = document.getElementById('smLastUpdate');
+    if (el) el.textContent = 'Connection error';
+  }
+}
+
+// ── Backup & Restore ─────────────────────────────────────────────────────────
+let currentBackupSub = null, currentRestoreBackup = null;
+
+async function openManageBackups(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentBackupSub = s;
+  document.getElementById('backupsInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(s.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(s.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Status</span><span class="info-box-val">${esc(s.status)}</span></div>`;
+  document.getElementById('backupsList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading backups…</div>';
+  openModal('modalBackups');
+  try {
+    const d = await api('pw_subscription.api.list_site_backups', {subscription_name: name});
+    renderBackupsList(d);
+  } catch (e) {
+    document.getElementById('backupsList').innerHTML = inlineError(extractMsg(e));
+  }
+}
+
+function renderBackupsList(d) {
+  const el = document.getElementById('backupsList');
+  if (!d.backups || !d.backups.length) {
+    el.innerHTML = `<div class="empty-state"><div style="font-size:2rem">💾</div><p>No backups found for this site.</p><p style="margin-top:.25rem;font-size:.78rem">Run <code style="background:rgba(255,255,255,.08);padding:.1rem .4rem;border-radius:4px">bench --site ${esc(d.site_name)} backup --with-files</code> to create one.</p></div>`;
+    return;
+  }
+  el.innerHTML = d.backups.map((b, i) => {
+    const bData = encodeURIComponent(JSON.stringify(b));
+    return `
+    <div class="backup-card">
+      <div class="backup-card-top">
+        <div>
+          <div class="backup-ts">${esc(b.created)}</div>
+          <div class="backup-chips">
+            <span class="bchip bchip-ok">💾 Database · ${fmtFileSize(b.db_size_bytes)}</span>
+            ${b.pub_file  ? '<span class="bchip bchip-ok">📁 Public Files</span>'   : '<span class="bchip bchip-no">📁 Public Files</span>'}
+            ${b.priv_file ? '<span class="bchip bchip-ok">🔒 Private Files</span>'  : '<span class="bchip bchip-no">🔒 Private Files</span>'}
+          </div>
+        </div>
+        <button class="btn btn-warning btn-sm" style="flex-shrink:0" onclick="openRestore(decodeBackup(${i}))">↩ Restore</button>
+      </div>
+      <div class="backup-dl">
+        <span style="font-size:.74rem;color:var(--muted);align-self:center;margin-right:.25rem">Download:</span>
+        <button class="btn btn-ghost btn-xs" onclick="dlBackup('${esc(b.db_file)}')">⬇ Database</button>
+        ${b.pub_file  ? `<button class="btn btn-ghost btn-xs" onclick="dlBackup('${esc(b.pub_file)}')">⬇ Public Files</button>`   : ''}
+        ${b.priv_file ? `<button class="btn btn-ghost btn-xs" onclick="dlBackup('${esc(b.priv_file)}')">⬇ Private Files</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  // store backups data for openRestore lookups
+  el._backups = d.backups;
+}
+
+function decodeBackup(idx) {
+  const el = document.getElementById('backupsList');
+  return (el._backups || [])[idx] || null;
+}
+
+function dlBackup(filename) {
+  if (!currentBackupSub) return;
+  const url = `/api/method/pw_subscription.api.download_site_backup?subscription_name=${encodeURIComponent(currentBackupSub.name)}&filename=${encodeURIComponent(filename)}`;
+  window.location.href = url;
+}
+
+function openRestore(backup) {
+  if (!currentBackupSub || !backup) return;
+  currentRestoreBackup = backup;
+
+  document.getElementById('restoreInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(currentBackupSub.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Backup Date</span><span class="info-box-val">${esc(backup.created)}</span></div>`;
+
+  const comps = document.getElementById('restoreComponents');
+  comps.innerHTML = `
+    <label class="restore-file-row disabled">
+      <input type="checkbox" id="rcDb" checked disabled>
+      <span>💾 Database <em style="font-size:.75rem;color:var(--muted)">(always required)</em></span>
+      <span class="restore-file-meta">${fmtFileSize(backup.db_size_bytes)}</span>
+    </label>
+    ${backup.pub_file ? `
+    <label class="restore-file-row">
+      <input type="checkbox" id="rcPub" checked>
+      <span>📁 Public Files</span>
+      <span class="restore-file-meta">${esc(backup.pub_file)}</span>
+    </label>` : `
+    <label class="restore-file-row disabled">
+      <input type="checkbox" id="rcPub" disabled>
+      <span style="color:var(--muted)">📁 Public Files <em style="font-size:.74rem">(not in this backup)</em></span>
+    </label>`}
+    ${backup.priv_file ? `
+    <label class="restore-file-row">
+      <input type="checkbox" id="rcPriv" checked>
+      <span>🔒 Private Files</span>
+      <span class="restore-file-meta">${esc(backup.priv_file)}</span>
+    </label>` : `
+    <label class="restore-file-row disabled">
+      <input type="checkbox" id="rcPriv" disabled>
+      <span style="color:var(--muted)">🔒 Private Files <em style="font-size:.74rem">(not in this backup)</em></span>
+    </label>`}`;
+
+  document.getElementById('restoreConfirm').value = '';
+  closeModal('modalBackups');
+  openModal('modalRestore');
+}
+
+async function doRestore() {
+  if (!currentBackupSub || !currentRestoreBackup) return;
+  const confirm = document.getElementById('restoreConfirm').value.trim();
+  if (confirm !== 'RESTORE') { toast('Type RESTORE in the box above to confirm this action.', 'warning', 'Confirmation required'); return; }
+  const includePub  = document.getElementById('rcPub')?.checked  && currentRestoreBackup.pub_file;
+  const includePriv = document.getElementById('rcPriv')?.checked && currentRestoreBackup.priv_file;
+  closeModal('modalRestore');
+  openJobProgress(`↩ Restoring ${currentBackupSub.site_name}`, currentBackupSub.site_name, async () => {
+    openManageBackups(currentBackupSub.name);
+  });
+  try {
+    const r = await api('pw_subscription.api.start_restore_job', {
+      subscription_name: currentBackupSub.name,
+      db_file:   currentRestoreBackup.db_file,
+      pub_file:  includePub  ? currentRestoreBackup.pub_file  : null,
+      priv_file: includePriv ? currentRestoreBackup.priv_file : null,
+    });
+    _jpJobId = r.job_id;
+  } catch (e) { _jpFail(extractMsg(e)); }
+}
+
+function fmtFileSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';
+  if (bytes >= 1048576)    return (bytes / 1048576).toFixed(1)    + ' MB';
+  if (bytes >= 1024)       return (bytes / 1024).toFixed(0)       + ' KB';
+  return bytes + ' B';
+}
+
+// ── Restore from External File ────────────────────────────────────────────────
+function setUploadName(input, nameId, clearId) {
+  const name = input.files[0]?.name || '';
+  const nameEl = document.getElementById(nameId);
+  const clearEl = document.getElementById(clearId);
+  if (name) {
+    nameEl.textContent = name;
+    nameEl.style.color = 'var(--text)';
+    clearEl.style.display = 'inline';
+  } else {
+    nameEl.textContent = 'No file chosen';
+    nameEl.style.color = 'var(--muted)';
+    clearEl.style.display = 'none';
+  }
+}
+
+function clearUpload(evt, inputId, nameId, clearId) {
+  evt.stopPropagation();
+  const input = document.getElementById(inputId);
+  input.value = '';
+  setUploadName(input, nameId, clearId);
+}
+
+function openRestoreExternal() {
+  if (!currentBackupSub) return;
+  document.getElementById('extRestoreInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(currentBackupSub.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Subscription</span><span class="info-box-val">${esc(currentBackupSub.name)}</span></div>`;
+  ['extDbFile','extPubFile','extPrivFile'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  [['extDbName','extDbClear'],['extPubName','extPubClear'],['extPrivName','extPrivClear']].forEach(([n,c]) => {
+    const nel = document.getElementById(n), cel = document.getElementById(c);
+    if (nel) { nel.textContent = 'No file chosen'; nel.style.color = 'var(--muted)'; }
+    if (cel) cel.style.display = 'none';
+  });
+  document.getElementById('extRestoreConfirm').value = '';
+  const prog = document.getElementById('extUploadProgress');
+  if (prog) prog.style.display = 'none';
+  const btn = document.getElementById('extRestoreBtn');
+  if (btn) { btn.disabled = false; btn.textContent = '↑ Upload & Restore'; }
+  closeModal('modalBackups');
+  openModal('modalRestoreExternal');
+}
+
+async function doRestoreExternal() {
+  if (!currentBackupSub) return;
+  const confirm = document.getElementById('extRestoreConfirm').value.trim();
+  if (confirm !== 'RESTORE') { toast('Type RESTORE in the box above to confirm this action.', 'warning', 'Confirmation required'); return; }
+  const dbFile = document.getElementById('extDbFile').files[0];
+  if (!dbFile) { toast('Please choose a database backup file (.sql.gz) to continue.', 'warning', 'File required'); return; }
+
+  const btn = document.getElementById('extRestoreBtn');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  const prog = document.getElementById('extUploadProgress');
+  const fill = document.getElementById('extUploadFill');
+  const label = document.getElementById('extUploadProgressLabel');
+  prog.style.display = 'block';
+  fill.style.width = '0%';
+  label.textContent = 'Uploading files…';
+
+  const fd = new FormData();
+  fd.append('subscription_name', currentBackupSub.name);
+  fd.append('db_file', dbFile);
+  const pubFile  = document.getElementById('extPubFile').files[0];
+  const privFile = document.getElementById('extPrivFile').files[0];
+  if (pubFile)  fd.append('pub_file',  pubFile);
+  if (privFile) fd.append('priv_file', privFile);
+
+  try {
+    const xhr = new XMLHttpRequest();
+    const result = await new Promise((resolve, reject) => {
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 90);
+          fill.style.width = pct + '%';
+          label.textContent = `Uploading… ${pct}%`;
+        }
+      };
+      xhr.onload = () => {
+        fill.style.width = '95%';
+        label.textContent = 'Restoring site…';
+        try {
+          const d = JSON.parse(xhr.responseText);
+          if (d.exc) reject(new Error(d._server_messages || d.exc));
+          else resolve(d.message !== undefined ? d.message : d);
+        } catch { reject(new Error('Unexpected server response.')); }
+      };
+      xhr.onerror = () => reject(new Error('Network error during upload.'));
+      xhr.open('POST', '/api/method/pw_subscription.api.restore_from_uploaded_backup');
+      xhr.setRequestHeader('X-Frappe-CSRF-Token', frappe.csrf_token || '');
+      xhr.send(fd);
+    });
+    fill.style.width = '100%';
+    label.textContent = 'Done!';
+    toast(result?.message || 'Site restored from uploaded backup successfully.', 'success', 'Restore complete');
+    closeModal('modalRestoreExternal');
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Restore failed');
+    btn.disabled = false;
+    btn.textContent = '↑ Upload & Restore';
+    prog.style.display = 'none';
+  }
+}
+
+// ── Job Progress ──────────────────────────────────────────────────────────────
+let _jpJobId = null, _jpDone = false, _jpElapsedTimer = null,
+    _jpStart = 0, _jpOnDone = null;
+
+function openJobProgress(title, siteName, onDone) {
+  _jpJobId = null; _jpDone = false; _jpStart = Date.now(); _jpOnDone = onDone || null;
+  document.getElementById('jpTitle').textContent = title;
+  document.getElementById('jpSite').textContent  = siteName || '';
+  document.getElementById('jpStatusBar').className = 'jp-status-bar jp-running';
+  document.getElementById('jpSpinner').style.display = '';
+  document.getElementById('jpStatusText').textContent = 'Queuing job…';
+  document.getElementById('jpBar').className = 'job-progress-fill jp-indeterminate';
+  document.getElementById('jpBar').style.width = '';
+  document.getElementById('jpTerminal').innerHTML = '<span class="log-dim">Waiting for output…</span>';
+  document.getElementById('jpElapsed').textContent = '';
+  const btn = document.getElementById('jpCloseBtn');
+  btn.disabled = true; btn.style.opacity = '.35'; btn.style.cursor = 'not-allowed';
+  clearInterval(_jpElapsedTimer);
+  _jpElapsedTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - _jpStart) / 1000);
+    const m = Math.floor(s / 60);
+    document.getElementById('jpElapsed').textContent = m ? `${m}m ${s % 60}s` : `${s}s`;
+  }, 1000);
+  openModal('modalJobProgress');
+}
+
+function _jpLine(raw) {
+  const term = document.getElementById('jpTerminal');
+  // clear placeholder on first real line
+  if (term.querySelector('.log-dim') && term.children.length === 1) term.innerHTML = '';
+  const div = document.createElement('div');
+  const lower = raw.toLowerCase();
+  if (/error|fail|traceback|exception|critical/.test(lower)) div.className = 'log-err';
+  else if (/\bdone\b|success|complete|installed|created|restored|migrat/.test(lower)) div.className = 'log-ok';
+  else if (/warn|deprecat/.test(lower)) div.className = 'log-warn';
+  else if (!raw.trim()) div.className = 'log-dim';
+  div.textContent = raw;
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+  document.getElementById('jpStatusText').textContent = raw.substring(0, 80) || 'Running…';
+}
+
+function _jpSucceed(summary) {
+  clearInterval(_jpElapsedTimer);
+  _jpDone = true;
+  document.getElementById('jpStatusBar').className  = 'jp-status-bar jp-done';
+  document.getElementById('jpSpinner').style.display = 'none';
+  document.getElementById('jpStatusText').textContent = summary || 'Completed successfully.';
+  document.getElementById('jpBar').className = 'job-progress-fill jp-done';
+  const btn = document.getElementById('jpCloseBtn');
+  btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = '';
+  toast(summary || 'Operation completed successfully.', 'success', 'Done');
+  if (_jpOnDone) _jpOnDone();
+}
+
+function _jpFail(summary) {
+  clearInterval(_jpElapsedTimer);
+  _jpDone = true;
+  document.getElementById('jpStatusBar').className  = 'jp-status-bar jp-error';
+  document.getElementById('jpSpinner').style.display = 'none';
+  document.getElementById('jpStatusText').textContent = extractMsg({message: summary || 'Operation failed.'});
+  document.getElementById('jpBar').className = 'job-progress-fill jp-error';
+  const btn = document.getElementById('jpCloseBtn');
+  btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = '';
+  if (summary) _jpLine(summary);
+  toast(extractMsg({message: summary || 'Operation failed.'}), 'error', 'Failed');
+}
+
+function closeJobProgress() {
+  if (!_jpDone) return;
+  closeModal('modalJobProgress');
+}
+
+// ── Create Backup ─────────────────────────────────────────────────────────────
+async function doCreateBackup() {
+  if (!currentBackupSub) return;
+  closeModal('modalBackups');
+  openJobProgress(`+ Creating backup`, currentBackupSub.site_name, async () => {
+    openManageBackups(currentBackupSub.name);
+  });
+  try {
+    const r = await api('pw_subscription.api.start_backup_job', {subscription_name: currentBackupSub.name});
+    _jpJobId = r.job_id;
+  } catch (e) { _jpFail(extractMsg(e)); }
+}
+
+// ── App Management ────────────────────────────────────────────────────────────
+async function openManageApps(name) {
+  const s = allSites.find(x => x.name === name);
+  if (!s) return;
+  currentAppsSub = s;
+  document.getElementById('appsInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(s.clinic_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(s.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Status</span><span class="info-box-val">${esc(s.status)}</span></div>`;
+  document.getElementById('appsList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading apps…</div>';
+  openModal('modalApps');
+  await refreshAppsList();
+}
+
+async function refreshAppsList() {
+  if (!currentAppsSub) return;
+  try {
+    const d = await api('pw_subscription.api.list_site_apps', {subscription_name: currentAppsSub.name});
+    renderAppsList(d.apps || []);
+  } catch (e) {
+    document.getElementById('appsList').innerHTML = inlineError(extractMsg(e));
+  }
+}
+
+function renderAppsList(apps) {
+  const el = document.getElementById('appsList');
+  if (!apps.length) {
+    el.innerHTML = '<div class="empty-state"><div style="font-size:2rem">📦</div><p>No apps found for this site.</p></div>';
+    return;
+  }
+  el.innerHTML = apps.map(a => `
+    <div class="app-item">
+      <div>
+        <div class="app-name">${esc(a.name)}${a.name === 'frappe' ? '<span class="app-core-badge">core</span>' : ''}</div>
+        <div class="app-version">${a.version ? `v${esc(a.version)}` : ''}${a.branch ? ` &nbsp;·&nbsp; ${esc(a.branch)}` : ''}</div>
+      </div>
+      ${a.name !== 'frappe'
+        ? `<button class="btn btn-danger btn-xs" onclick="openUninstallApp('${esc(a.name)}')">Uninstall</button>`
+        : '<span style="font-size:.72rem;color:var(--muted)">protected</span>'}
+    </div>`).join('');
+}
+
+function openInstallApp() {
+  if (!currentAppsSub) return;
+  document.getElementById('installAppInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(currentAppsSub.site_name)}</span></div>`;
+  document.getElementById('installAppName').value = '';
+  document.getElementById('installAppRepo').value = '';
+  document.getElementById('installAppBranch').value = '';
+  openModal('modalInstallApp');
+}
+
+async function doInstallApp() {
+  if (!currentAppsSub) return;
+  const appName = document.getElementById('installAppName').value.trim();
+  const repoUrl = document.getElementById('installAppRepo').value.trim();
+  const branch  = document.getElementById('installAppBranch').value.trim();
+  if (!appName) { toast('Please enter the app name to install.', 'warning', 'App name required'); return; }
+  const btn = document.querySelector('#modalInstallApp .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Installing…'; }
+  try {
+    const r = await api('pw_subscription.api.install_app', {
+      subscription_name: currentAppsSub.name,
+      app_name: appName, repo_url: repoUrl || null, branch: branch || null,
+    });
+    closeModal('modalInstallApp');
+    closeModal('modalApps');
+    toast(r?.message || `${appName} installed successfully.`, 'success', 'App installed');
+    await openManageApps(currentAppsSub.name);
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Install failed');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '+ Install'; }
+  }
+}
+
+function openUninstallApp(appName) {
+  if (!currentAppsSub) return;
+  currentUninstallApp = appName;
+  document.getElementById('uninstallAppInfo').innerHTML = `
+    <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val" style="font-family:monospace;font-size:.82rem">${esc(currentAppsSub.site_name)}</span></div>
+    <div class="info-box-row"><span class="info-box-label">App</span><span class="info-box-val" style="font-family:monospace;color:var(--danger)">${esc(appName)}</span></div>`;
+  closeModal('modalApps');
+  openModal('modalUninstallApp');
+}
+
+async function doUninstallApp() {
+  if (!currentAppsSub || !currentUninstallApp) return;
+  const btn = document.querySelector('#modalUninstallApp .btn-danger');
+  if (btn) { btn.disabled = true; btn.textContent = 'Uninstalling…'; }
+  try {
+    const r = await api('pw_subscription.api.uninstall_app', {
+      subscription_name: currentAppsSub.name,
+      app_name: currentUninstallApp,
+    });
+    closeModal('modalUninstallApp');
+    closeModal('modalApps');
+    toast(r?.message || `${currentUninstallApp} uninstalled.`, 'success', 'App removed');
+    await openManageApps(currentAppsSub.name);
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Uninstall failed');
+    if (btn) { btn.disabled = false; btn.textContent = '🗑 Yes, Uninstall'; }
+  }
+}
+
+async function doMigrateSite() {
+  if (!currentAppsSub) return;
+  const btn = document.querySelector('#modalApps .btn-warning');
+  if (btn) { btn.disabled = true; btn.textContent = 'Migrating…'; }
+  try {
+    const r = await api('pw_subscription.api.migrate_site', {subscription_name: currentAppsSub.name});
+    toast(r?.message || 'Migration completed.', 'success', 'Migration done');
+    await refreshAppsList();
+  } catch (e) {
+    toast(extractMsg(e), 'error', 'Migration failed');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⟳ Run Migration'; }
+  }
+}
+</script>
+{% endblock %}

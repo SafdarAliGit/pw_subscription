@@ -1,297 +1,1486 @@
 {% extends "templates/web.html" %}
-{% block title %}My Subscription — {{ app_name }}{% endblock %}
+{% block title %}{{ app_name }} — Subscription Portal{% endblock %}
 
+{% block page_title %}{% endblock %}
 {% block head_include %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  .navbar, .web-footer, footer.web-footer, .footer-main { display: none !important; }
-  *, *::before, *::after { box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: #F1F5F9; min-height: 100vh; }
-
-  :root {
-    --primary: #2563EB; --success: #10B981; --warning: #F59E0B;
-    --danger: #EF4444; --dark: #0F172A; --muted: #64748B;
-    --border: #E2E8F0; --white: #FFFFFF; --light: #F8FAFC;
-    --radius: 12px;
+  .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,.website-page-container>.container>.page-title,h1.page-title{display:none!important}
+  .page-content,.website-page-container,.container{padding-top:0!important;margin-top:0!important}
+  *,*::before,*::after{box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#F1F5F9;min-height:100vh;color:#1E293B}
+  :root{
+    --primary:#2563EB;--primary-dark:#1D4ED8;--success:#10B981;--warning:#F59E0B;
+    --danger:#EF4444;--muted:#64748B;--border:#E2E8F0;--white:#fff;
+    --light:#F8FAFC;--radius:14px;--shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
   }
 
-  .portal-wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  /* ── Utilities ── */
+  .hidden{display:none!important}
+  .spinner-inline{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.4rem}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .fade-up{animation:fadeUp .35s ease both}
+  @keyframes shake{0%,100%{transform:translateX(0)}15%,45%,75%{transform:translateX(-6px)}30%,60%,90%{transform:translateX(6px)}}
+  .do-shake{animation:shake .45s ease}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-  .portal-header { text-align: center; padding: 2.5rem 0 2rem; }
-  .portal-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--dark); letter-spacing: -.5px; }
-  .portal-header p { color: var(--muted); margin-top: .4rem; font-size: .95rem; }
+  /* ── Buttons ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.25rem;border-radius:9px;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+  .btn-success{background:var(--success);color:#fff}.btn-success:hover:not(:disabled){background:#059669}
+  .btn-ghost{background:#EEF2FF;color:var(--primary);border:1px solid #C7D2FE}.btn-ghost:hover:not(:disabled){background:#E0E7FF}
+  .btn-danger-ghost{background:#FFF1F2;color:var(--danger);border:1px solid #FECDD3}.btn-danger-ghost:hover:not(:disabled){background:#FFE4E6}
+  .btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-outline:hover:not(:disabled){background:var(--light)}
+  .btn-full{width:100%}
+  .btn-sm{padding:.4rem .85rem;font-size:.8rem}
+  .btn-lg{padding:.75rem 1.5rem;font-size:.95rem}
 
-  /* Status Card */
-  .status-card {
-    border-radius: 20px; padding: 2.5rem; margin-bottom: 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 1.5rem; position: relative; overflow: hidden;
-  }
-  .status-trial   { background: linear-gradient(135deg, #1E3A5F, #2563EB); }
-  .status-active  { background: linear-gradient(135deg, #065f46, #10B981); }
-  .status-grace   { background: linear-gradient(135deg, #78350f, #F59E0B); }
-  .status-expired, .status-cancelled { background: linear-gradient(135deg, #7f1d1d, #EF4444); }
-  .status-card::after { content:''; position:absolute; top:-60px; right:-60px; width:250px; height:250px; background:rgba(255,255,255,.06); border-radius:50%; }
-  .status-left { position: relative; z-index: 1; }
-  .status-badge { display: inline-flex; align-items: center; gap: .5rem; background: rgba(255,255,255,.15); color: #fff; padding: .4rem 1rem; border-radius: 100px; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 1rem; }
-  .status-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: blink 2s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .status-title { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: .3rem; }
-  .status-sub { font-size: .9rem; color: rgba(255,255,255,.7); }
-  .status-right { text-align: center; position: relative; z-index: 1; }
-  .countdown-num { font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1; }
-  .countdown-label { font-size: .82rem; color: rgba(255,255,255,.7); margin-top: .25rem; }
+  /* ── Form ── */
+  .form-group{margin-bottom:1.1rem}
+  .form-label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+  .form-control{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:.65rem 1rem;font-size:.9rem;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s;color:#1E293B}
+  .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .form-control.error{border-color:var(--danger)}
+  .form-hint{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+  .form-error{font-size:.75rem;color:var(--danger);margin-top:.3rem;display:flex;align-items:center;gap:.25rem}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:520px){.field-row{grid-template-columns:1fr}}
 
-  /* Info Cards */
-  .cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
-  @media(max-width:640px) { .cards-row { grid-template-columns: 1fr; } }
-  .info-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
-  .info-card-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 1rem; }
-  .info-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-bottom: 1px solid var(--border); }
-  .info-row:last-child { border: none; }
-  .info-row-label { font-size: .85rem; color: var(--muted); }
-  .info-row-value { font-size: .88rem; font-weight: 600; color: var(--dark); }
-  .badge-trial   { background: #eff6ff; color: #2563EB; }
-  .badge-active  { background: #f0fdf4; color: #10B981; }
-  .badge-grace   { background: #fffbeb; color: #F59E0B; }
-  .badge-expired { background: #fff1f2; color: #EF4444; }
-  .status-pill { padding: .25rem .75rem; border-radius: 100px; font-size: .78rem; font-weight: 700; }
+  /* ── Toast ── */
+  .toast-wrap{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+  .toast{background:#1E293B;border-left:3px solid #334155;border-radius:10px;padding:.75rem 1.1rem;font-size:.85rem;min-width:260px;max-width:360px;display:flex;align-items:flex-start;gap:.6rem;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadeUp .2s ease;pointer-events:auto;color:#E2E8F0}
+  .toast.success{border-color:var(--success);color:#fff}.toast.error{border-color:var(--danger)}.toast.info{border-color:var(--primary)}
+  .toast-close{margin-left:auto;cursor:pointer;opacity:.5;font-size:1rem;line-height:1;flex-shrink:0}.toast-close:hover{opacity:1}
 
-  /* Payment Section */
-  .payment-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
-  .payment-section h2 { font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
-  .bank-box { background: var(--light); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; font-size: .85rem; white-space: pre-line; line-height: 2; font-family: monospace; color: #334155; }
-  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-  @media(max-width:540px) { .contact-grid { grid-template-columns: 1fr; } }
-  .contact-item { display: flex; align-items: center; gap: .75rem; padding: .75rem; background: var(--light); border-radius: 8px; }
-  .contact-item-icon { font-size: 1.1rem; }
-  .contact-item-label { font-size: .75rem; color: var(--muted); }
-  .contact-item-value { font-size: .88rem; font-weight: 600; color: var(--dark); }
-  .contact-item a { color: var(--primary); text-decoration: none; }
+  /* ══════════════════════════════════════════
+     AUTH SCREEN
+  ══════════════════════════════════════════ */
+  .auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1.25rem 4rem;background:linear-gradient(160deg,#EFF6FF 0%,#F1F5F9 55%,#F0FDF4 100%)}
+  .auth-box{width:100%;max-width:440px}
 
-  /* Steps */
-  .steps-mini { display: flex; flex-direction: column; gap: .75rem; margin-top: 1rem; }
-  .step-mini { display: flex; align-items: flex-start; gap: .75rem; }
-  .step-mini-num { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-size: .75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: .1rem; }
-  .step-mini-text { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+  .auth-brand{text-align:center;margin-bottom:2rem}
+  .auth-brand-dot{width:52px;height:52px;background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;box-shadow:0 4px 14px rgba(37,99,235,.3)}
+  .auth-brand-dot svg{width:28px;height:28px;fill:#fff}
+  .auth-brand-name{font-size:1.5rem;font-weight:800;color:#0F172A;letter-spacing:-.5px}
+  .auth-brand-sub{font-size:.85rem;color:var(--muted);margin-top:.25rem}
+  .auth-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--shadow)}
+  .auth-tabs{display:flex;background:var(--light);border-radius:10px;padding:.25rem;margin-bottom:1.75rem;gap:.25rem}
+  .auth-tab{flex:1;text-align:center;padding:.55rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--muted);transition:.15s;border:none;background:transparent}
+  .auth-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .auth-form-title{font-size:1.1rem;font-weight:700;color:#0F172A;margin-bottom:.3rem}
+  .auth-form-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.5rem}
+  .auth-footer{text-align:center;margin-top:1.25rem;font-size:.82rem;color:var(--muted)}
+  .auth-footer a{color:var(--primary);font-weight:600;cursor:pointer;text-decoration:none}
+  .divider{display:flex;align-items:center;gap:.75rem;margin:1.1rem 0;color:var(--muted);font-size:.78rem}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  /* Activity Log */
-  .log-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
-  .log-section h2 { font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem; }
-  .log-empty { text-align: center; color: var(--muted); font-size: .9rem; padding: 2rem 0; }
-  .log-item { display: flex; align-items: flex-start; gap: 1rem; padding: .85rem 0; border-bottom: 1px solid var(--border); }
-  .log-item:last-child { border: none; }
-  .log-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
-  .log-content { flex: 1; }
-  .log-action { font-size: .88rem; font-weight: 600; color: var(--dark); }
-  .log-date { font-size: .78rem; color: var(--muted); margin-top: .15rem; }
-  .log-notes { font-size: .82rem; color: var(--muted); margin-top: .25rem; }
+  /* Subdomain input */
+  .subdomain-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .subdomain-wrap:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .subdomain-wrap.sd-error{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+  .subdomain-wrap.sd-success{border-color:var(--success);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+  .subdomain-input{border:none!important;box-shadow:none!important;border-radius:0!important;flex:1;min-width:0;padding:.65rem 1rem;font-size:.9rem;font-family:monospace;color:#0F172A;background:transparent;outline:none}
+  .subdomain-suffix{display:flex;align-items:center;padding:0 .85rem;font-size:.82rem;color:var(--muted);font-family:monospace;background:var(--light);border-left:1px solid var(--border);white-space:nowrap;flex-shrink:0;font-weight:500}
+  .subdomain-preview{font-size:.77rem;margin-top:.35rem;padding:.38rem .75rem;background:var(--light);border-radius:6px;color:#334155;font-family:monospace;border:1px solid var(--border);word-break:break-all}
+  .subdomain-status{font-size:.8rem;margin-top:.3rem;min-height:1.1rem;display:flex;align-items:center;gap:.3rem}
+  .subdomain-counter{font-size:.71rem;color:var(--muted);margin-top:.2rem;text-align:right}
+  .subdomain-counter.warn{color:var(--warning)}.subdomain-counter.over{color:var(--danger);font-weight:700}
+  .subdomain-rules{font-size:.75rem;color:var(--muted);margin-top:.4rem;line-height:1.7;background:var(--light);border-radius:8px;padding:.6rem .85rem;border:1px solid var(--border)}
+  .subdomain-rules li{list-style:none;padding:0}.subdomain-rules li::before{content:'· ';color:var(--muted)}
 
-  /* Alert */
-  .alert { padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: .9rem; }
-  .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-  .alert-danger  { background: #fff1f2; border: 1px solid #fecaca; color: #991b1b; }
-  .alert-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  /* Register steps */
+  .reg-step-bar{display:flex;align-items:center;margin-bottom:1.75rem;gap:0}
+  .reg-step{display:flex;align-items:center;gap:.4rem;flex:1}
+  .reg-step-num{width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--muted);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+  .reg-step.done .reg-step-num{background:var(--success);color:#fff}
+  .reg-step.active .reg-step-num{background:var(--primary);color:#fff}
+  .reg-step-label{font-size:.75rem;font-weight:600;color:var(--muted);white-space:nowrap}
+  .reg-step.active .reg-step-label{color:var(--primary)}
+  .reg-step.done .reg-step-label{color:var(--success)}
+  .reg-step-line{flex:1;height:2px;background:var(--border);margin:0 .5rem;flex-shrink:0;transition:.2s}
+  .reg-step.done + .reg-step-line,.reg-step.active + .reg-step-line{background:var(--primary)}
+  .reg-panel{display:none}.reg-panel.active{display:block}
+  .reg-nav{display:flex;justify-content:space-between;margin-top:1.25rem;gap:.75rem}
+
+  /* Provisioning progress */
+  .prov-card{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border:1px solid #BFDBFE;border-radius:16px;padding:1.75rem;text-align:center}
+  .prov-icon{font-size:2.5rem;margin-bottom:.75rem}
+  .prov-title{font-size:1.05rem;font-weight:700;color:#1E3A5F;margin-bottom:.3rem}
+  .prov-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.25rem}
+  .prov-steps{display:flex;flex-direction:column;gap:.5rem;text-align:left;margin-bottom:1.25rem;max-width:280px;margin-left:auto;margin-right:auto}
+  .prov-step{display:flex;align-items:center;gap:.65rem;font-size:.83rem}
+  .prov-step-dot{width:20px;height:20px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0;transition:.3s}
+  .prov-step-dot.done{background:var(--success);color:#fff}
+  .prov-step-dot.active{background:var(--primary);color:#fff;animation:blink 1s infinite}
+  .prov-step-dot.failed{background:var(--danger);color:#fff}
+  .prov-step-text{color:#334155}
+  .prov-step-text.active{color:var(--primary);font-weight:600}
+  .prov-step-text.done{color:var(--success)}
+  .prov-last-line{font-size:.76rem;color:var(--muted);font-style:italic;margin-top:.5rem;min-height:1rem}
+
+  /* ══════════════════════════════════════════
+     DASHBOARD
+  ══════════════════════════════════════════ */
+  .dash-wrap{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+
+  /* Topbar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+  .topbar-brand{display:flex;align-items:center;gap:.65rem}
+  .topbar-dot{width:9px;height:9px;border-radius:50%;background:var(--success);animation:blink 2s infinite}
+  .topbar-name{font-size:1.1rem;font-weight:800;color:#0F172A;letter-spacing:-.3px}
+  .topbar-right{display:flex;align-items:center;gap:.75rem}
+  .user-chip{display:flex;align-items:center;gap:.55rem;background:#fff;border:1px solid var(--border);border-radius:100px;padding:.35rem .75rem .35rem .45rem;font-size:.82rem}
+  .user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .user-name{font-weight:600;color:#0F172A;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Status card */
+  .status-card{border-radius:20px;padding:2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;position:relative;overflow:hidden}
+  .sc-trial{background:linear-gradient(135deg,#1E3A5F,#2563EB)}
+  .sc-active{background:linear-gradient(135deg,#065f46,#10B981)}
+  .sc-grace{background:linear-gradient(135deg,#78350f,#F59E0B)}
+  .sc-expired,.sc-cancelled{background:linear-gradient(135deg,#7f1d1d,#EF4444)}
+  .status-card::after{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none}
+  .sc-left{position:relative;z-index:1}
+  .sc-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);color:#fff;padding:.38rem 1rem;border-radius:100px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem}
+  .sc-badge-dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 2s infinite}
+  .sc-title{font-size:1.45rem;font-weight:900;color:#fff;margin-bottom:.25rem;letter-spacing:-.3px}
+  .sc-sub{font-size:.88rem;color:rgba(255,255,255,.75)}
+  .sc-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+  .sc-pill{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.14);color:#fff;padding:.28rem .8rem;border-radius:100px;font-size:.76rem}
+  .sc-right{text-align:center;position:relative;z-index:1}
+  .countdown-num{font-size:3.5rem;font-weight:900;color:#fff;line-height:1}
+  .countdown-label{font-size:.8rem;color:rgba(255,255,255,.7);margin-top:.2rem}
+
+  /* Site health */
+  .health-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5)}
+  .health-online{background:#34D399}.health-offline{background:#F87171}.health-checking{animation:blink 1s infinite}
+
+  /* Info cards */
+  .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem}
+  @media(max-width:620px){.cards-row{grid-template-columns:1fr}}
+  .info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.35rem;box-shadow:var(--shadow)}
+  .info-card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.85rem}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)}
+  .info-row:last-child{border:none}
+  .info-row-label{font-size:.82rem;color:var(--muted)}
+  .info-row-value{font-size:.86rem;font-weight:600;color:#0F172A}
+  .status-pill{padding:.2rem .65rem;border-radius:100px;font-size:.73rem;font-weight:700}
+  .badge-trial{background:#EFF6FF;color:var(--primary)}
+  .badge-active{background:#ECFDF5;color:var(--success)}
+  .badge-grace{background:#FFFBEB;color:var(--warning)}
+  .badge-expired,.badge-cancelled{background:#FFF1F2;color:var(--danger)}
+
+  /* Section */
+  .section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.4rem;box-shadow:var(--shadow)}
+  .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem}
+  .section-title{font-size:1rem;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:.5rem}
+  .section-badge{background:var(--primary);color:#fff;border-radius:100px;font-size:.72rem;font-weight:700;padding:.18rem .6rem}
+
+  /* Alert bars */
+  .alert{padding:.9rem 1.15rem;border-radius:10px;margin-bottom:1.1rem;font-size:.88rem;display:flex;align-items:flex-start;gap:.6rem}
+  .alert-icon{flex-shrink:0;font-size:1rem;line-height:1.4}
+  .alert-warning{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+  .alert-danger{background:#FFF1F2;border:1px solid #FECACA;color:#991B1B}
+  .alert-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
+  .alert-success{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
+
+  /* Plans */
+  .plan-section-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.85rem}
+  .plan-section-hd span:first-child{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.85rem}
+  .plan-card{position:relative;border:2px solid var(--border);border-radius:14px;padding:1.2rem 1rem 1rem;cursor:pointer;transition:all .2s;text-align:center;background:#fff;overflow:hidden;user-select:none}
+  .plan-card:hover{border-color:var(--primary);box-shadow:0 4px 18px rgba(37,99,235,.12);transform:translateY(-2px)}
+  .plan-card.selected{border-color:var(--primary);background:#EFF6FF;box-shadow:0 4px 22px rgba(37,99,235,.18)}
+  .plan-check{position:absolute;top:.5rem;right:.5rem;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .2s}
+  .plan-card.selected .plan-check{opacity:1;transform:scale(1)}
+  .plan-badge{display:inline-block;font-size:.66rem;font-weight:700;padding:.16rem .5rem;border-radius:100px;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.04em;line-height:1.5}
+  .plan-badge.best{background:#D1FAE5;color:#065F46}
+  .plan-badge.popular{background:#FEF3C7;color:#92400E}
+  .plan-badge.empty{visibility:hidden}
+  .plan-name{font-size:.9rem;font-weight:700;color:#0F172A;margin-bottom:.4rem}
+  .plan-price{font-size:1.5rem;font-weight:900;color:var(--primary);line-height:1}
+  .plan-price-label{font-size:.68rem;color:var(--muted);margin-top:.1rem}
+  .plan-per-month{font-size:.76rem;color:var(--muted);margin-top:.3rem}
+  .plan-save{display:inline-block;background:#DCFCE7;color:#16A34A;font-size:.68rem;font-weight:700;padding:.13rem .45rem;border-radius:100px;margin-top:.3rem}
+  .plans-error-outline{outline:2px solid var(--danger);outline-offset:6px;border-radius:14px}
+  .plan-required-banner{display:flex;align-items:flex-start;gap:.75rem;background:#FFF1F2;border:1.5px solid #FECACA;border-radius:12px;padding:.9rem 1.1rem;margin-bottom:.9rem;font-size:.87rem;color:#991B1B}
+  .plan-required-banner strong{display:block;font-weight:700}
+  .plan-required-banner span{font-size:.79rem;color:#B91C1C}
+
+  /* Bank reveal */
+  .bank-reveal{border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:1.2rem;margin-top:1rem}
+  .bank-reveal-hd{display:flex;align-items:center;gap:.75rem;margin-bottom:.8rem}
+  .bank-reveal-icon{font-size:1.4rem;flex-shrink:0}
+  .bank-reveal-title{font-size:.93rem;font-weight:700;color:#0F172A}
+  .bank-reveal-amt{color:var(--primary)}
+  .bank-reveal-sub{font-size:.77rem;color:var(--muted);margin-top:.1rem}
+  .bank-box{background:#fff;border:1px solid #BFDBFE;border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;white-space:pre-line;line-height:2;font-family:monospace;color:#334155;margin-bottom:.75rem}
+  .bank-next-hint{background:#D1FAE5;border-radius:8px;padding:.5rem .85rem;font-size:.81rem;color:#065F46;font-weight:600;text-align:center}
+
+  /* Plan summary in upload */
+  .plan-summary-box{display:flex;align-items:center;justify-content:space-between;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem}
+  .plan-summary-name{font-size:.88rem;font-weight:700;color:#0F172A}
+  .plan-summary-meta{font-size:.74rem;color:var(--muted);margin-top:.1rem}
+  .plan-summary-price{font-size:1.1rem;font-weight:900;color:var(--primary)}
+
+  /* Upload */
+  .upload-area{border:2px dashed var(--border);border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:.15s;position:relative;background:var(--light)}
+  .upload-area:hover,.upload-area.drag-over{border-color:var(--primary);background:#EFF6FF}
+  .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-icon{font-size:1.75rem;margin-bottom:.4rem}
+  .upload-text{font-size:.86rem;color:var(--muted)}
+  .upload-hint{font-size:.74rem;color:#94A3B8;margin-top:.2rem}
+  .upload-preview{width:100%;max-height:180px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-top:.85rem}
+
+  /* Payment history */
+  .proof-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);gap:1rem;flex-wrap:wrap}
+  .proof-item:last-child{border:none}
+  .proof-badge{padding:.18rem .6rem;border-radius:100px;font-size:.71rem;font-weight:700;text-transform:uppercase}
+  .proof-pending{background:#FFFBEB;color:#92400E}.proof-approved{background:#ECFDF5;color:#065F46}.proof-rejected{background:#FFF1F2;color:#991B1B}
+
+  /* Log */
+  #activityLog::-webkit-scrollbar{width:5px}
+  #activityLog::-webkit-scrollbar-track{background:var(--light);border-radius:4px}
+  #activityLog::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  #activityLog::-webkit-scrollbar-thumb:hover{background:#CBD5E1}
+  .log-item{display:flex;align-items:flex-start;gap:.85rem;padding:.65rem 0;border-bottom:1px solid var(--border)}
+  .log-item:last-child{border:none}
+  .log-dot{width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:.35rem}
+  .log-action{font-size:.86rem;font-weight:600;color:#0F172A}
+  .log-date{font-size:.76rem;color:var(--muted);margin-top:.1rem}
+
+  /* Empty state */
+  .empty-state{text-align:center;padding:2rem 1rem;color:var(--muted)}
+  .empty-state-icon{font-size:2rem;margin-bottom:.5rem}
+  .empty-state p{font-size:.86rem}
+
+  /* Steps mini */
+  .steps-mini{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
+  .step-mini{display:flex;align-items:flex-start;gap:.65rem}
+  .step-num{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+  .step-text{font-size:.86rem;color:var(--muted);line-height:1.6}
 
   /* Site pill */
-  .site-pill { display: inline-flex; align-items: center; gap: .4rem; background: #f1f5f9; border: 1px solid var(--border); border-radius: 100px; padding: .3rem .9rem; font-size: .8rem; color: var(--muted); font-family: monospace; margin-top: .5rem; }
+  .site-pill{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:.28rem .85rem;font-size:.78rem;font-family:monospace;margin-top:.5rem}
+
+  /* Responsive */
+  @media(max-width:620px){.cards-row{grid-template-columns:1fr}}
+  @media(max-width:600px){
+    .status-card{flex-direction:column}
+    .sc-right{text-align:left}
+    .countdown-num{font-size:2.5rem}
+    .topbar{flex-direction:column;align-items:flex-start}
+    .topbar-right{width:100%;justify-content:space-between}
+    .user-name{max-width:none}
+    .dash-wrap{padding:1rem .85rem 3rem}
+    .section{padding:1.1rem}
+    .plan-summary-box{flex-direction:column;gap:.5rem;align-items:flex-start}
+    .field-row{grid-template-columns:1fr}
+  }
+  @media(max-width:400px){
+    .auth-card{padding:1.5rem 1.1rem}
+    .sc-title{font-size:1.2rem}
+    .countdown-num{font-size:2rem}
+    .plans-grid{grid-template-columns:1fr 1fr}
+  }
+
+  /* ── Login Modal ── */
+  .lm-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(5px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1.25rem;animation:fadeIn .18s ease}
+  .lm-backdrop.hidden{display:none}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .lm-dialog{background:#fff;border-radius:20px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);overflow:hidden;animation:slideUp .22s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .lm-header{background:linear-gradient(135deg,#EFF6FF 0%,#F0FDF4 100%);padding:1.5rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.9rem}
+  .lm-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+  .lm-icon svg{width:22px;height:22px;fill:#fff}
+  .lm-title{font-size:1rem;font-weight:800;color:#0F172A;letter-spacing:-.3px}
+  .lm-sub{font-size:.77rem;color:var(--muted);margin-top:.15rem}
+  .lm-body{padding:1.5rem 1.75rem 1.75rem}
+  .lm-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:.25rem;border-radius:6px}
+  .lm-close:hover{color:#0F172A;background:var(--light)}
+  .lm-footer{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--muted)}
 </style>
 {% endblock %}
 
 {% block page_content %}
-<div class="portal-wrap">
+<div class="toast-wrap" id="toastWrap"></div>
 
-  <div class="portal-header">
-    <h1>Subscription Portal</h1>
-    <p>Manage your {{ app_name }} subscription</p>
-    {% if subscription %}
-    <div class="site-pill">&#127760; {{ subscription.site_name }}</div>
-    {% endif %}
-  </div>
+<!-- ══════════════════════════════════════
+     AUTH SCREEN  (guests only)
+══════════════════════════════════════ -->
+<div id="authScreen" {% if not is_guest %}class="hidden"{% endif %}>
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
 
-  <!-- Alerts -->
-  {% if status == "Grace Period" %}
-  <div class="alert alert-warning">
-    &#9888;&#65039; <strong>Grace Period Active.</strong> Your subscription has expired. You have {{ days_remaining }} day(s) remaining before access is blocked. Please renew immediately.
-  </div>
-  {% elif status == "Expired" %}
-  <div class="alert alert-danger">
-    &#128683; <strong>Subscription Expired.</strong> Your access has been suspended. Please contact us to renew your subscription.
-  </div>
-  {% elif status == "Trial" and days_remaining <= 2 %}
-  <div class="alert alert-warning">
-    &#9203; <strong>Trial Ending Soon.</strong> Only {{ days_remaining }} day(s) left in your free trial. Subscribe now to avoid interruption.
-  </div>
-  {% elif status == "Trial" %}
-  <div class="alert alert-info">
-    &#127873; <strong>Free Trial Active.</strong> You have {{ days_remaining }} day(s) remaining in your free trial.
-  </div>
-  {% endif %}
-
-  <!-- Status Card -->
-  {% if status == "Trial" %}<div class="status-card status-trial">
-  {% elif status == "Active" %}<div class="status-card status-active">
-  {% elif status == "Grace Period" %}<div class="status-card status-grace">
-  {% else %}<div class="status-card status-expired">
-  {% endif %}
-    <div class="status-left">
-      <div class="status-badge"><span class="status-badge-dot"></span>{{ status }}</div>
-      <div class="status-title">
-        {% if status == "Trial" %}Free Trial in Progress
-        {% elif status == "Active" %}Subscription Active
-        {% elif status == "Grace Period" %}Grace Period
-        {% else %}Subscription Expired
-        {% endif %}
+    <!-- Brand -->
+    <div class="auth-brand">
+      <div class="auth-brand-dot">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
       </div>
-      <div class="status-sub">
-        {% if end_date %}
-          {% if status == "Grace Period" %}Access blocked after {{ end_date }}
-          {% elif status == "Expired" %}Expired — please renew
-          {% else %}Valid until {{ end_date }}
-          {% endif %}
-        {% else %}No active subscription{% endif %}
-      </div>
+      <div class="auth-brand-name">{{ app_name }} Subscription Portal</div>
     </div>
-    <div class="status-right">
-      <div class="countdown-num">{{ days_remaining }}</div>
-      <div class="countdown-label">
-        {% if status == "Grace Period" %}days until block
-        {% elif status == "Expired" %}—
-        {% else %}days remaining
-        {% endif %}
+
+    <div class="auth-card">
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">New Clinic</button>
       </div>
+
+      <!-- ── LOGIN PANEL ── -->
+      <div id="loginPanel">
+        <div class="auth-form-title">Welcome back</div>
+        <div class="auth-form-sub">Sign in with your clinic credentials</div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-control" id="loginEmail" type="email" placeholder="doctor@example.com" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+          <div class="form-error hidden" id="loginEmailErr"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;justify-content:space-between">
+            <span>Password</span>
+            <a onclick="switchTab('forgot')" style="font-weight:500;color:var(--primary);cursor:pointer;font-size:.75rem;text-transform:none;letter-spacing:0">Forgot password?</a>
+          </label>
+          <input class="form-control" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <div class="form-error hidden" id="loginPassErr"></div>
+        </div>
+        <div class="form-error hidden" id="loginGlobalErr" style="margin-bottom:.75rem;font-size:.85rem"></div>
+        <button class="btn btn-primary btn-full btn-lg" id="loginBtn" onclick="doLogin()">Sign In</button>
+
+        <div class="auth-footer">
+          New clinic? <a onclick="switchTab('register')">Register free trial →</a>
+        </div>
+      </div>
+
+      <!-- ── FORGOT PASSWORD PANEL ── -->
+      <div id="forgotPanel" class="hidden">
+        <div class="auth-form-title">Reset Password</div>
+        <div class="auth-form-sub">Contact support to reset your password</div>
+        {% if contact_email or contact_phone %}
+        <div class="alert alert-info" style="margin-bottom:0">
+          <span class="alert-icon">ℹ️</span>
+          <div>
+            {% if contact_email %}<div style="margin-bottom:.3rem">✉️ <a href="mailto:{{ contact_email }}" style="color:var(--primary)">{{ contact_email }}</a></div>{% endif %}
+            {% if contact_phone %}<div>📱 {{ contact_phone }}</div>{% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info" style="margin-bottom:0"><span class="alert-icon">ℹ️</span>Please contact your system administrator to reset your password.</div>
+        {% endif %}
+        <div class="auth-footer" style="margin-top:1rem">
+          <a onclick="switchTab('login')">← Back to Sign In</a>
+        </div>
+      </div>
+
+      <!-- ── REGISTER PANEL ── -->
+      <div id="registerPanel" class="hidden">
+        <div class="auth-form-title">Start Free Trial</div>
+        <div class="auth-form-sub">Set up your clinic in minutes</div>
+
+        <!-- Step bar -->
+        <div class="reg-step-bar" id="regStepBar">
+          <div class="reg-step active" id="rsDot0"><div class="reg-step-num">1</div><div class="reg-step-label">Clinic</div></div>
+          <div class="reg-step-line" id="rsLine0"></div>
+          <div class="reg-step" id="rsDot1"><div class="reg-step-num">2</div><div class="reg-step-label">Doctor</div></div>
+          <div class="reg-step-line" id="rsLine1"></div>
+          <div class="reg-step" id="rsDot2"><div class="reg-step-num">3</div><div class="reg-step-label">Account</div></div>
+        </div>
+
+        <!-- Step 1: Clinic -->
+        <div class="reg-panel active" id="regStep0">
+          <div class="form-group">
+            <label class="form-label">Clinic Web Address <span style="color:var(--danger)">*</span></label>
+            <div class="subdomain-wrap" id="subdomainWrap">
+              <input class="subdomain-input" id="regClinic" type="text"
+                     placeholder="your-clinic"
+                     maxlength="63"
+                     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                     oninput="formatSubdomain(this)">
+              <span class="subdomain-suffix">.{{ base_domain or 'your-domain.com' }}</span>
+            </div>
+            <div class="subdomain-preview hidden" id="clinicPreview"></div>
+            <div class="subdomain-status" id="clinicCheck"></div>
+            <div class="subdomain-counter" id="subdomainCounter">0 / 63</div>
+            <ul class="subdomain-rules">
+              <li>Lowercase letters (a–z), numbers (0–9) and hyphens (-) only</li>
+              <li>Must start with a letter &nbsp;·&nbsp; Cannot start or end with a hyphen</li>
+              <li>No spaces or special characters &nbsp;·&nbsp; 3 to 63 characters</li>
+            </ul>
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input class="form-control" id="regCity" type="text" placeholder="e.g. Karachi">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input class="form-control" id="regAddress" type="text" placeholder="Clinic address">
+          </div>
+          <div class="reg-nav">
+            <button class="btn btn-outline btn-sm" onclick="switchTab('login')">Cancel</button>
+            <button class="btn btn-primary" onclick="regNext(1)">Next →</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Doctor -->
+        <div class="reg-panel" id="regStep1">
+          <div class="form-group">
+            <label class="form-label">Doctor / Owner Name <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" id="regName" type="text" placeholder="Dr. Ahmed Khan">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" id="regPhone" type="tel" placeholder="+92 300 0000000">
+          </div>
+          <div class="reg-nav">
+            <button class="btn btn-outline btn-sm" onclick="regNext(0)">← Back</button>
+            <button class="btn btn-primary" onclick="regNext(2)">Next →</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Account -->
+        <div class="reg-panel" id="regStep2">
+          <div class="form-group">
+            <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" id="regEmail" type="email" placeholder="doctor@clinic.com">
+            <div class="form-hint">This will be your login ID</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" id="regPassword" type="password" placeholder="Min 8 characters">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" id="regPasswordConfirm" type="password" placeholder="Repeat password">
+          </div>
+          <div class="form-error hidden" id="regGlobalErr" style="margin-bottom:.75rem;font-size:.85rem"></div>
+          <div class="reg-nav">
+            <button class="btn btn-outline btn-sm" onclick="regNext(1)">← Back</button>
+            <button class="btn btn-success" id="regSubmitBtn" onclick="doRegister()">🚀 Start Free Trial</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROVISIONING PANEL ── -->
+      <div id="provPanel" class="hidden">
+        <div class="prov-card">
+          <div class="prov-icon" id="provIcon">⚙️</div>
+          <div class="prov-title" id="provTitle">Setting up your clinic…</div>
+          <div class="prov-sub" id="provSub">This takes 2–5 minutes. You can close this tab and come back.</div>
+          <div class="prov-steps" id="provSteps">
+            <div class="prov-step"><div class="prov-step-dot" id="ps0">1</div><span class="prov-step-text" id="pt0">Backing up template</span></div>
+            <div class="prov-step"><div class="prov-step-dot" id="ps1">2</div><span class="prov-step-text" id="pt1">Creating your site</span></div>
+            <div class="prov-step"><div class="prov-step-dot" id="ps2">3</div><span class="prov-step-text" id="pt2">Importing data</span></div>
+            <div class="prov-step"><div class="prov-step-dot" id="ps3">4</div><span class="prov-step-text" id="pt3">Configuring account</span></div>
+            <div class="prov-step"><div class="prov-step-dot" id="ps4">5</div><span class="prov-step-text" id="pt4">Sending welcome email</span></div>
+          </div>
+          <div class="prov-last-line" id="provLastLine"></div>
+          <button class="btn btn-ghost btn-sm hidden" id="provRetryBtn" onclick="retryProv()">🔄 Retry</button>
+        </div>
+        <div class="auth-footer" style="margin-top:1.25rem">
+          <a onclick="switchTab('login')">← Sign In later</a>
+        </div>
+      </div>
+
+    </div><!-- /auth-card -->
+  </div><!-- /auth-box -->
+
+
+</div><!-- /auth-wrap -->
+</div><!-- /authScreen -->
+
+
+<!-- ══════════════════════════════════════
+     DASHBOARD  (logged-in users)
+══════════════════════════════════════ -->
+<div id="dashScreen" {% if is_guest %}class="hidden"{% endif %}>
+<div class="dash-wrap">
+
+  <!-- Topbar -->
+  <div class="topbar fade-up">
+    <div class="topbar-brand">
+      <div class="topbar-dot"></div>
+      <div class="topbar-name">{{ app_name }}</div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-name" id="userDisplayName">{{ session_user }}</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
 
-  <!-- Info Cards -->
-  <div class="cards-row">
+  <!-- Alert bar -->
+  <div id="alertBar"></div>
+
+  <!-- Status card -->
+  <div id="statusCard" class="status-card sc-trial fade-up" style="margin-bottom:1.5rem">
+    <div class="sc-left">
+      <div class="sc-badge"><span class="sc-badge-dot"></span><span id="statusLabel">Loading…</span></div>
+      <div class="sc-title" id="statusTitle">—</div>
+      <div class="sc-sub" id="statusSub">—</div>
+      <div class="sc-pills" id="scPills"></div>
+    </div>
+    <div class="sc-right">
+      <div class="countdown-num" id="countdownNum">—</div>
+      <div class="countdown-label" id="countdownLabel">days remaining</div>
+    </div>
+  </div>
+
+  <!-- Details row -->
+  <div class="cards-row fade-up">
     <div class="info-card">
       <div class="info-card-title">Subscription Details</div>
-      <div class="info-row">
-        <span class="info-row-label">Status</span>
-        <span class="status-pill
-          {% if status == 'Active' %}badge-active
-          {% elif status == 'Trial' %}badge-trial
-          {% elif status == 'Grace Period' %}badge-grace
-          {% else %}badge-expired
-          {% endif %}">{{ status }}</span>
-      </div>
-      {% if subscription %}
-        {% if subscription.trial_start %}
-        <div class="info-row">
-          <span class="info-row-label">Trial Started</span>
-          <span class="info-row-value">{{ subscription.trial_start }}</span>
-        </div>
-        {% endif %}
-        {% if subscription.trial_end %}
-        <div class="info-row">
-          <span class="info-row-label">Trial Ends</span>
-          <span class="info-row-value">{{ subscription.trial_end }}</span>
-        </div>
-        {% endif %}
-        {% if subscription.subscription_start %}
-        <div class="info-row">
-          <span class="info-row-label">Subscribed From</span>
-          <span class="info-row-value">{{ subscription.subscription_start }}</span>
-        </div>
-        {% endif %}
-        {% if subscription.subscription_end %}
-        <div class="info-row">
-          <span class="info-row-label">Expires On</span>
-          <span class="info-row-value">{{ subscription.subscription_end }}</span>
-        </div>
-        {% endif %}
-        {% if subscription.grace_end %}
-        <div class="info-row">
-          <span class="info-row-label">Grace Ends</span>
-          <span class="info-row-value">{{ subscription.grace_end }}</span>
-        </div>
-        {% endif %}
-      {% endif %}
+      <div id="subDetails"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Clinic Info</div>
+      <div id="clinicDetails"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+    </div>
+  </div>
+
+  <!-- Plans & Payment -->
+  <div class="section fade-up">
+    <div class="section-hd">
+      <div class="section-title">💳 Renew / Subscribe</div>
     </div>
 
-    <div class="info-card">
-      <div class="info-card-title">Plan Info</div>
-      <div class="info-row">
-        <span class="info-row-label">Plan</span>
-        <span class="info-row-value">Professional Monthly</span>
+    <div class="steps-mini">
+      <div class="step-mini"><div class="step-num">1</div><div class="step-text">Pick a plan below</div></div>
+      <div class="step-mini"><div class="step-num">2</div><div class="step-text">Transfer to the bank account shown</div></div>
+      <div class="step-mini"><div class="step-num">3</div><div class="step-text">Upload the transfer screenshot here</div></div>
+      <div class="step-mini"><div class="step-num">4</div><div class="step-text">We activate within a few hours</div></div>
+    </div>
+
+    <!-- Plan required banner -->
+    <div id="planRequiredBanner" class="plan-required-banner hidden">
+      <span style="font-size:1.4rem;flex-shrink:0">🚫</span>
+      <div><strong>No plan selected</strong><span>Please choose a plan below before submitting your payment proof.</span></div>
+    </div>
+
+    {% if subscription_plans %}
+    <div class="plan-section-hd">
+      <span>Choose a Plan</span>
+      <span style="font-size:.76rem;color:var(--muted)">Select to see bank details</span>
+    </div>
+    <div class="plans-grid" id="plansGrid">
+      {% for plan in subscription_plans %}
+      <div class="plan-card" data-label="{{ plan.plan_label }}" data-months="{{ plan.duration_months }}" data-price="{{ plan.price }}" onclick="selectPlan(this)">
+        <div class="plan-check">✓</div>
+        {% if plan.badge == 'best' %}<div class="plan-badge best">Best Value</div>
+        {% elif plan.badge == 'popular' %}<div class="plan-badge popular">Popular</div>
+        {% else %}<div class="plan-badge empty">-</div>{% endif %}
+        <div class="plan-name">{{ plan.plan_label }}</div>
+        <div class="plan-price">PKR {{ plan.price | int }}</div>
+        <div class="plan-price-label">{% if plan.duration_months > 1 %}for {{ plan.duration_months }} months{% else %}per month{% endif %}</div>
+        {% if plan.duration_months > 1 %}
+        <div class="plan-per-month">PKR {{ plan.monthly_equiv }} / mo</div>
+        {% if plan.savings_pct > 0 %}<div class="plan-save">Save {{ plan.savings_pct }}%</div>{% endif %}
+        {% endif %}
       </div>
-      <div class="info-row">
-        <span class="info-row-label">Monthly Fee</span>
-        <span class="info-row-value">PKR {{ monthly_fee | int }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info"><span class="alert-icon">ℹ️</span>No plans configured. Contact support for pricing.</div>
+    {% endif %}
+
+    <!-- Bank reveal -->
+    <div id="bankReveal" class="hidden">
+      <div class="bank-reveal">
+        <div class="bank-reveal-hd">
+          <span class="bank-reveal-icon">🏦</span>
+          <div>
+            <div class="bank-reveal-title">Transfer <span id="bankRevealAmt" class="bank-reveal-amt">—</span></div>
+            <div class="bank-reveal-sub">to the account below, then upload your screenshot</div>
+          </div>
+        </div>
+        {% if bank_details %}
+        <div class="bank-box">{{ bank_details }}</div>
+        <button class="btn btn-ghost btn-sm" onclick="copyBankDetails()">📋 Copy Details</button>
+        {% endif %}
+        <div class="bank-next-hint" style="margin-top:.75rem">Transferred? Upload your screenshot below ↓</div>
       </div>
-      <div class="info-row">
-        <span class="info-row-label">Billing</span>
-        <span class="info-row-value">Manual Bank Transfer</span>
+    </div>
+
+    <!-- Upload form -->
+    <div id="uploadFormWrap" style="margin-top:1.25rem">
+      <div id="pendingProofAlert" class="alert alert-info hidden">
+        <span class="alert-icon">⏳</span>
+        <div><strong>Payment under review.</strong> Your proof has been submitted and is being reviewed. We'll activate within a few hours.</div>
       </div>
-      <div class="info-row">
-        <span class="info-row-label">Users Included</span>
-        <span class="info-row-value">Unlimited</span>
-      </div>
-      <div class="info-row">
-        <span class="info-row-label">Data Ownership</span>
-        <span class="info-row-value">100% Yours</span>
+
+      <div id="uploadForm">
+        <input type="hidden" id="selectedPlanLabel" value="">
+        <input type="hidden" id="selectedPlanMonths" value="">
+        <input type="hidden" id="selectedPlanPrice" value="">
+
+        <div id="planSummaryBox" class="plan-summary-box hidden">
+          <div>
+            <div class="plan-summary-name" id="planSummaryName">—</div>
+            <div class="plan-summary-meta">Selected plan</div>
+          </div>
+          <div class="plan-summary-price" id="planSummaryPrice">—</div>
+        </div>
+        <div id="noPlanHint" class="alert alert-info" style="font-size:.84rem">
+          <span class="alert-icon">☝️</span>Select a plan above first, then upload your screenshot here.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Amount Transferred (PKR) <span style="color:var(--danger)">*</span></label>
+          <input type="number" class="form-control" id="payAmount" placeholder="Auto-filled from plan">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Screenshot <span style="color:var(--danger)">*</span></label>
+          <div class="upload-area" id="uploadArea" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <input type="file" id="screenshotFile" accept="image/*" onchange="previewImage(this)">
+            <div id="uploadPlaceholder">
+              <div class="upload-icon">📷</div>
+              <div class="upload-text">Click or drag to upload screenshot</div>
+              <div class="upload-hint">PNG, JPG, JPEG — max 10 MB</div>
+            </div>
+            <img id="uploadPreview" class="upload-preview hidden" src="" alt="Preview">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <input type="text" class="form-control" id="payNotes" placeholder="e.g. Paid via Easypaisa, Ref# 12345">
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="submitPayBtn" onclick="submitPayment()">📤 Submit Payment Proof</button>
       </div>
     </div>
   </div>
 
-  <!-- Payment Instructions -->
-  <div class="payment-section">
-    <h2>&#128179; How to Renew / Subscribe</h2>
-    <div class="steps-mini">
-      <div class="step-mini"><div class="step-mini-num">1</div><div class="step-mini-text">Transfer <strong>PKR {{ monthly_fee | int }}</strong> to our bank account below</div></div>
-      <div class="step-mini"><div class="step-mini-num">2</div><div class="step-mini-text">Take a screenshot of your payment confirmation</div></div>
-      <div class="step-mini"><div class="step-mini-num">3</div><div class="step-mini-text">Send the screenshot + your site name (<code>{{ subscription.site_name if subscription else frappe.local.site }}</code>) via WhatsApp or email</div></div>
-      <div class="step-mini"><div class="step-mini-num">4</div><div class="step-mini-text">We activate your subscription within a few hours</div></div>
+  <!-- Payment History -->
+  <div class="section fade-up">
+    <div class="section-hd">
+      <div class="section-title">📜 Payment History</div>
     </div>
-
-    {% if bank_details %}
-    <div style="margin-top:1.5rem">
-      <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.5rem">Bank Account</div>
-      <div class="bank-box">{{ bank_details }}</div>
-    </div>
-    {% endif %}
-
-    <div class="contact-grid">
-      {% if contact_email %}
-      <div class="contact-item">
-        <div class="contact-item-icon">&#9993;&#65039;</div>
-        <div>
-          <div class="contact-item-label">Email</div>
-          <div class="contact-item-value"><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></div>
-        </div>
-      </div>
-      {% endif %}
-      {% if contact_phone %}
-      <div class="contact-item">
-        <div class="contact-item-icon">&#128241;</div>
-        <div>
-          <div class="contact-item-label">WhatsApp / Phone</div>
-          <div class="contact-item-value"><a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></div>
-        </div>
-      </div>
-      {% endif %}
-    </div>
+    <div id="paymentHistory"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
   </div>
 
   <!-- Activity Log -->
-  <div class="log-section">
-    <h2>&#128203; Subscription Activity</h2>
-    {% if logs %}
-      {% for log in logs %}
-      <div class="log-item">
-        <div class="log-dot"></div>
-        <div class="log-content">
-          <div class="log-action">{{ log.action }}</div>
-          <div class="log-date">{{ log.action_date }}</div>
-          {% if log.notes %}<div class="log-notes">{{ log.notes }}</div>{% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="log-empty">No activity recorded yet.</div>
-    {% endif %}
+  <div class="section fade-up">
+    <div class="section-hd">
+      <div class="section-title">📋 Activity Log</div>
+    </div>
+    <div id="activityLog" style="max-height:320px;overflow-y:auto;padding-right:.25rem"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
   </div>
 
+  {% if contact_email or contact_phone %}
+  <div class="section fade-up">
+    <div class="section-title" style="margin-bottom:1rem">📞 Need Help?</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.85rem">
+      {% if contact_email %}
+      <div style="display:flex;align-items:center;gap:.75rem;background:var(--light);border-radius:10px;padding:.75rem">
+        <span style="font-size:1.2rem">✉️</span>
+        <div><div style="font-size:.74rem;color:var(--muted)">Email</div><div style="font-size:.88rem;font-weight:600"><a href="mailto:{{ contact_email }}" style="color:var(--primary)">{{ contact_email }}</a></div></div>
+      </div>
+      {% endif %}
+      {% if contact_phone %}
+      <div style="display:flex;align-items:center;gap:.75rem;background:var(--light);border-radius:10px;padding:.75rem">
+        <span style="font-size:1.2rem">📱</span>
+        <div><div style="font-size:.74rem;color:var(--muted)">WhatsApp / Phone</div><div style="font-size:.88rem;font-weight:600"><a href="tel:{{ contact_phone }}" style="color:var(--primary)">{{ contact_phone }}</a></div></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /dash-wrap -->
+</div><!-- /dashScreen -->
+
+<!-- ══════════════════════════════════════
+     LOGIN MODAL
+══════════════════════════════════════ -->
+<div id="loginModal" class="lm-backdrop hidden" onclick="handleLmBackdrop(event)">
+  <div class="lm-dialog" style="position:relative">
+    <button class="lm-close" onclick="hideLm()" title="Close">×</button>
+    <div class="lm-header">
+      <div class="lm-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      </div>
+      <div>
+        <div class="lm-title">Sign In to Continue</div>
+        <div class="lm-sub" id="lmSubText">Your session has expired — please sign in again</div>
+      </div>
+    </div>
+    <div class="lm-body">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-control" id="mlEmail" type="email" placeholder="doctor@example.com" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('mlPassword').focus()">
+      </div>
+      <div class="form-group" style="margin-bottom:.6rem">
+        <label class="form-label">Password</label>
+        <input class="form-control" id="mlPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doModalLogin()">
+      </div>
+      <div class="form-error hidden" id="mlErr" style="margin-bottom:.85rem;font-size:.84rem;padding:.5rem .75rem;background:#FFF1F2;border-radius:8px;border:1px solid #FECACA"></div>
+      <button class="btn btn-primary btn-full btn-lg" id="mlBtn" onclick="doModalLogin()">Sign In</button>
+      <div class="lm-footer">
+        Forgot your password? <a href="mailto:{{ contact_email }}" style="color:var(--primary);font-weight:600">Contact support</a>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const IS_GUEST     = {{ 'true' if is_guest else 'false' }};
+const SESSION_USER = {{ '"' ~ session_user ~ '"' }};
+const PING_ENABLED = {{ 'true' if enable_site_ping else 'false' }};
+const PING_TIMEOUT = {{ ping_timeout }};
+const PORTAL_DOMAIN = '{{ base_domain or '' }}';
+let currentSub = null, currentEmail = '', regRequestName = '', provPollTimer = null;
+let _provEmail = '', _provPass = '';
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(method, args = {}, allowGuest = false) {
+  const headers = {'Content-Type': 'application/json'};
+  if (!allowGuest) headers['X-Frappe-CSRF-Token'] = frappe.csrf_token || '';
+  else headers['X-Frappe-CSRF-Token'] = frappe.csrf_token || '';
+  const resp = await fetch(`/api/method/${method}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(args),
+  });
+  const data = await resp.json();
+  if (data.exc || (!data.message && data._server_messages)) {
+    const raw = data._server_messages || data.exc || '{}';
+    let msg = raw;
+    try { const arr = JSON.parse(raw); msg = arr.map(m => { try{return JSON.parse(m).message}catch(_){return m} }).join(' '); } catch(_){}
+    throw new Error(msg.substring(0, 300));
+  }
+  return data.message !== undefined ? data.message : data;
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['loginPanel','registerPanel','forgotPanel','provPanel'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  ['tabLogin','tabRegister'].forEach(id => document.getElementById(id).classList.remove('active'));
+  if (tab === 'login') {
+    document.getElementById('loginPanel').classList.remove('hidden');
+    document.getElementById('tabLogin').classList.add('active');
+  } else if (tab === 'register') {
+    document.getElementById('registerPanel').classList.remove('hidden');
+    document.getElementById('tabRegister').classList.add('active');
+    showRegStep(0);
+  } else if (tab === 'forgot') {
+    document.getElementById('forgotPanel').classList.remove('hidden');
+  } else if (tab === 'prov') {
+    document.getElementById('provPanel').classList.remove('hidden');
+    document.getElementById('tabRegister').classList.add('active');
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginGlobalErr');
+  const btn   = document.getElementById('loginBtn');
+
+  clearFieldError('loginEmail','loginEmailErr');
+  clearFieldError('loginPassword','loginPassErr');
+  errEl.classList.add('hidden');
+
+  let ok = true;
+  if (!email) { showFieldError('loginEmail','loginEmailErr','Email is required.'); ok=false; }
+  if (!pass)  { showFieldError('loginPassword','loginPassErr','Password is required.'); ok=false; }
+  if (!ok) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-inline"></span>Signing in…';
+  try {
+    const resp = await fetch('/api/method/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({usr: email, pwd: pass}),
+    });
+    const data = await resp.json();
+    if (data.message === 'Logged In' || resp.ok) {
+      window.location.reload();
+    } else {
+      const msg = data._server_messages || data.message || 'Invalid email or password.';
+      let clean = msg;
+      try { clean = JSON.parse(msg).map(m => {try{return JSON.parse(m).message}catch(_){return m}}).join(' '); } catch(_){}
+      showError(errEl, clean.substring(0,200));
+    }
+  } catch(e) {
+    showError(errEl, 'Login failed. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+  }
+}
+
+async function doLogout() {
+  try { await fetch('/api/method/logout', {method:'POST', headers:{'X-Frappe-CSRF-Token': frappe.csrf_token||''}}); }
+  catch(_) {}
+  window.location.reload();
+}
+
+// ── REGISTER ─────────────────────────────────────────────────────────────────
+let clinicAvailTimer = null, clinicAvailable = false;
+
+// Reserved subdomain words — same list as server
+const _SD_RESERVED = new Set([
+  'www','mail','ftp','smtp','imap','pop','ns1','ns2','ns3','vpn','cdn',
+  'admin','api','app','portal','support','help','dashboard','status',
+  'root','localhost','dev','staging','test','demo','beta','alpha',
+  'blog','shop','store','static','assets','media','images','docs',
+  'git','webmail','cpanel','ssl','remote',
+]);
+
+function validateSubdomain(val) {
+  if (!val)           return {ok:false, msg:'', type:'empty'};
+  if (val.length < 3) return {ok:false, msg:`Too short — need at least 3 characters (${val.length}/3)`, type:'format'};
+  if (val.length > 63) return {ok:false, msg:'Too long — maximum 63 characters', type:'format'};
+  if (/^[0-9]/.test(val))      return {ok:false, msg:'Must start with a letter (a–z), not a number', type:'format'};
+  if (val.startsWith('-'))      return {ok:false, msg:'Cannot start with a hyphen ( - )', type:'format'};
+  if (val.endsWith('-'))        return {ok:false, msg:'Cannot end with a hyphen ( - )', type:'format'};
+  if (val.includes('--'))       return {ok:false, msg:'No consecutive hyphens allowed ( -- )', type:'format'};
+  if (/[^a-z0-9-]/.test(val))  return {ok:false, msg:'Only lowercase letters (a–z), numbers (0–9) and hyphens (-) allowed', type:'format'};
+  if (_SD_RESERVED.has(val))   return {ok:false, msg:`"${val}" is a reserved word — please choose another name`, type:'format'};
+  return {ok:true};
+}
+
+function formatSubdomain(input) {
+  const pos   = input.selectionStart;
+  const raw   = input.value;
+  // Auto-transform: lowercase, spaces→hyphens, strip invalid chars
+  const clean = raw.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  if (raw !== clean) {
+    const shrink = raw.length - clean.length;
+    input.value  = clean;
+    try { input.setSelectionRange(Math.max(0,pos-shrink), Math.max(0,pos-shrink)); } catch(_){}
+  }
+  // Character counter
+  const ctr = document.getElementById('subdomainCounter');
+  if (ctr) {
+    ctr.textContent = `${clean.length} / 63`;
+    ctr.className   = clean.length > 63 ? 'subdomain-counter over'
+                    : clean.length > 55 ? 'subdomain-counter warn'
+                    : 'subdomain-counter';
+  }
+  runClinicValidation(clean);
+}
+
+function runClinicValidation(val) {
+  clearTimeout(clinicAvailTimer);
+  clinicAvailable = false;
+
+  const wrap    = document.getElementById('subdomainWrap');
+  const statusEl = document.getElementById('clinicCheck');
+  const prevEl  = document.getElementById('clinicPreview');
+
+  // Preview URL
+  if (val) {
+    prevEl.textContent = PORTAL_DOMAIN ? `${val}.${PORTAL_DOMAIN}` : val;
+    prevEl.classList.remove('hidden');
+  } else {
+    prevEl.classList.add('hidden');
+  }
+
+  // Reset wrap state
+  wrap.className = 'subdomain-wrap';
+
+  if (!val) { statusEl.innerHTML = ''; return; }
+
+  const v = validateSubdomain(val);
+  if (!v.ok) {
+    if (v.type !== 'empty') {
+      wrap.classList.add('sd-error');
+      statusEl.innerHTML = `<span style="color:var(--danger)">✗ ${esc(v.msg)}</span>`;
+    }
+    return;
+  }
+
+  // Valid format — debounce availability check
+  statusEl.innerHTML = '<span style="color:var(--muted);font-size:.78rem">⏳ Checking availability…</span>';
+  clinicAvailTimer = setTimeout(async () => {
+    try {
+      const r = await api('pw_subscription.api.check_clinic_name', {clinic_name: val}, true);
+      if (r.available) {
+        clinicAvailable = true;
+        wrap.classList.add('sd-success');
+        statusEl.innerHTML = `<span style="color:var(--success)">✓ Available — your address will be <strong>${esc(PORTAL_DOMAIN ? val+'.'+PORTAL_DOMAIN : val)}</strong></span>`;
+      } else {
+        clinicAvailable = false;
+        wrap.classList.add('sd-error');
+        let html = `<span style="color:var(--danger)">✗ ${esc(r.message || 'Name already taken')}`;
+        if (r.suggestions && r.suggestions.length)
+          html += ` — try: ${r.suggestions.map(s=>`<strong>${esc(s)}</strong>`).join(' or ')}`;
+        html += '</span>';
+        statusEl.innerHTML = html;
+      }
+    } catch(_) {
+      statusEl.innerHTML = '<span style="color:var(--muted)">Could not check availability. Try again.</span>';
+    }
+  }, 700);
+}
+
+function showRegStep(n) {
+  for (let i = 0; i < 3; i++) {
+    document.getElementById(`regStep${i}`).classList.remove('active');
+    const dot = document.getElementById(`rsDot${i}`);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  document.getElementById(`regStep${n}`).classList.add('active');
+}
+
+function regNext(to) {
+  const from = to > 0 ? to - 1 : to + 1;
+  if (to > from && !validateRegStep(from)) return;
+  showRegStep(to);
+}
+
+function validateRegStep(step) {
+  if (step === 0) {
+    const c = document.getElementById('regClinic').value.trim();
+    if (!c) {
+      document.getElementById('subdomainWrap').classList.add('sd-error');
+      document.getElementById('clinicCheck').innerHTML = '<span style="color:var(--danger)">✗ Clinic web address is required</span>';
+      document.getElementById('regClinic').focus();
+      return false;
+    }
+    const v = validateSubdomain(c);
+    if (!v.ok) {
+      toast('Fix the clinic name error before continuing.', 'error');
+      return false;
+    }
+    if (!clinicAvailable) {
+      toast('Availability check pending — please wait a moment or choose a different name.', 'error');
+      return false;
+    }
+  }
+  if (step === 1) {
+    const n = document.getElementById('regName').value.trim();
+    const p = document.getElementById('regPhone').value.trim();
+    if (!n) { document.getElementById('regName').classList.add('error'); toast('Doctor name is required.','error'); return false; }
+    if (!p) { document.getElementById('regPhone').classList.add('error'); toast('Contact phone is required.','error'); return false; }
+  }
+  return true;
+}
+
+async function doRegister() {
+  if (!validateRegStep(2)) return;
+  const email    = document.getElementById('regEmail').value.trim();
+  const pass     = document.getElementById('regPassword').value;
+  const passConf = document.getElementById('regPasswordConfirm').value;
+  const errEl    = document.getElementById('regGlobalErr');
+  errEl.classList.add('hidden');
+
+  if (!email || !pass) { showError(errEl,'Email and password are required.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError(errEl,'Invalid email address.'); return; }
+  if (pass.length < 8) { showError(errEl,'Password must be at least 8 characters.'); return; }
+  if (pass !== passConf) { showError(errEl,'Passwords do not match.'); return; }
+
+  const btn = document.getElementById('regSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-inline"></span>Creating clinic…';
+  try {
+    const r = await api('pw_subscription.api.register_clinic', {
+      clinic_name:    document.getElementById('regClinic').value.trim(),
+      email,
+      physician_name: document.getElementById('regName').value.trim(),
+      password:       pass,
+      contact:        document.getElementById('regPhone').value.trim(),
+      address:        document.getElementById('regAddress').value.trim(),
+      city:           document.getElementById('regCity').value.trim(),
+    }, true);
+    _provEmail = email;
+    _provPass  = pass;
+    regRequestName = r.request_name;
+    switchTab('prov');
+    startProvPolling(r.request_name);
+  } catch(e) {
+    showError(errEl, extractMsg(e));
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Start Free Trial';
+  }
+}
+
+// ── PROVISIONING POLL ─────────────────────────────────────────────────────────
+const PROV_STEP_LABELS = ['Backing up template','Creating your site','Importing data','Configuring account','Sending welcome email'];
+
+function startProvPolling(reqName) {
+  updateProvUI({status:'In Progress', current_step:0, last_line:''});
+  provPollTimer = setInterval(() => pollProv(reqName), 4000);
+  pollProv(reqName);
+}
+
+async function pollProv(reqName) {
+  try {
+    const r = await api('pw_subscription.api.get_provisioning_status', {request_name: reqName}, true);
+    updateProvUI(r);
+    if (r.status === 'Success' || r.status === 'Failed') {
+      clearInterval(provPollTimer);
+    }
+  } catch(_) {}
+}
+
+function updateProvUI(r) {
+  const step = Math.max(0, (r.current_step || 0) - 1);
+  for (let i = 0; i < 5; i++) {
+    const dot = document.getElementById(`ps${i}`);
+    const txt = document.getElementById(`pt${i}`);
+    dot.className = 'prov-step-dot';
+    txt.className = 'prov-step-text';
+    if (r.status === 'Success') { dot.classList.add('done'); dot.textContent = '✓'; }
+    else if (r.status === 'Failed' && i === step) { dot.classList.add('failed'); dot.textContent = '✗'; txt.classList.add('active'); }
+    else if (i < step) { dot.classList.add('done'); dot.textContent = '✓'; txt.classList.add('done'); }
+    else if (i === step) { dot.classList.add('active'); dot.textContent = i+1; txt.classList.add('active'); }
+    else { dot.textContent = i+1; }
+  }
+  document.getElementById('provLastLine').textContent = r.last_line || '';
+
+  if (r.status === 'Success') {
+    document.getElementById('provIcon').textContent = '🎉';
+    document.getElementById('provTitle').textContent = 'Your clinic is ready!';
+
+    const siteLink = r.site_url
+      ? `<a href="${esc(r.site_url)}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:.75rem;display:inline-flex">🌐 Open Clinic →</a>`
+      : '';
+    const maskedPass = _provPass ? '•'.repeat(Math.min(_provPass.length, 12)) : '••••••••';
+    document.getElementById('provSub').innerHTML = `
+      <div style="text-align:left;background:#fff;border:1px solid #BFDBFE;border-radius:12px;padding:1.1rem 1.25rem;margin:.75rem 0;font-size:.86rem">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.75rem">Your Login Credentials (PW Admin)</div>
+        <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #EFF6FF">
+          <span style="color:var(--muted)">Email</span>
+          <strong style="font-family:monospace;color:#0F172A;font-size:.85rem">${esc(_provEmail)}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0">
+          <span style="color:var(--muted)">Password</span>
+          <span style="display:flex;align-items:center;gap:.5rem">
+            <span id="provPassDisplay" style="font-family:monospace;font-size:.88rem;color:#0F172A;letter-spacing:.1em">${maskedPass}</span>
+            <button onclick="toggleProvPass()" id="provPassBtn"
+              style="font-size:.72rem;padding:.2rem .55rem;border-radius:6px;border:1px solid var(--border);background:var(--light);cursor:pointer;color:var(--muted);font-weight:600">
+              Show
+            </button>
+          </span>
+        </div>
+      </div>
+      <p style="font-size:.78rem;color:var(--muted);margin:.1rem 0 .75rem">Use these to log in to the Subscription Portal and your clinic software. Change your password after first login.</p>
+      ${siteLink}`;
+
+    document.getElementById('provRetryBtn').classList.add('hidden');
+  } else if (r.status === 'Failed') {
+    document.getElementById('provIcon').textContent = '⚠️';
+    document.getElementById('provTitle').textContent = 'Setup encountered an issue';
+    document.getElementById('provSub').textContent = r.error_message ? r.error_message.substring(0,200) : 'Please retry or contact support.';
+    document.getElementById('provRetryBtn').classList.remove('hidden');
+  }
+}
+
+async function retryProv() {
+  if (!regRequestName) return;
+  try {
+    await api('pw_subscription.api.retry_site_creation', {request_name: regRequestName}, true);
+    document.getElementById('provRetryBtn').classList.add('hidden');
+    startProvPolling(regRequestName);
+  } catch(e) { toast(extractMsg(e), 'error'); }
+}
+
+let _passVisible = false;
+function toggleProvPass() {
+  const display = document.getElementById('provPassDisplay');
+  const btn     = document.getElementById('provPassBtn');
+  if (!display || !_provPass) return;
+  _passVisible = !_passVisible;
+  if (_passVisible) {
+    display.textContent = _provPass;
+    btn.textContent     = 'Hide';
+  } else {
+    display.textContent = '•'.repeat(Math.min(_provPass.length, 12));
+    btn.textContent     = 'Show';
+  }
+}
+
+// ── LOGIN MODAL ───────────────────────────────────────────────────────────────
+function showLm(reason) {
+  const sub = document.getElementById('lmSubText');
+  if (sub) sub.textContent = reason || 'Please sign in to access your subscription';
+  document.getElementById('mlEmail').value    = '';
+  document.getElementById('mlPassword').value = '';
+  document.getElementById('mlErr').classList.add('hidden');
+  document.getElementById('loginModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('mlEmail').focus(), 80);
+}
+
+function hideLm() {
+  document.getElementById('loginModal').classList.add('hidden');
+}
+
+function handleLmBackdrop(e) {
+  if (e.target === document.getElementById('loginModal')) hideLm();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideLm();
+});
+
+async function doModalLogin() {
+  const email = document.getElementById('mlEmail').value.trim();
+  const pass  = document.getElementById('mlPassword').value;
+  const errEl = document.getElementById('mlErr');
+  const btn   = document.getElementById('mlBtn');
+  errEl.classList.add('hidden');
+
+  if (!email || !pass) {
+    errEl.textContent = 'Email and password are required.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-inline"></span>Signing in…';
+  try {
+    const resp = await fetch('/api/method/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({usr: email, pwd: pass}),
+    });
+    const data = await resp.json();
+    if (data.message === 'Logged In' || resp.ok) {
+      window.location.reload();
+    } else {
+      const raw = data._server_messages || data.message || 'Invalid email or password.';
+      let clean = raw;
+      try { clean = JSON.parse(raw).map(m => { try { return JSON.parse(m).message; } catch(_) { return m; } }).join(' '); } catch(_) {}
+      errEl.textContent = clean.substring(0, 200);
+      errEl.classList.remove('hidden');
+    }
+  } catch(_) {
+    errEl.textContent = 'Login failed. Check your connection and try again.';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+  }
+}
+
+function _isAuthError(msg) {
+  return /not whitelisted|not permitted|permission denied|login|authenticat|session/i.test(msg);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const d = await api('pw_subscription.api.get_my_subscription');
+    currentSub = d.subscription;
+    currentEmail = d.email;
+    renderDashboard(d.subscription, d.days_remaining);
+    loadHistory();
+    if (PING_ENABLED && currentSub.site_name) {
+      pingHealth(`https://${currentSub.site_name}`);
+    }
+  } catch(e) {
+    const msg = extractMsg(e);
+    if (_isAuthError(msg)) {
+      showLm('Your session has expired — please sign in again');
+    } else {
+      document.getElementById('alertBar').innerHTML =
+        `<div class="alert alert-danger"><span class="alert-icon">⚠️</span><div>${esc(msg)}</div></div>`;
+    }
+  }
+}
+
+function renderDashboard(sub, days) {
+  const cls = statusClass(sub.status);
+  const card = document.getElementById('statusCard');
+  card.className = `status-card sc-${cls} fade-up`;
+  document.getElementById('statusLabel').textContent = sub.status;
+  document.getElementById('statusTitle').textContent = statusTitle(sub.status);
+  document.getElementById('statusSub').textContent = statusSub(sub, days);
+  document.getElementById('countdownNum').textContent = days;
+  document.getElementById('countdownLabel').textContent =
+    sub.status === 'Grace Period' ? 'days until block' :
+    sub.status === 'Expired' ? '—' : 'days remaining';
+
+  // Pills
+  const pills = [];
+  if (sub.site_name) pills.push(`🌐 ${esc(sub.site_name)}`);
+  if (sub.is_suspended) pills.push('⛔ Suspended');
+  document.getElementById('scPills').innerHTML = pills.map(p => `<span class="sc-pill">${p}</span>`).join('');
+
+  // Health dot (inline)
+  if (PING_ENABLED && sub.site_name) {
+    document.getElementById('scPills').innerHTML +=
+      `<span class="sc-pill"><span class="health-dot health-checking" id="healthDot"></span>&nbsp;<span id="healthLabel">Checking…</span></span>`;
+  }
+
+  // Alert
+  document.getElementById('alertBar').innerHTML = buildAlert(sub, days);
+
+  // User chip
+  const av = document.getElementById('userAvatar');
+  const nm = document.getElementById('userDisplayName');
+  const initials = (sub.physician_name || currentEmail || '?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  av.textContent = initials || '?';
+  nm.textContent = sub.physician_name || currentEmail;
+
+  // Sub details
+  document.getElementById('subDetails').innerHTML = [
+    ['Status', `<span class="status-pill badge-${cls}">${esc(sub.status)}</span>`],
+    sub.trial_start ? ['Trial Started', sub.trial_start] : null,
+    sub.trial_end   ? ['Trial Ends',    sub.trial_end]   : null,
+    sub.subscription_start ? ['Active From', sub.subscription_start] : null,
+    sub.subscription_end   ? ['Expires On',  sub.subscription_end]   : null,
+    sub.grace_end          ? ['Grace Ends',  sub.grace_end]          : null,
+  ].filter(Boolean).map(([l,v])=>`<div class="info-row"><span class="info-row-label">${esc(l)}</span><span class="info-row-value">${v}</span></div>`).join('');
+
+  // Clinic details
+  document.getElementById('clinicDetails').innerHTML = [
+    ['Clinic',    sub.clinic_name],
+    ['Doctor',    sub.physician_name],
+    ['Email',     currentEmail],
+    ['Site URL',  sub.site_name ? `<a href="https://${sub.site_name}" target="_blank" style="color:var(--primary)">${sub.site_name}</a>` : '—'],
+  ].map(([l,v])=>`<div class="info-row"><span class="info-row-label">${esc(l)}</span><span class="info-row-value">${v}</span></div>`).join('');
+
+  checkPendingProof();
+}
+
+function buildAlert(sub, days) {
+  if (sub.is_suspended) return `<div class="alert alert-danger fade-up"><span class="alert-icon">⛔</span><div><strong>Site Suspended.</strong> Contact support immediately.</div></div>`;
+  if (sub.status === 'Grace Period') return `<div class="alert alert-warning fade-up"><span class="alert-icon">⚠️</span><div><strong>Grace Period Active.</strong> Subscription expired. <strong>${days} day(s)</strong> left before access is blocked. Renew now.</div></div>`;
+  if (sub.status === 'Expired')      return `<div class="alert alert-danger fade-up"><span class="alert-icon">🔴</span><div><strong>Subscription Expired.</strong> Submit payment proof to renew.</div></div>`;
+  if (sub.status === 'Trial' && days <= 2) return `<div class="alert alert-warning fade-up"><span class="alert-icon">⏳</span><div><strong>Trial Ending Soon!</strong> Only ${days} day(s) left.</div></div>`;
+  if (sub.status === 'Trial') return `<div class="alert alert-info fade-up"><span class="alert-icon">🎁</span><div><strong>Free Trial Active</strong> — ${days} day(s) remaining.</div></div>`;
+  if (sub.status === 'Active' && days <= 7) return `<div class="alert alert-warning fade-up"><span class="alert-icon">📅</span><div><strong>Renewal Coming Up.</strong> Expires in ${days} day(s).</div></div>`;
+  return '';
+}
+
+async function loadHistory() {
+  const hEl = document.getElementById('paymentHistory');
+  const lEl = document.getElementById('activityLog');
+  try {
+    const d = await api('pw_subscription.api.get_payment_history_by_email', {email: currentEmail});
+    const hasPending = d.proofs.some(p => p.status === 'Pending');
+    if (hasPending) {
+      document.getElementById('pendingProofAlert').classList.remove('hidden');
+      document.getElementById('uploadForm').classList.add('hidden');
+    }
+    if (!d.proofs.length) {
+      hEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💳</div><p>No payment history yet.</p></div>';
+    } else {
+      hEl.innerHTML = d.proofs.map(p => `
+        <div class="proof-item">
+          <div>
+            <div style="font-weight:600;font-size:.88rem;color:#0F172A">${esc(p.selected_plan || (p.duration_months + ' month plan'))}</div>
+            <div style="font-size:.77rem;color:var(--muted);margin-top:.15rem">Submitted: ${fmtDate(p.submitted_on)}</div>
+            ${p.admin_notes ? `<div style="font-size:.77rem;color:var(--muted);margin-top:.15rem;font-style:italic">${esc(p.admin_notes)}</div>` : ''}
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="proof-badge proof-${p.status.toLowerCase()}">${esc(p.status)}</div>
+            <div style="font-size:.82rem;font-weight:700;color:var(--success);margin-top:.3rem">PKR ${fmtNum(p.amount_paid)}</div>
+          </div>
+        </div>`).join('');
+    }
+  } catch(_) {
+    hEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Could not load payment history.</p></div>';
+  }
+  try {
+    const l = await api('pw_subscription.api.get_subscription_logs_by_email', {email: currentEmail});
+    if (!l.logs || !l.logs.length) {
+      lEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>No activity recorded yet.</p></div>';
+    } else {
+      lEl.innerHTML = l.logs.map(lg => `
+        <div class="log-item">
+          <div class="log-dot"></div>
+          <div>
+            <div class="log-action">${esc(lg.action)}</div>
+            <div class="log-date">${fmtDate(lg.action_date)}</div>
+            ${lg.notes ? `<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">${esc(lg.notes)}</div>` : ''}
+          </div>
+        </div>`).join('');
+    }
+  } catch(_) {
+    lEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Could not load activity log.</p></div>';
+  }
+}
+
+async function checkPendingProof() {
+  try {
+    const d = await api('pw_subscription.api.get_payment_history_by_email', {email: currentEmail});
+    if ((d.proofs || []).some(p => p.status === 'Pending')) {
+      document.getElementById('pendingProofAlert').classList.remove('hidden');
+      document.getElementById('uploadForm').classList.add('hidden');
+    }
+  } catch(_) {}
+}
+
+// ── Plan selector ─────────────────────────────────────────────────────────────
+function selectPlan(card) {
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const {label, months, price} = card.dataset;
+  document.getElementById('selectedPlanLabel').value  = label;
+  document.getElementById('selectedPlanMonths').value = months;
+  document.getElementById('selectedPlanPrice').value  = price;
+  document.getElementById('payAmount').value          = price;
+
+  document.getElementById('bankReveal').classList.remove('hidden');
+  document.getElementById('bankRevealAmt').textContent = 'PKR ' + fmtNum(price);
+
+  document.getElementById('planSummaryBox').classList.remove('hidden');
+  document.getElementById('planSummaryName').textContent  = label;
+  document.getElementById('planSummaryPrice').textContent = 'PKR ' + fmtNum(price);
+  document.getElementById('noPlanHint').classList.add('hidden');
+  document.getElementById('planRequiredBanner').classList.add('hidden');
+  document.getElementById('plansGrid').classList.remove('plans-error-outline');
+  document.getElementById('bankReveal').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function copyBankDetails() {
+  const box = document.querySelector('.bank-box');
+  if (!box) return;
+  navigator.clipboard.writeText(box.textContent.trim())
+    .then(() => toast('Bank details copied!','success'))
+    .catch(() => toast('Copy manually — clipboard access denied.','error'));
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('drag-over'); }
+function handleDragLeave()  { document.getElementById('uploadArea').classList.remove('drag-over'); }
+function handleDrop(e)      { e.preventDefault(); handleDragLeave(); const f = e.dataTransfer.files[0]; if (f) { document.getElementById('screenshotFile').files = e.dataTransfer.files; previewImage({files:[f]}); } }
+
+function previewImage(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('uploadPreview');
+    prev.src = e.target.result;
+    prev.classList.remove('hidden');
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(f);
+}
+
+async function uploadFile(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('is_private', '0');
+  fd.append('folder', 'Home/Attachments');
+  const resp = await fetch('/api/method/upload_file', {
+    method: 'POST',
+    headers: {'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+    body: fd,
+  });
+  const data = await resp.json();
+  if (data.message && data.message.file_url) return data.message.file_url;
+  throw new Error('File upload failed.');
+}
+
+// ── Submit Payment ────────────────────────────────────────────────────────────
+async function submitPayment() {
+  const planLabel = document.getElementById('selectedPlanLabel').value;
+  if (!planLabel) {
+    document.getElementById('planRequiredBanner').classList.remove('hidden');
+    const grid = document.getElementById('plansGrid');
+    grid.classList.remove('do-shake','plans-error-outline');
+    void grid.offsetWidth;
+    grid.classList.add('do-shake','plans-error-outline');
+    setTimeout(() => grid.classList.remove('do-shake'), 500);
+    document.getElementById('plansGrid').scrollIntoView({behavior:'smooth',block:'center'});
+    toast('⬆️ Please select a subscription plan first','error');
+    return;
+  }
+  const amount    = document.getElementById('payAmount').value;
+  const fileInput = document.getElementById('screenshotFile');
+  if (!amount || parseFloat(amount) <= 0) { toast('Please enter the amount transferred.','error'); return; }
+  if (!fileInput.files || !fileInput.files[0]) { toast('Please upload your payment screenshot.','error'); return; }
+
+  const btn = document.getElementById('submitPayBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-inline"></span>Uploading…';
+  try {
+    const fileUrl = await uploadFile(fileInput.files[0]);
+    btn.innerHTML = '<span class="spinner-inline"></span>Submitting…';
+    await api('pw_subscription.api.submit_payment_proof', {
+      email: currentEmail,
+      subscription_name: currentSub.name,
+      plan_label:     planLabel,
+      duration_months: document.getElementById('selectedPlanMonths').value,
+      amount_paid:    amount,
+      screenshot:     fileUrl,
+      notes:          document.getElementById('payNotes').value,
+    });
+    toast('Payment proof submitted! We\'ll review within a few hours.','success');
+    document.getElementById('uploadForm').classList.add('hidden');
+    document.getElementById('pendingProofAlert').classList.remove('hidden');
+    loadHistory();
+  } catch(e) {
+    toast(extractMsg(e),'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 Submit Payment Proof';
+  }
+}
+
+// ── Health ping ───────────────────────────────────────────────────────────────
+async function pingHealth(url) {
+  const dot = document.getElementById('healthDot');
+  const lbl = document.getElementById('healthLabel');
+  if (!dot) return;
+  try {
+    const r = await api('pw_subscription.api.ping_site', {site_url: url, timeout: PING_TIMEOUT});
+    if (r.online) {
+      dot.className = 'health-dot health-online';
+      if (lbl) lbl.textContent = `Online (${r.response_ms}ms)`;
+    } else {
+      dot.className = 'health-dot health-offline';
+      if (lbl) lbl.textContent = 'Offline';
+    }
+  } catch(_) {
+    if (dot) dot.className = 'health-dot health-offline';
+    if (lbl) lbl.textContent = 'Could not check';
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span style="flex:1">${esc(msg)}</span><span class="toast-close" onclick="this.parentElement.remove()">×</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove && el.remove(), 6000);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtNum(n){ return Number(n||0).toLocaleString(); }
+function fmtDate(dt){ if(!dt) return '—'; return String(dt).substring(0,16).replace('T',' '); }
+function extractMsg(e){
+  if(!e) return 'Unknown error';
+  const msg = e.message || String(e);
+  try{ const a=JSON.parse(msg); if(Array.isArray(a)) return a.map(m=>{try{return JSON.parse(m).message}catch(_){return m}}).join(' '); }catch(_){}
+  return msg.substring(0,250);
+}
+function statusClass(s){ return {Trial:'trial',Active:'active','Grace Period':'grace',Expired:'expired',Cancelled:'cancelled'}[s]||'expired'; }
+function statusTitle(s){ return {Trial:'Free Trial Active',Active:'Subscription Active','Grace Period':'Grace Period Active',Expired:'Subscription Expired',Cancelled:'Cancelled'}[s]||s; }
+function statusSub(sub,days){
+  if(sub.status==='Trial'&&sub.trial_end)    return `Trial valid until ${sub.trial_end}`;
+  if(sub.status==='Active'&&sub.subscription_end) return `Subscription valid until ${sub.subscription_end}`;
+  if(sub.status==='Grace Period'&&sub.grace_end)  return `Access blocked after ${sub.grace_end}`;
+  if(sub.status==='Expired') return 'Please renew your subscription';
+  return '';
+}
+function showFieldError(inputId,errId,msg){ document.getElementById(inputId).classList.add('error'); const e=document.getElementById(errId); e.textContent=msg; e.classList.remove('hidden'); }
+function clearFieldError(inputId,errId){ document.getElementById(inputId).classList.remove('error'); document.getElementById(errId).classList.add('hidden'); }
+function showError(el,msg){ el.textContent=msg; el.classList.remove('hidden'); }
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!IS_GUEST) {
+    loadDashboard();
+  }
+});
+</script>
 {% endblock %}

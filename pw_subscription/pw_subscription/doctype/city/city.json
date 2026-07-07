@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "creation": "2026-06-17 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "city_name",
+  "country",
+  "state_province"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "city_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "City Name",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Country",
+   "options": "Country",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "state_province",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "State / Province"
+  }
+ ],
+ "idx": 0,
+ "modified": "2026-06-17 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PW Subscription",
+ "name": "City",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "All"
+  }
+ ],
+ "sort_field": "city_name",
+ "sort_order": "ASC",
+ "title_field": "city_name",
+ "track_changes": 0
+}
