@@ -4,6 +4,13 @@ from frappe.utils import today, add_days, add_months, now, date_diff, now_dateti
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+def has_app_permission():
+    """Return True if the current user may see PW Subscription on the apps screen."""
+    if frappe.session.user == "Guest":
+        return False
+    return bool(set(frappe.get_roles(frappe.session.user)) & {"System Manager", "PW Admin"})
+
+
 def _get_settings():
     return frappe.get_single("PW Subscription Settings")
 

@@ -5,6 +5,15 @@ app_description = "SaaS Subscription Management for CureDesk"
 app_email = "safdar211@gmail.com"
 app_license = "MIT"
 
+add_to_apps_screen = [
+    {
+        "name": "pw_subscription",
+        "title": "PW Subscription",
+        "route": "/control-room",
+        "has_permission": "pw_subscription.api.has_app_permission",
+    }
+]
+
 after_install = "pw_subscription.install.after_install"
 
 fixtures = [
