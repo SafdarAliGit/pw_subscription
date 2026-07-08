@@ -521,6 +521,15 @@ def _create_site_user_via_bench(site_name, email, first_name, last_name, passwor
          })],
         None, "add PW Doctor role", timeout=30,
     )
+    _run(
+        ["--site", site_name, "execute", "frappe.db.sql",
+         "--kwargs", json.dumps({
+             "query": "UPDATE `tabUser` SET role_profile_name='PW Doctor' WHERE name=%s",
+             "values": [email],
+             "auto_commit": 1,
+         })],
+        None, "set role_profile_name", timeout=30,
+    )
 
 
 def _enqueue_provision(request_name):
