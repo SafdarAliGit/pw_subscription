@@ -486,15 +486,13 @@ def _create_site_user_direct(site_name, email, first_name, last_name, password):
     """
     bench_dir  = _bench_dir()
     sites_path = os.path.join(bench_dir, "sites")
-    bd = bench_dir.rstrip("/")
-    python_candidates = [
-        bd + "_env/bin/python",
-        os.path.join(bd, "env", "bin", "python"),
-    ]
-    python_exe = next(
-        (p for p in python_candidates if os.path.isfile(p) and os.access(p, os.X_OK)),
-        "python3",
-    )
+    # Derive Python from the bench binary — guaranteed same venv
+    bench_bin_dir = os.path.dirname(_find_bench())
+    python_exe = os.path.join(bench_bin_dir, "python")
+    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
+        python_exe = os.path.join(bench_bin_dir, "python3")
+    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
+        python_exe = "python3"
 
     script = (
         "import os, sys, json, frappe\n"
