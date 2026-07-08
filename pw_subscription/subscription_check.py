@@ -269,6 +269,9 @@ def add_subscription_to_boot(bootinfo):
 
 
 def on_session_creation(login_manager):
+    # Administrator is always allowed — never block the business owner
+    if getattr(login_manager, "user", None) == "Administrator":
+        return
     try:
         settings = frappe.get_single("PW Subscription Settings")
         if not settings.enforce_subscription:

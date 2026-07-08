@@ -312,6 +312,26 @@ def _provision_site(request_name):
         except Exception as _prod_exc:
             _log(request_name, f"⚠ maintenance mode step skipped: {str(_prod_exc)[:200]}")
 
+        _log(request_name, "Writing SSL certificate config to site_config.json...")
+        try:
+            ssl_cert = (getattr(settings, "ssl_certificate", "") or "").strip() or "/etc/nginx/ssl/corelogics.uk.pem"
+            ssl_key  = (getattr(settings, "ssl_certificate_key", "") or "").strip() or "/etc/nginx/ssl/corelogics.uk.key"
+            missing = [p for p in [ssl_cert, ssl_key] if not os.path.exists(p)]
+            if missing:
+                _log(request_name, f"⚠ SSL file(s) not found, skipping SSL config: {', '.join(missing)}")
+            else:
+                _run(
+                    ["--site", site_name, "set-config", "ssl_certificate", ssl_cert],
+                    request_name, "Set ssl_certificate", timeout=30,
+                )
+                _run(
+                    ["--site", site_name, "set-config", "ssl_certificate_key", ssl_key],
+                    request_name, "Set ssl_certificate_key", timeout=30,
+                )
+                _log(request_name, "✓ SSL config written to site_config.json.")
+        except Exception as _ssl_exc:
+            _log(request_name, f"⚠ SSL config step skipped: {str(_ssl_exc)[:200]}")
+
         _log(request_name, "Updating nginx config...")
         try:
             _run(

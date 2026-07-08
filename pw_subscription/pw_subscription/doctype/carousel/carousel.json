@@ -17,12 +17,13 @@
    "label": "Carousel Settings"
   },
   {
+   "default": "4",
+   "description": "Time in seconds each slide is shown before auto-advancing",
    "fieldname": "delay_time",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Slide Delay (seconds)",
-   "default": "4",
-   "reqd": 1,
-   "description": "Time in seconds each slide is shown before auto-advancing"
+   "reqd": 1
   },
   {
    "fieldname": "sb_slides",
@@ -36,11 +37,11 @@
    "options": "Carousel Item"
   }
  ],
- "idx": 0,
  "issingle": 1,
- "module": "PW Subscription",
- "modified": "2026-06-12 00:00:00",
+ "links": [],
+ "modified": "2026-07-08 07:51:15.654461",
  "modified_by": "Administrator",
+ "module": "PW Subscription",
  "name": "Carousel",
  "owner": "Administrator",
  "permissions": [
@@ -48,16 +49,15 @@
    "create": 1,
    "delete": 1,
    "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "System Manager",
    "share": 1,
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "track_changes": 0
+ "states": []
 }
