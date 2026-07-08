@@ -214,7 +214,6 @@ def _provision_site(request_name):
         restore_args = [
             "--site", site_name, "restore", db_file,
             "--mariadb-root-password", db_root_pass,
-            "--admin-password", admin_pass,
         ]
         if pub_file:
             restore_args += ["--with-public-files", pub_file]
@@ -222,13 +221,6 @@ def _provision_site(request_name):
             restore_args += ["--with-private-files", priv_file]
         _run(restore_args, request_name, "Restore", timeout=600)
         _log(request_name, "✓ Data restored successfully.")
-
-        _log(request_name, "Applying database migrations...")
-        _run(
-            ["--site", site_name, "migrate"],
-            request_name, "Migrate", timeout=300,
-        )
-        _log(request_name, "✓ Migrations applied.")
 
         # ── Step 3b: Ensure portal login user exists on master site ─────────────
         _log(request_name, f"Ensuring portal account on master site ({frappe.local.site})...")
@@ -266,11 +258,10 @@ def _provision_site(request_name):
             frappe.log_error(frappe.get_traceback(), f"Portal user creation failed [{request_name}]")
             _log(request_name, f"⚠ Portal user creation failed: {str(portal_exc)[:300]}")
 
-        # ── Step 4: Create PW Admin user on new site + set admin password ────────
+        # ── Step 4: Create PW Doctor user on new site ────────────────────────────
         _set_step(request_name, STEP_PASSWORD)
         _log(request_name, "Configuring your account...")
 
-        # Create the customer's user with PW Admin role on the new clinic site
         if contact_email:
             _log(request_name, f"Creating clinic login account ({contact_email})...")
             try:
@@ -292,12 +283,12 @@ def _provision_site(request_name):
                 frappe.log_error(frappe.get_traceback(), f"Clinic user creation failed [{request_name}]")
                 _log(request_name, "⚠ Clinic user setup skipped (non-fatal).")
 
-        # Also set the built-in Administrator password as a fallback
-        _log(request_name, "Setting administrator password...")
+        _log(request_name, "Applying database migrations...")
         _run(
-            ["--site", site_name, "set-admin-password", admin_pass],
-            request_name, "Set password", timeout=60,
+            ["--site", site_name, "migrate"],
+            request_name, "Migrate", timeout=300,
         )
+        _log(request_name, "✓ Migrations applied.")
         _log(request_name, "✓ Account configured.")
 
         # ── Step 5: Production setup ──────────────────────────────────────────
@@ -456,12 +447,12 @@ def _publish_prov(request_name, status, site_url="", subscription=""):
 def _setup_site_user(email, first_name, last_name, password):
     """
     Called via `bench --site <new_site> execute` in the new clinic site's context.
-    Creates (or updates) the customer's user with PW Admin role and sets their password.
+    Creates (or updates) the customer's user with PW Doctor role and sets their password.
     """
     if frappe.db.exists("User", email):
         user = frappe.get_doc("User", email)
-        if "PW Admin" not in [r.role for r in user.roles]:
-            user.append("roles", {"role": "PW Admin"})
+        if "PW Doctor" not in [r.role for r in user.roles]:
+            user.append("roles", {"role": "PW Doctor"})
             user.flags.ignore_password_policy = True
             user.save(ignore_permissions=True)
     else:
@@ -473,7 +464,7 @@ def _setup_site_user(email, first_name, last_name, password):
             "enabled": 1,
             "send_welcome_email": 0,
             "user_type": "System User",
-            "roles": [{"role": "PW Admin"}],
+            "roles": [{"role": "PW Doctor"}],
         })
         doc.flags.ignore_password_policy = True
         doc.insert(ignore_permissions=True)
