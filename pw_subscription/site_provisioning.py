@@ -164,7 +164,7 @@ def _provision_site(request_name):
         doc            = frappe.get_doc("Site Provisioning Request", request_name)
         site_name      = doc.site_name
         sub_doc        = frappe.get_doc("PW Subscription", doc.subscription)
-        admin_pass     = (sub_doc.initial_password or "").strip()
+        admin_pass     = (sub_doc.get_password("initial_password") or "").strip()
         contact_email  = (doc.contact_email or "").strip().lower()
         physician_name = (doc.physician_name or "").strip()
         _name_parts    = physician_name.split(None, 1)
