@@ -332,6 +332,8 @@ def _provision_site(request_name):
         except Exception as _ssl_exc:
             _log(request_name, f"⚠ SSL config step skipped: {str(_ssl_exc)[:200]}")
 
+        nginx_reloaded = False
+
         _log(request_name, "Updating nginx config...")
         try:
             _run(
@@ -339,6 +341,16 @@ def _provision_site(request_name):
                 request_name, "Setup nginx", timeout=120,
             )
             _log(request_name, "✓ Nginx configured.")
+            _log(request_name, "Reloading nginx...")
+            _reload = subprocess.run(
+                ["sudo", "systemctl", "reload", "nginx"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if _reload.returncode == 0:
+                nginx_reloaded = True
+                _log(request_name, "✓ Nginx reloaded.")
+            else:
+                _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {(_reload.stderr or '').strip()[:200]}")
         except Exception as _prod_exc:
             _log(request_name, f"⚠ bench setup nginx skipped: {str(_prod_exc)[:200]}")
 
@@ -366,6 +378,21 @@ def _provision_site(request_name):
         except Exception:
             pass
         frappe.db.commit()
+
+        if not nginx_reloaded:
+            _log(request_name, "Reloading nginx (final attempt)...")
+            try:
+                _reload = subprocess.run(
+                    ["sudo", "systemctl", "reload", "nginx"],
+                    capture_output=True, text=True, timeout=30,
+                )
+                if _reload.returncode == 0:
+                    _log(request_name, "✓ Nginx reloaded.")
+                else:
+                    _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {(_reload.stderr or '').strip()[:200]}")
+            except Exception as _reload_exc:
+                _log(request_name, f"⚠ nginx reload skipped: {str(_reload_exc)[:200]}")
+
         _publish_prov(request_name, "Success", site_url=site_url,
                       subscription=doc.subscription)
 
