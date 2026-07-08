@@ -486,14 +486,25 @@ def _create_site_user_direct(site_name, email, first_name, last_name, password):
     """
     bench_dir  = _bench_dir()
     sites_path = os.path.join(bench_dir, "sites")
-    python_exe = os.path.join(bench_dir, "env", "bin", "python")
-    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
-        python_exe = "python3"
+    bd = bench_dir.rstrip("/")
+    python_candidates = [
+        bd + "_env/bin/python",
+        os.path.join(bd, "env", "bin", "python"),
+    ]
+    python_exe = next(
+        (p for p in python_candidates if os.path.isfile(p) and os.access(p, os.X_OK)),
+        "python3",
+    )
 
     script = (
-        "import sys, json, frappe\n"
+        "import os, sys, json, frappe\n"
         "from frappe.utils.password import update_password\n"
         "p = json.loads(sys.stdin.read())\n"
+        # Frappe tries to open its log files during init; ensure the directory exists
+        # regardless of where this Python env's frappe module lives.
+        "import frappe as _fm\n"
+        "_bench = os.path.abspath(os.path.join(os.path.dirname(_fm.__file__), '..', '..', '..'))\n"
+        "os.makedirs(os.path.join(_bench, 'logs'), exist_ok=True)\n"
         "frappe.init(site=p['site'], sites_path=p['sites_path'])\n"
         "frappe.connect()\n"
         "email = p['email']; pwd = p['password']\n"
