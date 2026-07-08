@@ -273,7 +273,7 @@ def _provision_site(request_name):
             _run(
                 [
                     "--site", site_name, "execute",
-                    "pw_subscription.site_provisioning._setup_site_user",
+                    "frappe.get_attr('pw_subscription.site_provisioning._setup_site_user')",
                     "--kwargs", json.dumps({
                         "email": contact_email,
                         "first_name": first_name,
