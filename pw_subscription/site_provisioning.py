@@ -270,18 +270,8 @@ def _provision_site(request_name):
         _log(request_name, "Configuring your account...")
         if contact_email:
             _log(request_name, f"Creating clinic login account ({contact_email})...")
-            _run(
-                [
-                    "--site", site_name, "execute",
-                    "frappe.get_attr('pw_subscription.site_provisioning._setup_site_user')",
-                    "--kwargs", json.dumps({
-                        "email": contact_email,
-                        "first_name": first_name,
-                        "last_name": last_name,
-                        "password": admin_pass,
-                    }),
-                ],
-                request_name, "Create clinic user", timeout=120,
+            _create_site_user_direct(
+                site_name, contact_email, first_name, last_name, admin_pass,
             )
             _log(request_name, f"✓ Clinic account ready: {contact_email}")
         _log(request_name, "✓ Account configured.")
@@ -486,47 +476,67 @@ def _publish_prov(request_name, status, site_url="", subscription=""):
         pass
 
 
-def _setup_site_user(email, first_name, last_name, password):
+def _create_site_user_direct(site_name, email, first_name, last_name, password):
     """
-    Called via `bench --site <new_site> execute` in the new clinic site's context.
-    Creates (or updates) the customer's user with PW Doctor role and sets their password.
+    Creates (or updates) the PW Doctor user on the clinic site by invoking the
+    bench Python interpreter directly.  This avoids `bench execute` which requires
+    pw_subscription to be installed on the target site (it is NOT — it lives only
+    on the master site).  Parameters are passed via stdin as JSON so no shell
+    escaping issues arise with special characters in the password.
     """
-    if frappe.db.exists("User", email):
-        user = frappe.get_doc("User", email)
-        changed = False
-        if not user.enabled:
-            user.enabled = 1
-            changed = True
-        if user.user_type != "System User":
-            user.user_type = "System User"
-            changed = True
-        if "PW Doctor" not in [r.role for r in user.roles]:
-            user.append("roles", {"role": "PW Doctor"})
-            changed = True
-        if changed:
-            user.flags.ignore_password_policy = True
-            user.save(ignore_permissions=True)
-    else:
-        doc = frappe.get_doc({
-            "doctype": "User",
-            "email": email,
-            "first_name": first_name or "Doctor",
-            "last_name": last_name or "",
-            "enabled": 1,
-            "send_welcome_email": 0,
-            "user_type": "System User",
-            "roles": [{"role": "PW Doctor"}],
-        })
-        doc.flags.ignore_password_policy = True
-        doc.insert(ignore_permissions=True)
-    frappe.db.commit()
-    from frappe.utils.password import update_password
-    frappe.flags.in_import = True
-    try:
-        update_password(email, password)
-        frappe.db.commit()
-    finally:
-        frappe.flags.in_import = False
+    bench_dir  = _bench_dir()
+    sites_path = os.path.join(bench_dir, "sites")
+    python_exe = os.path.join(bench_dir, "env", "bin", "python")
+    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
+        python_exe = "python3"
+
+    script = (
+        "import sys, json, frappe\n"
+        "from frappe.utils.password import update_password\n"
+        "p = json.loads(sys.stdin.read())\n"
+        "frappe.init(site=p['site'], sites_path=p['sites_path'])\n"
+        "frappe.connect()\n"
+        "email = p['email']; pwd = p['password']\n"
+        "if frappe.db.exists('User', email):\n"
+        "    u = frappe.get_doc('User', email); chg = False\n"
+        "    if not u.enabled: u.enabled = 1; chg = True\n"
+        "    if u.user_type != 'System User': u.user_type = 'System User'; chg = True\n"
+        "    if 'PW Doctor' not in [r.role for r in u.roles]: u.append('roles', {'role': 'PW Doctor'}); chg = True\n"
+        "    if chg: u.flags.ignore_password_policy = True; u.save(ignore_permissions=True)\n"
+        "else:\n"
+        "    d = frappe.get_doc({'doctype':'User','email':email,'first_name':p['first_name'],'last_name':p['last_name'],'enabled':1,'send_welcome_email':0,'user_type':'System User','roles':[{'role':'PW Doctor'}]})\n"
+        "    d.flags.ignore_password_policy = True; d.insert(ignore_permissions=True)\n"
+        "frappe.db.commit()\n"
+        "frappe.flags.in_import = True\n"
+        "update_password(email, pwd)\n"
+        "frappe.db.commit()\n"
+        "frappe.flags.in_import = False\n"
+        "frappe.destroy()\n"
+    )
+
+    params = json.dumps({
+        "site":       site_name,
+        "sites_path": sites_path,
+        "email":      email,
+        "first_name": first_name or "Doctor",
+        "last_name":  last_name  or "",
+        "password":   password,
+    })
+
+    result = subprocess.run(
+        [python_exe, "-c", script],
+        input=params,
+        cwd=bench_dir,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env=_run_env(),
+    )
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "Unknown error").strip()
+        if len(err) > 1000:
+            err = "…" + err[-1000:]
+        raise RuntimeError(f"Create clinic user failed:\n{err}")
 
 
 def _enqueue_provision(request_name):
