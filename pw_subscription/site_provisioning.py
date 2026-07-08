@@ -258,37 +258,32 @@ def _provision_site(request_name):
             frappe.log_error(frappe.get_traceback(), f"Portal user creation failed [{request_name}]")
             _log(request_name, f"⚠ Portal user creation failed: {str(portal_exc)[:300]}")
 
-        # ── Step 4: Create PW Doctor user on new site ────────────────────────────
+        # ── Step 4: Migrate then create PW Doctor user on new site ──────────────
         _set_step(request_name, STEP_PASSWORD)
-        _log(request_name, "Configuring your account...")
-
-        if contact_email:
-            _log(request_name, f"Creating clinic login account ({contact_email})...")
-            try:
-                _run(
-                    [
-                        "--site", site_name, "execute",
-                        "pw_subscription.site_provisioning._setup_site_user",
-                        "--kwargs", json.dumps({
-                            "email": contact_email,
-                            "first_name": first_name,
-                            "last_name": last_name,
-                            "password": admin_pass,
-                        }),
-                    ],
-                    request_name, "Create clinic user", timeout=120,
-                )
-                _log(request_name, f"✓ Clinic account ready: {contact_email}")
-            except Exception:
-                frappe.log_error(frappe.get_traceback(), f"Clinic user creation failed [{request_name}]")
-                _log(request_name, "⚠ Clinic user setup skipped (non-fatal).")
-
         _log(request_name, "Applying database migrations...")
         _run(
             ["--site", site_name, "migrate"],
             request_name, "Migrate", timeout=300,
         )
         _log(request_name, "✓ Migrations applied.")
+
+        _log(request_name, "Configuring your account...")
+        if contact_email:
+            _log(request_name, f"Creating clinic login account ({contact_email})...")
+            _run(
+                [
+                    "--site", site_name, "execute",
+                    "pw_subscription.site_provisioning._setup_site_user",
+                    "--kwargs", json.dumps({
+                        "email": contact_email,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "password": admin_pass,
+                    }),
+                ],
+                request_name, "Create clinic user", timeout=120,
+            )
+            _log(request_name, f"✓ Clinic account ready: {contact_email}")
         _log(request_name, "✓ Account configured.")
 
         # ── Step 5: Production setup ──────────────────────────────────────────
@@ -498,8 +493,17 @@ def _setup_site_user(email, first_name, last_name, password):
     """
     if frappe.db.exists("User", email):
         user = frappe.get_doc("User", email)
+        changed = False
+        if not user.enabled:
+            user.enabled = 1
+            changed = True
+        if user.user_type != "System User":
+            user.user_type = "System User"
+            changed = True
         if "PW Doctor" not in [r.role for r in user.roles]:
             user.append("roles", {"role": "PW Doctor"})
+            changed = True
+        if changed:
             user.flags.ignore_password_policy = True
             user.save(ignore_permissions=True)
     else:
