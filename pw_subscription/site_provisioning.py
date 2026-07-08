@@ -270,7 +270,7 @@ def _provision_site(request_name):
         _log(request_name, "Configuring your account...")
         if contact_email:
             _log(request_name, f"Creating clinic login account ({contact_email})...")
-            _create_site_user_direct(
+            _create_site_user_via_bench(
                 site_name, contact_email, first_name, last_name, admin_pass,
             )
             _log(request_name, f"✓ Clinic account ready: {contact_email}")
@@ -476,76 +476,51 @@ def _publish_prov(request_name, status, site_url="", subscription=""):
         pass
 
 
-def _create_site_user_direct(site_name, email, first_name, last_name, password):
+def _create_site_user_via_bench(site_name, email, first_name, last_name, password):
     """
-    Creates (or updates) the PW Doctor user on the clinic site by invoking the
-    bench Python interpreter directly.  This avoids `bench execute` which requires
-    pw_subscription to be installed on the target site (it is NOT — it lives only
-    on the master site).  Parameters are passed via stdin as JSON so no shell
-    escaping issues arise with special characters in the password.
+    Creates the PW Doctor user on the clinic site using bench commands only.
+    pw_subscription is NOT installed on clinic sites, so we cannot use
+    bench execute with a pw_subscription path.  frappe.db.sql IS available
+    in bench execute context because bench execute calls frappe.connect() first.
+
+    Steps:
+      1. bench add-system-manager — creates/updates user and sets password
+      2. DELETE System Manager role added by step 1
+      3. INSERT PW Doctor role if not already present  (idempotent on retry)
     """
-    bench_dir  = _bench_dir()
-    sites_path = os.path.join(bench_dir, "sites")
-    # Derive Python from the bench binary — guaranteed same venv
-    bench_bin_dir = os.path.dirname(_find_bench())
-    python_exe = os.path.join(bench_bin_dir, "python")
-    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
-        python_exe = os.path.join(bench_bin_dir, "python3")
-    if not (os.path.isfile(python_exe) and os.access(python_exe, os.X_OK)):
-        python_exe = "python3"
-
-    script = (
-        "import os, sys, json, frappe\n"
-        "from frappe.utils.password import update_password\n"
-        "p = json.loads(sys.stdin.read())\n"
-        # Frappe tries to open its log files during init; ensure the directory exists
-        # regardless of where this Python env's frappe module lives.
-        "import frappe as _fm\n"
-        "_bench = os.path.abspath(os.path.join(os.path.dirname(_fm.__file__), '..', '..', '..'))\n"
-        "os.makedirs(os.path.join(_bench, 'logs'), exist_ok=True)\n"
-        "frappe.init(site=p['site'], sites_path=p['sites_path'])\n"
-        "frappe.connect()\n"
-        "email = p['email']; pwd = p['password']\n"
-        "if frappe.db.exists('User', email):\n"
-        "    u = frappe.get_doc('User', email); chg = False\n"
-        "    if not u.enabled: u.enabled = 1; chg = True\n"
-        "    if u.user_type != 'System User': u.user_type = 'System User'; chg = True\n"
-        "    if 'PW Doctor' not in [r.role for r in u.roles]: u.append('roles', {'role': 'PW Doctor'}); chg = True\n"
-        "    if chg: u.flags.ignore_password_policy = True; u.save(ignore_permissions=True)\n"
-        "else:\n"
-        "    d = frappe.get_doc({'doctype':'User','email':email,'first_name':p['first_name'],'last_name':p['last_name'],'enabled':1,'send_welcome_email':0,'user_type':'System User','roles':[{'role':'PW Doctor'}]})\n"
-        "    d.flags.ignore_password_policy = True; d.insert(ignore_permissions=True)\n"
-        "frappe.db.commit()\n"
-        "frappe.flags.in_import = True\n"
-        "update_password(email, pwd)\n"
-        "frappe.db.commit()\n"
-        "frappe.flags.in_import = False\n"
-        "frappe.destroy()\n"
+    _run(
+        ["--site", site_name, "add-system-manager", email,
+         "--first-name", first_name or "Doctor",
+         "--last-name", last_name or "",
+         "--password", password],
+        None, "add-system-manager", timeout=60,
     )
-
-    params = json.dumps({
-        "site":       site_name,
-        "sites_path": sites_path,
-        "email":      email,
-        "first_name": first_name or "Doctor",
-        "last_name":  last_name  or "",
-        "password":   password,
-    })
-
-    result = subprocess.run(
-        [python_exe, "-c", script],
-        input=params,
-        cwd=bench_dir,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        env=_run_env(),
+    _run(
+        ["--site", site_name, "execute", "frappe.db.sql",
+         "--kwargs", json.dumps({
+             "query": "DELETE FROM `tabHas Role` WHERE parent=%s AND role='System Manager'",
+             "values": [email],
+             "auto_commit": 1,
+         })],
+        None, "remove System Manager role", timeout=30,
     )
-    if result.returncode != 0:
-        err = (result.stderr or result.stdout or "Unknown error").strip()
-        if len(err) > 1000:
-            err = "…" + err[-1000:]
-        raise RuntimeError(f"Create clinic user failed:\n{err}")
+    _run(
+        ["--site", site_name, "execute", "frappe.db.sql",
+         "--kwargs", json.dumps({
+             "query": (
+                 "INSERT INTO `tabHas Role` "
+                 "(name, creation, modified, modified_by, owner, docstatus, "
+                 " idx, role, parent, parenttype, parentfield) "
+                 "SELECT UUID(), NOW(), NOW(), 'Administrator', 'Administrator', "
+                 "0, 1, 'PW Doctor', %s, 'User', 'roles' "
+                 "FROM DUAL WHERE NOT EXISTS "
+                 "(SELECT 1 FROM `tabHas Role` r WHERE r.parent=%s AND r.role='PW Doctor')"
+             ),
+             "values": [email, email],
+             "auto_commit": 1,
+         })],
+        None, "add PW Doctor role", timeout=30,
+    )
 
 
 def _enqueue_provision(request_name):
