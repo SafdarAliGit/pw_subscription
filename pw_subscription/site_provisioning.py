@@ -530,6 +530,11 @@ def _create_site_user_via_bench(site_name, email, first_name, last_name, passwor
          })],
         None, "set role_profile_name", timeout=30,
     )
+    _run(
+        ["--site", site_name, "execute", "frappe.utils.password.update_password",
+         "--args", json.dumps([email, password])],
+        None, "set user password", timeout=30,
+    )
 
 
 def _enqueue_provision(request_name):
