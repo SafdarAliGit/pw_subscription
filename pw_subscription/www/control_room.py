@@ -17,9 +17,13 @@ def get_context(context):
         context.app_name = settings.app_name or "CureDesk"
         context.enable_site_ping = bool(settings.enable_site_ping)
         context.ping_timeout = settings.ping_timeout or 5
+        context.phone_otp_enabled = bool(settings.get("enable_phone_otp"))
+        context.email_otp_enabled = bool(settings.get("enable_email_otp"))
     except Exception:
         context.app_name = "CureDesk"
         context.enable_site_ping = True
         context.ping_timeout = 5
+        context.phone_otp_enabled = False
+        context.email_otp_enabled = False
 
     return context

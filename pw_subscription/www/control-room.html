@@ -337,6 +337,13 @@
   .cns-bar-fill.done{background:var(--success)}.cns-bar-fill.fail{background:var(--danger)}
   .cns-status-row{display:flex;align-items:center;gap:.6rem;font-size:.83rem;font-weight:600;margin-bottom:.6rem}
   .cns-spinner{width:13px;height:13px;border:2px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:jpSpin .75s linear infinite;flex-shrink:0}
+  .cns-field-row{display:flex;gap:.5rem;align-items:flex-start}
+  .cns-field-row .form-control{flex:1;min-width:0}
+  .cns-otp-btn{flex-shrink:0;width:auto;min-width:52px;padding:.35rem .5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1;background:linear-gradient(135deg,var(--primary),#1d4ed8);color:#fff;border:none;cursor:pointer;transition:all .2s;align-self:stretch}
+  .cns-otp-btn:hover:not(:disabled){background:#1d4ed8}.cns-otp-btn:disabled{opacity:.55;cursor:not-allowed}
+  .cns-verify-btn{flex-shrink:0;padding:.5rem .9rem;font-size:.8rem;font-weight:600;background:var(--success);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap}
+  .cns-verify-btn:hover:not(:disabled){background:#059669}.cns-verify-btn:disabled{opacity:.55;cursor:not-allowed}
+  .cns-otp-hint{font-size:.76rem;min-height:.9rem;margin-top:.2rem}
   @media(max-width:540px){.cns-grid{grid-template-columns:1fr}.cns-full{grid-column:auto}}
 </style>
 {% endblock %}
@@ -934,14 +941,54 @@
         <!-- Contact -->
         <div class="form-group">
           <label class="form-label">Contact / WhatsApp <span style="color:var(--danger)">*</span></label>
-          <input type="tel" class="form-control" id="cnsContact" placeholder="+92 300 1234567">
+          <div class="cns-field-row">
+            <input type="tel" class="form-control" id="cnsContact" placeholder="+92 300 1234567">
+            {% if phone_otp_enabled %}
+            <button type="button" id="cnsSendOtp" class="cns-otp-btn" title="Send verification code to phone" aria-label="Send phone OTP">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Verify
+            </button>
+            {% endif %}
+          </div>
+          <div class="cns-otp-hint" id="cnsContactHint"></div>
         </div>
+
+        {% if phone_otp_enabled %}
+        <div class="form-group cns-full" id="cnsOtpRow" style="display:none">
+          <label class="form-label">Phone Verification Code <span style="color:var(--danger)">*</span></label>
+          <div class="cns-field-row">
+            <input type="text" class="form-control" id="cnsOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="letter-spacing:.2em">
+            <button type="button" id="cnsVerifyOtp" class="cns-verify-btn">Verify</button>
+          </div>
+          <div class="cns-otp-hint" id="cnsOtpHint"></div>
+        </div>
+        {% endif %}
 
         <!-- Email -->
         <div class="form-group">
           <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
-          <input type="email" class="form-control" id="cnsEmail" placeholder="doctor@clinic.com">
+          <div class="cns-field-row">
+            <input type="email" class="form-control" id="cnsEmail" placeholder="doctor@clinic.com">
+            {% if email_otp_enabled %}
+            <button type="button" id="cnsSendEmailOtp" class="cns-otp-btn" title="Send verification code to email" aria-label="Send email OTP">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              Verify
+            </button>
+            {% endif %}
+          </div>
+          <div class="cns-otp-hint" id="cnsEmailHint"></div>
         </div>
+
+        {% if email_otp_enabled %}
+        <div class="form-group cns-full" id="cnsEmailOtpRow" style="display:none">
+          <label class="form-label">Email Verification Code <span style="color:var(--danger)">*</span></label>
+          <div class="cns-field-row">
+            <input type="text" class="form-control" id="cnsEmailOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="letter-spacing:.2em">
+            <button type="button" id="cnsVerifyEmailOtp" class="cns-verify-btn">Verify</button>
+          </div>
+          <div class="cns-otp-hint" id="cnsEmailOtpHint"></div>
+        </div>
+        {% endif %}
 
         <!-- Password -->
         <div class="form-group">
@@ -1600,7 +1647,11 @@ function closeAllMenus() {
 document.addEventListener('click', closeAllMenus);
 
 // ── Create New Site ──────────────────────────────────────────────────────────
+const CNS_PHONE_OTP_ENABLED = {{ 'true' if phone_otp_enabled else 'false' }};
+const CNS_EMAIL_OTP_ENABLED = {{ 'true' if email_otp_enabled else 'false' }};
 let cnsClinicOk = false;
+let cnsPhoneVerified = false;
+let cnsEmailVerified = false;
 let cnsCheckTimer = null;
 let cnsPollTimer = null;
 let cnsReqName = null;
@@ -1621,7 +1672,23 @@ function openCreateSite() {
   document.getElementById('cnsProvPanel').style.display = 'none';
   const submitBtn = document.getElementById('cnsSubmitBtn');
   submitBtn.disabled = false; submitBtn.textContent = '+ Create Site';
-  cnsClinicOk = false; cnsReqName = null; cnsSiteName = null;
+  cnsClinicOk = false; cnsPhoneVerified = false; cnsEmailVerified = false;
+  cnsReqName = null; cnsSiteName = null;
+  // Reset OTP rows
+  if (CNS_PHONE_OTP_ENABLED) {
+    const r = document.getElementById('cnsOtpRow');
+    if (r) { r.style.display = 'none'; document.getElementById('cnsOtp').value = ''; document.getElementById('cnsOtp').disabled = false; document.getElementById('cnsVerifyOtp').disabled = false; document.getElementById('cnsVerifyOtp').textContent = 'Verify'; }
+    document.getElementById('cnsSendOtp').disabled = false;
+    document.getElementById('cnsSendOtp').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify';
+    document.getElementById('cnsContactHint').textContent = '';
+  }
+  if (CNS_EMAIL_OTP_ENABLED) {
+    const r = document.getElementById('cnsEmailOtpRow');
+    if (r) { r.style.display = 'none'; document.getElementById('cnsEmailOtp').value = ''; document.getElementById('cnsEmailOtp').disabled = false; document.getElementById('cnsVerifyEmailOtp').disabled = false; document.getElementById('cnsVerifyEmailOtp').textContent = 'Verify'; }
+    document.getElementById('cnsSendEmailOtp').disabled = false;
+    document.getElementById('cnsSendEmailOtp').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify';
+    document.getElementById('cnsEmailHint').textContent = '';
+  }
   if (cnsPollTimer) { clearInterval(cnsPollTimer); cnsPollTimer = null; }
   openModal('modalCreateSite');
   setTimeout(() => { const el = document.getElementById('cnsClinicName'); if (el) el.focus(); }, 150);
@@ -1700,6 +1767,18 @@ async function doCreateSite() {
   if (password.length < 8) { toast('Password must be at least 8 characters.', 'warning'); return; }
   if (!contact) { toast('Contact number is required.', 'warning'); return; }
   if (!address) { toast('Address is required.', 'warning'); return; }
+  if (CNS_PHONE_OTP_ENABLED || CNS_EMAIL_OTP_ENABLED) {
+    const otpOk = (CNS_PHONE_OTP_ENABLED && cnsPhoneVerified) || (CNS_EMAIL_OTP_ENABLED && cnsEmailVerified);
+    if (!otpOk) {
+      if (CNS_EMAIL_OTP_ENABLED && CNS_PHONE_OTP_ENABLED) {
+        toast('Please verify the email or phone number before creating the site.', 'warning'); return;
+      } else if (CNS_EMAIL_OTP_ENABLED) {
+        toast('Please verify the email address before creating the site.', 'warning'); return;
+      } else {
+        toast('Please verify the phone number before creating the site.', 'warning'); return;
+      }
+    }
+  }
 
   const btn = document.getElementById('cnsSubmitBtn');
   btn.disabled = true; btn.textContent = 'Creating…';
@@ -1720,6 +1799,166 @@ async function doCreateSite() {
     btn.disabled = false; btn.textContent = '+ Create Site';
   }
 }
+
+// ── Create New Site OTP ───────────────────────────────────────────────────────
+(function initCnsOtp() {
+  const PHONE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify';
+  const EMAIL_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify';
+  const SPIN_HTML = '<div style="width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:jpSpin .75s linear infinite"></div>';
+
+  function setHint(id, msg, isErr) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isErr ? 'var(--danger)' : 'var(--success)';
+  }
+
+  if (CNS_PHONE_OTP_ENABLED) {
+    const sendBtn   = document.getElementById('cnsSendOtp');
+    const otpRow    = document.getElementById('cnsOtpRow');
+    const otpInput  = document.getElementById('cnsOtp');
+    const verifyBtn = document.getElementById('cnsVerifyOtp');
+    const contactEl = document.getElementById('cnsContact');
+
+    sendBtn.addEventListener('click', async () => {
+      const phone = contactEl.value.trim();
+      const digits = phone.replace(/[\s\-().]/g, '');
+      if (!phone) { setHint('cnsContactHint', 'Contact number is required.', true); return; }
+      if (!/^\+?[0-9]{7,15}$/.test(digits)) { setHint('cnsContactHint', 'Enter a valid phone number (e.g. +92 300 1234567).', true); return; }
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = SPIN_HTML;
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.send_phone_otp', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+          body: JSON.stringify({phone}),
+        });
+        const data = await resp.json();
+        if (data.exc) {
+          const msg = data._server_messages ? JSON.parse(JSON.parse(data._server_messages)[0]).message : 'Failed to send code.';
+          throw new Error(msg);
+        }
+        otpRow.style.display = ''; otpInput.value = ''; cnsPhoneVerified = false;
+        setHint('cnsOtpHint', 'Code sent! Enter it below.', false);
+        let secs = 60;
+        const t = setInterval(() => { sendBtn.title = 'Resend in ' + (--secs) + 's'; if (secs <= 0) { clearInterval(t); sendBtn.disabled = false; sendBtn.innerHTML = PHONE_SVG; sendBtn.title = 'Send verification code to phone'; } }, 1000);
+      } catch (err) {
+        setHint('cnsContactHint', err.message || 'Failed to send code.', true);
+        sendBtn.disabled = false; sendBtn.innerHTML = PHONE_SVG;
+      }
+    });
+
+    verifyBtn.addEventListener('click', async () => {
+      const otp = otpInput.value.trim();
+      if (!otp) { setHint('cnsOtpHint', 'Enter the 6-digit code.', true); return; }
+      verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying…';
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.verify_phone_otp', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+          body: JSON.stringify({phone: contactEl.value.trim(), otp}),
+        });
+        const data = await resp.json();
+        const r = data.message;
+        if (r && r.valid) {
+          cnsPhoneVerified = true;
+          setHint('cnsOtpHint', 'Phone verified!', false);
+          otpInput.disabled = true; verifyBtn.textContent = 'Verified';
+          setHint('cnsContactHint', '', false);
+        } else {
+          const reason = r && r.reason;
+          setHint('cnsOtpHint', reason === 'expired' ? 'Code expired. Request a new one.' : 'Incorrect code. Try again.', true);
+          verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+        }
+      } catch (err) {
+        setHint('cnsOtpHint', 'Verification failed. Try again.', true);
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+      }
+    });
+
+    contactEl.addEventListener('input', () => {
+      if (cnsPhoneVerified) {
+        cnsPhoneVerified = false; otpRow.style.display = 'none';
+        otpInput.disabled = false; otpInput.value = '';
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+        sendBtn.disabled = false; sendBtn.innerHTML = PHONE_SVG;
+        setHint('cnsOtpHint', '', false);
+      }
+    });
+  }
+
+  if (CNS_EMAIL_OTP_ENABLED) {
+    const sendBtn   = document.getElementById('cnsSendEmailOtp');
+    const otpRow    = document.getElementById('cnsEmailOtpRow');
+    const otpInput  = document.getElementById('cnsEmailOtp');
+    const verifyBtn = document.getElementById('cnsVerifyEmailOtp');
+    const emailEl   = document.getElementById('cnsEmail');
+
+    sendBtn.addEventListener('click', async () => {
+      const email = emailEl.value.trim();
+      if (!email) { setHint('cnsEmailHint', 'Email is required.', true); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setHint('cnsEmailHint', 'Enter a valid email address.', true); return; }
+      sendBtn.disabled = true; sendBtn.innerHTML = SPIN_HTML;
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.send_email_otp', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+          body: JSON.stringify({email}),
+        });
+        const data = await resp.json();
+        if (data.exc) {
+          const msg = data._server_messages ? JSON.parse(JSON.parse(data._server_messages)[0]).message : 'Failed to send code.';
+          throw new Error(msg);
+        }
+        otpRow.style.display = ''; otpInput.value = ''; cnsEmailVerified = false;
+        setHint('cnsEmailOtpHint', 'Code sent! Check your inbox.', false);
+        let secs = 60;
+        const t = setInterval(() => { sendBtn.title = 'Resend in ' + (--secs) + 's'; if (secs <= 0) { clearInterval(t); sendBtn.disabled = false; sendBtn.innerHTML = EMAIL_SVG; sendBtn.title = 'Send verification code to email'; } }, 1000);
+      } catch (err) {
+        setHint('cnsEmailHint', err.message || 'Failed to send code.', true);
+        sendBtn.disabled = false; sendBtn.innerHTML = EMAIL_SVG;
+      }
+    });
+
+    verifyBtn.addEventListener('click', async () => {
+      const otp = otpInput.value.trim();
+      if (!otp) { setHint('cnsEmailOtpHint', 'Enter the 6-digit code.', true); return; }
+      verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying…';
+      try {
+        const resp = await fetch('/api/method/pw_subscription.api.verify_email_otp', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+          body: JSON.stringify({email: emailEl.value.trim(), otp}),
+        });
+        const data = await resp.json();
+        const r = data.message;
+        if (r && r.valid) {
+          cnsEmailVerified = true;
+          setHint('cnsEmailOtpHint', 'Email verified!', false);
+          otpInput.disabled = true; verifyBtn.textContent = 'Verified';
+          setHint('cnsEmailHint', '', false);
+        } else {
+          const reason = r && r.reason;
+          setHint('cnsEmailOtpHint', reason === 'expired' ? 'Code expired. Request a new one.' : 'Incorrect code. Try again.', true);
+          verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+        }
+      } catch (err) {
+        setHint('cnsEmailOtpHint', 'Verification failed. Try again.', true);
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+      }
+    });
+
+    emailEl.addEventListener('input', () => {
+      if (cnsEmailVerified) {
+        cnsEmailVerified = false; otpRow.style.display = 'none';
+        otpInput.disabled = false; otpInput.value = '';
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+        sendBtn.disabled = false; sendBtn.innerHTML = EMAIL_SVG;
+        setHint('cnsEmailOtpHint', '', false);
+      }
+    });
+  }
+})();
 
 function cnsShowProgress(result) {
   document.getElementById('cnsFormPanel').style.display = 'none';
