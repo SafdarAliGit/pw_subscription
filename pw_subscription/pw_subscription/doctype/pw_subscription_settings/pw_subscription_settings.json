@@ -40,7 +40,15 @@
   "mariadb_root_password",
   "sb_ping",
   "enable_site_ping",
-  "ping_timeout"
+  "ping_timeout",
+  "sb_email_otp",
+  "enable_email_otp",
+  "sb_msg91",
+  "enable_phone_otp",
+  "msg91_auth_key",
+  "msg91_template_id",
+  "cb_msg91",
+  "msg91_sender_id"
  ],
  "fields": [
   {"fieldname":"sb_general","fieldtype":"Section Break","label":"App Info"},
@@ -83,12 +91,22 @@
 
   {"fieldname":"sb_ping","fieldtype":"Section Break","label":"Site Health Monitoring"},
   {"fieldname":"enable_site_ping","fieldtype":"Check","label":"Enable Live Site Ping (Online/Offline Check)","default":"1","description":"Shows live online/offline status for each site in the Control Room. Disable if it causes performance issues."},
-  {"fieldname":"ping_timeout","fieldtype":"Int","label":"Ping Timeout (Seconds)","default":"5","description":"Maximum seconds to wait for a ping response before marking site as offline"}
+  {"fieldname":"ping_timeout","fieldtype":"Int","label":"Ping Timeout (Seconds)","default":"5","description":"Maximum seconds to wait for a ping response before marking site as offline"},
+
+  {"fieldname":"sb_email_otp","fieldtype":"Section Break","label":"Email OTP Verification"},
+  {"fieldname":"enable_email_otp","fieldtype":"Check","label":"Enable Email OTP Verification on Registration","default":"0","description":"When enabled, users must verify their email address via a one-time code sent to their inbox before completing registration. Uses the configured outgoing email server — no third-party service required."},
+
+  {"fieldname":"sb_msg91","fieldtype":"Section Break","label":"Phone OTP Verification (MSG91)"},
+  {"fieldname":"enable_phone_otp","fieldtype":"Check","label":"Enable Phone OTP Verification on Registration","default":"0","description":"When enabled, users must verify their phone number via a one-time SMS code (sent through MSG91) before completing registration."},
+  {"fieldname":"msg91_auth_key","fieldtype":"Password","label":"MSG91 Auth Key","description":"Your MSG91 account auth key. Found in MSG91 dashboard → API → Auth Key.","depends_on":"enable_phone_otp"},
+  {"fieldname":"msg91_template_id","fieldtype":"Data","label":"MSG91 OTP Template ID","description":"The approved OTP template ID from your MSG91 account. The template must contain ##OTP## as the variable.","depends_on":"enable_phone_otp"},
+  {"fieldname":"cb_msg91","fieldtype":"Column Break"},
+  {"fieldname":"msg91_sender_id","fieldtype":"Data","label":"Sender ID","default":"OTPSMS","description":"6-character alphanumeric sender ID registered with MSG91 (e.g. OTPSMS).","depends_on":"enable_phone_otp"}
  ],
  "idx": 0,
  "issingle": 1,
  "module": "PW Subscription",
- "modified": "2026-06-16 00:00:00",
+ "modified": "2026-07-09 00:00:00",
  "modified_by": "Administrator",
  "name": "PW Subscription Settings",
  "owner": "Administrator",

@@ -115,16 +115,18 @@ def get_public_info():
     try:
         s = _get_settings()
         return {
-            "app_name": s.app_name or "CureDesk",
-            "tagline": s.tagline or "",
-            "monthly_fee": s.monthly_fee or 0,
-            "trial_days": s.trial_days or 7,
-            "contact_email": s.contact_email or "",
-            "contact_phone": s.contact_phone or "",
+            "app_name":        s.app_name or "CureDesk",
+            "tagline":         s.tagline or "",
+            "monthly_fee":     s.monthly_fee or 0,
+            "trial_days":      s.trial_days or 7,
+            "contact_email":   s.contact_email or "",
+            "contact_phone":   s.contact_phone or "",
+            "phone_otp_enabled": bool(s.get("enable_phone_otp")),
         }
     except Exception:
         return {"app_name": "CureDesk", "tagline": "", "monthly_fee": 0,
-                "trial_days": 7, "contact_email": "", "contact_phone": ""}
+                "trial_days": 7, "contact_email": "", "contact_phone": "",
+                "phone_otp_enabled": False}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -330,6 +332,164 @@ def get_cities_by_country(country):
 
 
 @frappe.whitelist(allow_guest=True)
+def send_email_otp(email):
+    import random, re
+    email = (email or "").strip().lower()
+    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        frappe.throw("Invalid email address.")
+
+    s = _get_settings()
+    if not s.get("enable_email_otp"):
+        frappe.throw("Email OTP verification is not enabled.")
+
+    otp = str(random.randint(100000, 999999))
+    cache_key = f"email_otp_{email}"
+    frappe.cache.set(cache_key, otp)
+    frappe.cache.expire(cache_key, 600)  # 10-minute expiry
+
+    app_name = s.app_name or "CureDesk"
+    sender   = s.sender_email or None
+
+    subject = f"{app_name} — Your Email Verification Code"
+    body = f"""
+<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:2rem;border:1px solid #e2e8f0;border-radius:12px">
+  <h2 style="margin:0 0 1rem;color:#1e293b">Verify your email address</h2>
+  <p style="color:#475569;margin:0 0 1.5rem">Use the code below to complete your {app_name} registration. It expires in <strong>10 minutes</strong>.</p>
+  <div style="background:#f1f5f9;border-radius:8px;padding:1.5rem;text-align:center;font-size:2rem;font-weight:700;letter-spacing:.3em;color:#1d4ed8">{otp}</div>
+  <p style="color:#94a3b8;font-size:.85rem;margin:1.5rem 0 0">If you did not request this, please ignore this email.</p>
+</div>""".strip()
+
+    try:
+        frappe.sendmail(
+            recipients=[email],
+            sender=sender,
+            subject=subject,
+            message=body,
+            now=True,
+        )
+    except Exception as e:
+        frappe.log_error(f"Email OTP send failed for {email}: {e}", "Email OTP")
+        frappe.throw("Could not send verification email. Please check the email address and try again.")
+
+    return {"sent": True}
+
+
+@frappe.whitelist(allow_guest=True)
+def verify_email_otp(email, otp):
+    import re
+    email = (email or "").strip().lower()
+    otp   = (otp or "").strip()
+
+    s = _get_settings()
+    if not s.get("enable_email_otp"):
+        frappe.throw("Email OTP verification is not enabled.")
+
+    if not otp:
+        return {"valid": False, "reason": "mismatch"}
+
+    cache_key = f"email_otp_{email}"
+    stored = frappe.safe_decode(frappe.cache.get(cache_key) or b"")
+    if not stored:
+        return {"valid": False, "reason": "expired"}
+    if stored != otp:
+        return {"valid": False, "reason": "mismatch"}
+
+    frappe.cache.delete(cache_key)
+    verified_key = f"email_verified_{email}"
+    frappe.cache.set(verified_key, "1")
+    frappe.cache.expire(verified_key, 1800)  # 30-minute window to complete registration
+    return {"valid": True}
+
+
+def _msg91_settings():
+    """Return (auth_key, template_id, sender_id) or raise if not configured."""
+    s = _get_settings()
+    if not s.get("enable_phone_otp"):
+        frappe.throw("Phone OTP verification is not enabled.")
+    auth_key    = s.get_password("msg91_auth_key") if s.msg91_auth_key else ""
+    template_id = (s.msg91_template_id or "").strip()
+    sender_id   = (s.msg91_sender_id or "OTPSMS").strip()
+    if not auth_key or not template_id:
+        frappe.throw("MSG91 is not fully configured. Set Auth Key and Template ID in PW Subscription Settings.")
+    return auth_key, template_id, sender_id
+
+
+def _normalize_phone(phone):
+    """Strip formatting and ensure no leading +."""
+    import re
+    digits = re.sub(r"[\s\-().]", "", (phone or "").strip())
+    # MSG91 requires country code without the + prefix
+    return digits.lstrip("+")
+
+
+@frappe.whitelist(allow_guest=True)
+def send_phone_otp(phone):
+    import re, requests as _req
+    phone = (phone or "").strip()
+    raw_digits = re.sub(r"[\s\-().]", "", phone)
+    if not re.match(r"^\+?[0-9]{7,15}$", raw_digits):
+        frappe.throw("Invalid phone number.")
+
+    auth_key, template_id, sender_id = _msg91_settings()
+    mobile = _normalize_phone(phone)
+
+    try:
+        resp = _req.post(
+            "https://control.msg91.com/api/v5/otp",
+            headers={"authkey": auth_key, "Content-Type": "application/json"},
+            json={
+                "mobile":      mobile,
+                "template_id": template_id,
+                "sender":      sender_id,
+                "otp_expiry":  5,
+            },
+            timeout=10,
+        )
+        data = resp.json()
+        if data.get("type") not in ("success", "10"):
+            frappe.log_error(f"MSG91 send OTP failed for {mobile}: {data}", "Phone OTP")
+            frappe.throw("Could not send verification code. Please check the phone number and try again.")
+    except _req.exceptions.RequestException as e:
+        frappe.log_error(f"MSG91 request error for {mobile}: {e}", "Phone OTP")
+        frappe.throw("Could not reach SMS gateway. Please try again.")
+
+    return {"sent": True}
+
+
+@frappe.whitelist(allow_guest=True)
+def verify_phone_otp(phone, otp):
+    import requests as _req
+    otp = (otp or "").strip()
+    if not otp:
+        return {"valid": False, "reason": "mismatch"}
+
+    auth_key, _template_id, _sender_id = _msg91_settings()
+    mobile = _normalize_phone(phone)
+
+    try:
+        resp = _req.post(
+            "https://control.msg91.com/api/v5/otp/verify",
+            headers={"authkey": auth_key, "Content-Type": "application/json"},
+            json={"mobile": mobile, "otp": otp},
+            timeout=10,
+        )
+        data = resp.json()
+    except Exception as e:
+        frappe.log_error(f"MSG91 verify OTP error for {mobile}: {e}", "Phone OTP")
+        return {"valid": False, "reason": "error"}
+
+    if data.get("type") == "success":
+        # Store a short-lived token so register_clinic can confirm verification
+        verified_key = f"phone_verified_{mobile}"
+        frappe.cache.set(verified_key, "1")
+        frappe.cache.expire(verified_key, 600)
+        return {"valid": True}
+
+    reason = "expired" if "expire" in str(data.get("message", "")).lower() else "mismatch"
+    return {"valid": False, "reason": reason}
+
+
+@frappe.whitelist(allow_guest=True)
 def check_clinic_name(clinic_name):
     import re
     clinic_name = (clinic_name or "").strip()
@@ -375,6 +535,23 @@ def check_clinic_name(clinic_name):
     return {"available": True, "name": clinic_name}
 
 
+_BLOCKED_STATUSES = {"Trial", "Active", "Expired", "Suspended"}
+
+@frappe.whitelist(allow_guest=True)
+def check_email(email):
+    email = (email or "").strip().lower()
+    import re
+    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        return {"available": False, "message": "Invalid email address."}
+    existing = frappe.db.get_value(
+        "PW Subscription", {"contact_email": email},
+        ["status"], order_by="creation desc", as_dict=True
+    )
+    if existing and existing.status in _BLOCKED_STATUSES:
+        return {"available": False, "message": "This email is already registered. Please contact support."}
+    return {"available": True}
+
+
 @frappe.whitelist(allow_guest=True)
 def register_clinic(clinic_name, email, physician_name, password, contact, address,
                     country=None, city=None):
@@ -399,6 +576,32 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
         frappe.throw("Invalid email address.")
     if len(password) < 8:
         frappe.throw("Password must be at least 8 characters.")
+
+    s = _get_settings()
+    email_otp_on  = bool(s.get("enable_email_otp"))
+    phone_otp_on  = bool(s.get("enable_phone_otp"))
+    if email_otp_on or phone_otp_on:
+        email_verified = email_otp_on and bool(
+            frappe.safe_decode(frappe.cache.get(f"email_verified_{email.lower()}") or b"")
+        )
+        contact_mobile = _normalize_phone(contact)
+        phone_verified = phone_otp_on and bool(
+            frappe.safe_decode(frappe.cache.get(f"phone_verified_{contact_mobile}") or b"")
+        )
+        if not (email_verified or phone_verified):
+            if email_otp_on and phone_otp_on:
+                frappe.throw("Please verify at least your email address or phone number before registering.")
+            elif email_otp_on:
+                frappe.throw("Email address not verified. Please verify your email before registering.")
+            else:
+                frappe.throw("Phone number not verified. Please verify your phone number before registering.")
+
+    existing_email = frappe.db.get_value(
+        "PW Subscription", {"contact_email": email.lower()},
+        ["status"], order_by="creation desc", as_dict=True
+    )
+    if existing_email and existing_email.status in _BLOCKED_STATUSES:
+        frappe.throw("This email is already registered. Please contact support.")
 
     if frappe.db.exists("PW Subscription", {"clinic_name": clinic_name}):
         frappe.throw("This clinic name is already registered. Please choose a different name.")

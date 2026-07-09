@@ -76,6 +76,8 @@ def get_context(context):
         context.contact_phone = settings.contact_phone or ""
         context.bank_details = settings.bank_details or ""
         context.grace_period = f"{settings.grace_period_days or 3} days"
+        context.phone_otp_enabled = bool(settings.get("enable_phone_otp"))
+        context.email_otp_enabled = bool(settings.get("enable_email_otp"))
     except Exception:
         context.app_name = "CureDesk"
         context.tagline = "The smartest prescription writing platform"
@@ -86,6 +88,8 @@ def get_context(context):
         context.contact_phone = ""
         context.bank_details = ""
         context.grace_period = "3 days"
+        context.phone_otp_enabled = False
+        context.email_otp_enabled = False
 
     try:
         carousel = frappe.get_single("Carousel")

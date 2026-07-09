@@ -764,8 +764,8 @@
   <div class="steps-wrap">
     <div class="step-card">
       <div class="step-num">1</div>
-      <h3>Contact Us</h3>
-      <p>Reach out via email or phone. Tell us your clinic name and we will set up your dedicated instance.</p>
+      <h3>Create Your Clinic App</h3>
+      <p>Click the Get Started button and fill up the form to create your own clinic application yourself.</p>
     </div>
     <div class="step-card">
       <div class="step-num">2</div>
@@ -1007,20 +1007,50 @@
           <!-- Contact -->
           <div class="reg-field">
             <label class="reg-label" for="regContact">Contact / WhatsApp <span class="req">*</span></label>
-            <div class="reg-iw">
-              <input type="tel" id="regContact" placeholder="+92 300 1234567">
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="tel" id="regContact" placeholder="+92 300 1234567" style="flex:1">
+              {% if phone_otp_enabled %}
+              <button type="button" id="regSendOtp" title="Send verification code to phone" class="reg-submit" style="flex-shrink:0;width:auto;min-width:52px;height:auto;padding:.35rem .5rem;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1" aria-label="Send phone verification code"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify</button>
+              {% endif %}
             </div>
             <div class="reg-hint" id="regContactHint"></div>
           </div>
 
+          {% if phone_otp_enabled %}
+          <!-- OTP verification (hidden until code is sent) -->
+          <div class="reg-field" id="regOtpRow" style="display:none">
+            <label class="reg-label" for="regOtp">Verification Code <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="text" id="regOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+              <button type="button" id="regVerifyOtp" class="reg-submit" style="flex-shrink:0;width:auto;padding:.55rem 1rem;font-size:.8rem;margin:0">Verify</button>
+            </div>
+            <div class="reg-hint" id="regOtpHint"></div>
+          </div>
+          {% endif %}
+
           <!-- Email -->
           <div class="reg-field">
             <label class="reg-label" for="regEmail">Email Address <span class="req">*</span></label>
-            <div class="reg-iw">
-              <input type="email" id="regEmail" placeholder="doctor@clinic.com">
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="email" id="regEmail" placeholder="doctor@clinic.com" style="flex:1">
+              {% if email_otp_enabled %}
+              <button type="button" id="regSendEmailOtp" title="Send verification code to email" class="reg-submit" style="flex-shrink:0;width:auto;min-width:52px;height:auto;padding:.35rem .5rem;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1" aria-label="Send email verification code"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify</button>
+              {% endif %}
             </div>
             <div class="reg-hint" id="regEmailHint"></div>
           </div>
+
+          {% if email_otp_enabled %}
+          <!-- Email OTP (hidden until code is sent) -->
+          <div class="reg-field" id="regEmailOtpRow" style="display:none">
+            <label class="reg-label" for="regEmailOtp">Email Verification Code <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="text" id="regEmailOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+              <button type="button" id="regVerifyEmailOtp" class="reg-submit" style="flex-shrink:0;width:auto;padding:.55rem 1rem;font-size:.8rem;margin:0">Verify</button>
+            </div>
+            <div class="reg-hint" id="regEmailOtpHint"></div>
+          </div>
+          {% endif %}
 
           <!-- Password -->
           <div class="reg-field">
@@ -1443,6 +1473,47 @@
       if (f.clinic.value.trim()) checkName();
     });
 
+    // ── Email availability check ───────────────────────────────────────────────
+    let emailTimer   = null;
+    let emailBlocked = false;
+
+    function setEmailHint(msg, isErr) {
+      const h = document.getElementById("regEmailHint");
+      f.email.classList.toggle("f-err", isErr);
+      if (h) { h.className = "reg-hint " + (isErr ? "err" : ""); h.textContent = msg || ""; }
+    }
+
+    function checkEmail() {
+      const val = f.email.value.trim();
+      emailBlocked = false;
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!val || !emailRe.test(val)) return;
+      fetch("/api/method/pw_subscription.api.check_email?email=" + encodeURIComponent(val))
+        .then(r => r.json())
+        .then(data => {
+          const d = data.message;
+          if (d.available) {
+            emailBlocked = false;
+            setEmailHint("", false);
+          } else {
+            emailBlocked = true;
+            setEmailHint("This email is already registered. Please use a different email.", true);
+          }
+        })
+        .catch(() => { emailBlocked = false; });
+    }
+
+    f.email.addEventListener("input", () => {
+      clearTimeout(emailTimer);
+      emailBlocked = false;
+      setEmailHint("", false);
+      emailTimer = setTimeout(checkEmail, 600);
+    });
+    f.email.addEventListener("blur", () => {
+      clearTimeout(emailTimer);
+      if (f.email.value.trim()) checkEmail();
+    });
+
     // ── Field validation helpers ──
     function markField(input, hintId, msg, isErr) {
       input.classList.toggle("f-err", isErr);
@@ -1466,11 +1537,36 @@
         markField(f.email, "regEmailHint", "Email is required.", true); ok = false;
       } else if (!emailRe.test(f.email.value.trim())) {
         markField(f.email, "regEmailHint", "Enter a valid email address.", true); ok = false;
+      } else if (emailBlocked) {
+        f.email.classList.add("f-err"); ok = false;
       }
       if (f.password.value.length < 8) {
         markField(f.password, "regPasswordHint", "Password must be at least 8 characters.", true); ok = false;
       }
-      if (!markField(f.contact, "regContactHint", "Contact number is required.", !f.contact.value.trim())) ok = false;
+      const phoneRaw = f.contact.value.trim();
+      const phoneDigits = phoneRaw.replace(/[\s\-().]/g, "");
+      const phoneRe = /^\+?[0-9]{7,15}$/;
+      if (!phoneRaw) {
+        markField(f.contact, "regContactHint", "Contact number is required.", true); ok = false;
+      } else if (!phoneRe.test(phoneDigits)) {
+        markField(f.contact, "regContactHint", "Enter a valid phone number (e.g. +92 300 1234567).", true); ok = false;
+      }
+      // OTP gate: if either is enabled, at least one must be verified
+      if (EMAIL_OTP_ENABLED || PHONE_OTP_ENABLED) {
+        const otpSatisfied = (EMAIL_OTP_ENABLED && emailVerified) || (PHONE_OTP_ENABLED && phoneVerified);
+        if (!otpSatisfied) {
+          if (EMAIL_OTP_ENABLED && PHONE_OTP_ENABLED) {
+            markField(f.email, "regEmailHint", "Please verify your email or phone number before registering.", true);
+            ok = false;
+          } else if (EMAIL_OTP_ENABLED) {
+            markField(f.email, "regEmailHint", "Please verify your email address by clicking Send Code.", true);
+            ok = false;
+          } else {
+            markField(f.contact, "regContactHint", "Please verify your phone number by clicking Send Code.", true);
+            ok = false;
+          }
+        }
+      }
       if (!markField(f.address, "regAddressHint", "Address is required.", !f.address.value.trim())) ok = false;
       return ok;
     }
@@ -1481,6 +1577,222 @@
         if (input !== f.clinic) input.classList.remove("f-err");
       });
     });
+
+    // ── Email OTP ─────────────────────────────────────────────────────────────
+    const EMAIL_OTP_ENABLED = {{ 'true' if email_otp_enabled else 'false' }};
+    let emailVerified = false;
+
+    function setEmailOtpHint(msg, isErr) {
+      const h = document.getElementById("regEmailOtpHint");
+      if (!h) return;
+      h.textContent = msg;
+      h.style.color = isErr ? "var(--danger, #dc2626)" : "#059669";
+    }
+
+    if (EMAIL_OTP_ENABLED) {
+      const sendEmailOtpBtn   = document.getElementById("regSendEmailOtp");
+      const emailOtpRow       = document.getElementById("regEmailOtpRow");
+      const emailOtpInput     = document.getElementById("regEmailOtp");
+      const verifyEmailOtpBtn = document.getElementById("regVerifyEmailOtp");
+
+      sendEmailOtpBtn.addEventListener("click", async () => {
+        const emailVal = f.email.value.trim();
+        const emailRe  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailVal) {
+          markField(f.email, "regEmailHint", "Email is required.", true); return;
+        }
+        if (!emailRe.test(emailVal)) {
+          markField(f.email, "regEmailHint", "Enter a valid email address.", true); return;
+        }
+        if (emailBlocked) {
+          markField(f.email, "regEmailHint", "This email is already registered. Please use a different email.", true); return;
+        }
+        sendEmailOtpBtn.disabled = true;
+        sendEmailOtpBtn.innerHTML = '<div class="reg-spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>';
+        try {
+          const resp = await fetch("/api/method/pw_subscription.api.send_email_otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": getCsrf() },
+            body: JSON.stringify({ email: emailVal }),
+          });
+          const data = await resp.json();
+          if (data.exc) {
+            const msg = data._server_messages
+              ? JSON.parse(JSON.parse(data._server_messages)[0]).message
+              : "Failed to send code. Try again.";
+            throw new Error(msg);
+          }
+          emailOtpRow.style.display = "";
+          emailOtpInput.value = "";
+          emailVerified = false;
+          setEmailOtpHint("Code sent! Check your inbox.", false);
+          const emailIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
+          let secs = 60;
+          const timer = setInterval(() => {
+            sendEmailOtpBtn.title = `Resend in ${--secs}s`;
+            if (secs <= 0) { clearInterval(timer); sendEmailOtpBtn.disabled = false; sendEmailOtpBtn.innerHTML = emailIcon; sendEmailOtpBtn.title = "Send verification code to email"; }
+          }, 1000);
+        } catch (err) {
+          markField(f.email, "regEmailHint", err.message || "Failed to send code. Try again.", true);
+          sendEmailOtpBtn.disabled = false;
+          sendEmailOtpBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
+        }
+      });
+
+      verifyEmailOtpBtn.addEventListener("click", async () => {
+        const otp = emailOtpInput.value.trim();
+        if (!otp) { setEmailOtpHint("Enter the 6-digit code.", true); return; }
+        verifyEmailOtpBtn.disabled = true;
+        verifyEmailOtpBtn.textContent = "Verifying…";
+        try {
+          const resp = await fetch("/api/method/pw_subscription.api.verify_email_otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": getCsrf() },
+            body: JSON.stringify({ email: f.email.value.trim(), otp }),
+          });
+          const data = await resp.json();
+          const r = data.message;
+          if (r && r.valid) {
+            emailVerified = true;
+            setEmailOtpHint("Email verified!", false);
+            emailOtpInput.disabled = true;
+            verifyEmailOtpBtn.textContent = "Verified";
+            f.email.classList.remove("f-err");
+            document.getElementById("regEmailHint").textContent = "";
+          } else {
+            const reason = r && r.reason;
+            setEmailOtpHint(reason === "expired" ? "Code expired. Click Send Code to get a new one." : "Incorrect code. Try again.", true);
+            verifyEmailOtpBtn.disabled = false;
+            verifyEmailOtpBtn.textContent = "Verify";
+          }
+        } catch (err) {
+          setEmailOtpHint("Verification failed. Try again.", true);
+          verifyEmailOtpBtn.disabled = false;
+          verifyEmailOtpBtn.textContent = "Verify";
+        }
+      });
+
+      // Reset when user changes the email
+      f.email.addEventListener("input", () => {
+        if (emailVerified) {
+          emailVerified = false;
+          emailOtpRow.style.display = "none";
+          emailOtpInput.disabled = false;
+          emailOtpInput.value = "";
+          verifyEmailOtpBtn.disabled = false;
+          verifyEmailOtpBtn.textContent = "Verify";
+          sendEmailOtpBtn.disabled = false;
+          sendEmailOtpBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
+          setEmailOtpHint("", false);
+        }
+      });
+    }
+
+    // ── Phone OTP ──────────────────────────────────────────────────────────────
+    const PHONE_OTP_ENABLED = {{ 'true' if phone_otp_enabled else 'false' }};
+    let phoneVerified = false;
+
+    function setOtpHint(msg, isErr) {
+      const otpHint = document.getElementById("regOtpHint");
+      if (!otpHint) return;
+      otpHint.textContent = msg;
+      otpHint.style.color = isErr ? "var(--danger, #dc2626)" : "#059669";
+    }
+
+    if (PHONE_OTP_ENABLED) {
+      const sendOtpBtn   = document.getElementById("regSendOtp");
+      const otpRow       = document.getElementById("regOtpRow");
+      const otpInput     = document.getElementById("regOtp");
+      const verifyOtpBtn = document.getElementById("regVerifyOtp");
+
+      sendOtpBtn.addEventListener("click", async () => {
+        const phoneRaw = f.contact.value.trim();
+        const phoneDigits = phoneRaw.replace(/[\s\-().]/g, "");
+        const phoneRe = /^\+?[0-9]{7,15}$/;
+        if (!phoneRaw) {
+          markField(f.contact, "regContactHint", "Contact number is required.", true); return;
+        }
+        if (!phoneRe.test(phoneDigits)) {
+          markField(f.contact, "regContactHint", "Enter a valid phone number (e.g. +92 300 1234567).", true); return;
+        }
+        const phoneIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+        sendOtpBtn.disabled = true;
+        sendOtpBtn.innerHTML = '<div class="reg-spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>';
+        try {
+          const resp = await fetch("/api/method/pw_subscription.api.send_phone_otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": getCsrf() },
+            body: JSON.stringify({ phone: phoneRaw }),
+          });
+          const data = await resp.json();
+          if (data.exc) {
+            const msg = data._server_messages
+              ? JSON.parse(JSON.parse(data._server_messages)[0]).message
+              : "Failed to send code. Try again.";
+            throw new Error(msg);
+          }
+          otpRow.style.display = "";
+          otpInput.value = "";
+          phoneVerified = false;
+          setOtpHint("Code sent! Enter it below.", false);
+          let secs = 60;
+          const timer = setInterval(() => {
+            sendOtpBtn.title = `Resend in ${--secs}s`;
+            if (secs <= 0) { clearInterval(timer); sendOtpBtn.disabled = false; sendOtpBtn.innerHTML = phoneIcon; sendOtpBtn.title = "Send verification code to phone"; }
+          }, 1000);
+        } catch (err) {
+          markField(f.contact, "regContactHint", err.message || "Failed to send code. Try again.", true);
+          sendOtpBtn.disabled = false;
+          sendOtpBtn.innerHTML = phoneIcon;
+        }
+      });
+
+      verifyOtpBtn.addEventListener("click", async () => {
+        const otp = otpInput.value.trim();
+        if (!otp) { setOtpHint("Enter the 6-digit code.", true); return; }
+        verifyOtpBtn.disabled = true;
+        verifyOtpBtn.textContent = "Verifying…";
+        try {
+          const resp = await fetch("/api/method/pw_subscription.api.verify_phone_otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": getCsrf() },
+            body: JSON.stringify({ phone: f.contact.value.trim(), otp }),
+          });
+          const data = await resp.json();
+          const r = data.message;
+          if (r && r.valid) {
+            phoneVerified = true;
+            setOtpHint("Phone verified!", false);
+            otpInput.disabled = true;
+            verifyOtpBtn.textContent = "Verified";
+            f.contact.classList.remove("f-err");
+            document.getElementById("regContactHint").textContent = "";
+          } else {
+            const reason = r && r.reason;
+            setOtpHint(reason === "expired" ? "Code expired. Click Send Code to get a new one." : "Incorrect code. Try again.", true);
+            verifyOtpBtn.disabled = false;
+            verifyOtpBtn.textContent = "Verify";
+          }
+        } catch (err) {
+          setOtpHint("Verification failed. Try again.", true);
+          verifyOtpBtn.disabled = false;
+          verifyOtpBtn.textContent = "Verify";
+        }
+      });
+
+      // Reset verification when user edits the phone number
+      f.contact.addEventListener("input", () => {
+        if (phoneVerified) {
+          phoneVerified = false;
+          otpRow.style.display = "none";
+          otpInput.disabled = false;
+          verifyOtpBtn.disabled = false;
+          verifyOtpBtn.textContent = "Verify";
+          sendOtpBtn.disabled = false;
+          sendOtpBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+        }
+      });
+    }
 
     // ── Provisioning panel refs ──
     const provPanel    = document.getElementById("regProvisioning");

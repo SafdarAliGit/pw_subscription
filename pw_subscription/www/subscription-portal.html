@@ -59,6 +59,7 @@
   ══════════════════════════════════════════ */
   .auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1.25rem 4rem;background:linear-gradient(160deg,#EFF6FF 0%,#F1F5F9 55%,#F0FDF4 100%)}
   .auth-box{width:100%;max-width:440px}
+  .auth-box.reg-mode{max-width:700px}
 
   .auth-brand{text-align:center;margin-bottom:2rem}
   .auth-brand-dot{width:52px;height:52px;background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;box-shadow:0 4px 14px rgba(37,99,235,.3)}
@@ -301,6 +302,68 @@
   .lm-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:.25rem;border-radius:6px}
   .lm-close:hover{color:#0F172A;background:var(--light)}
   .lm-footer{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--muted)}
+  .reg-spinner{width:18px;height:18px;border-radius:50%;border:2px solid #e2e8f0;border-top-color:#2563eb;animation:portalSpin .7s linear infinite;display:inline-block}
+  @keyframes portalSpin{to{transform:rotate(360deg)}}
+
+  /* ── Registration form (matches Get Started modal) ── */
+  .req{color:var(--danger)}
+  .reg-label{font-size:.72rem;font-weight:700;color:#475569;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:.25rem}
+  .reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.2rem}
+  @media(max-width:540px){.reg-grid{grid-template-columns:1fr}}
+  .reg-field{display:flex;flex-direction:column;gap:.35rem}
+  .reg-field.full{grid-column:1/-1}
+  .reg-iw{position:relative}
+  .reg-iw input,.reg-iw textarea{width:100%;padding:.72rem 1rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#0F172A;font-family:inherit;background:#F8FAFC;transition:border-color .2s,box-shadow .2s,background .2s;outline:none;box-sizing:border-box;line-height:1.5}
+  .reg-iw input:focus,.reg-iw textarea:focus{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .reg-iw input.has-badge{padding-right:7rem}
+  .reg-iw input.f-err{border-color:#EF4444!important;background:#FFF5F5;box-shadow:0 0 0 3px rgba(239,68,68,.07)!important}
+  .reg-iw input.f-ok{border-color:#10B981!important;background:#F0FDF4;box-shadow:0 0 0 3px rgba(16,185,129,.07)!important}
+  .reg-iw textarea{resize:vertical;min-height:74px}
+  .reg-iw textarea.f-err{border-color:#EF4444!important;background:#FFF5F5}
+  .reg-pw-wrap input{padding-right:2.8rem}
+  .reg-pw-btn{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#94A3B8;display:flex;transition:color .2s}
+  .reg-pw-btn:hover{color:#2563EB}
+  .reg-pw-btn svg{width:18px;height:18px}
+  .reg-avail{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;pointer-events:none;white-space:nowrap}
+  .reg-avail.spin{color:#94A3B8}.reg-avail.ok{color:#10B981}.reg-avail.err{color:#EF4444}
+  .reg-hint{font-size:.76rem;min-height:.95rem;line-height:1.3}
+  .reg-hint.ok{color:#10B981}.reg-hint.err{color:#EF4444}.reg-hint.muted{color:#94A3B8}
+  .reg-err-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:.75rem 1rem;font-size:.84rem;color:#DC2626;display:none;margin-top:.25rem;grid-column:1/-1}
+  .reg-search-wrap{position:relative}
+  .reg-search-input{width:100%;padding:.72rem 2.5rem .72rem 1rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#0F172A;font-family:inherit;background:#F8FAFC;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s,background .2s;cursor:pointer}
+  .reg-search-input:focus{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .reg-search-input.f-err{border-color:#EF4444!important;background:#FFF5F5}
+  .reg-search-input:disabled{opacity:.55;cursor:not-allowed}
+  .reg-search-arrow{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8}
+  .reg-search-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:9999;background:#fff;border:1.5px solid #CBD5E1;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.14);max-height:220px;overflow-y:auto}
+  .reg-search-dropdown.hidden{display:none}
+  .reg-dropdown-item{padding:.6rem 1rem;cursor:pointer;font-size:.88rem;color:#1E293B;transition:background .1s;border-bottom:1px solid #F1F5F9}
+  .reg-dropdown-item:last-child{border-bottom:none}
+  .reg-dropdown-item:hover,.reg-dropdown-item.highlighted{background:#EFF6FF;color:#2563EB}
+  .reg-dropdown-empty{padding:.75rem 1rem;font-size:.84rem;color:#94A3B8;text-align:center}
+  .reg-otp-btn{flex-shrink:0;width:auto;min-width:52px;padding:.35rem .5rem;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1;background:linear-gradient(135deg,#2563EB,#1d4ed8);color:#fff;border:none;cursor:pointer;transition:all .2s}
+  .reg-otp-btn:hover:not(:disabled){background:#1d4ed8}.reg-otp-btn:disabled{opacity:.55;cursor:not-allowed}
+  .reg-verify-btn{flex-shrink:0;padding:.55rem 1rem;font-size:.8rem;font-weight:600;background:var(--success);color:#fff;border:none;border-radius:9px;cursor:pointer;transition:background .15s}
+  .reg-verify-btn:hover:not(:disabled){background:#059669}.reg-verify-btn:disabled{opacity:.55;cursor:not-allowed}
+
+  /* ── Register mode: hide tabs, remove card padding, show dark header ── */
+  .auth-card.reg-mode{padding:0;border-color:transparent}
+  .auth-card.reg-mode .auth-tabs{display:none}
+  .reg-portal-head{
+    background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 55%,#2563EB 100%);
+    border-radius:20px 20px 0 0;padding:1.75rem 2rem 1.5rem;text-align:center;position:relative;overflow:hidden
+  }
+  .reg-portal-head::after{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none}
+  .reg-portal-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.18);border:1px solid rgba(16,185,129,.4);color:#6EE7B7;padding:.28rem .85rem;border-radius:100px;font-size:.73rem;font-weight:600;margin-bottom:.85rem}
+  .reg-portal-badge-dot{width:6px;height:6px;border-radius:50%;background:#10B981;flex-shrink:0}
+  .reg-portal-logo{font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:.45rem}
+  .reg-portal-logo span{color:#60a5fa}
+  .reg-portal-title{font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 .3rem;letter-spacing:-.4px}
+  .reg-portal-sub{font-size:.84rem;color:rgba(255,255,255,.6);margin:0}
+  .reg-portal-body{padding:1.5rem 2rem 2rem}
+  .reg-portal-back{text-align:center;padding:.25rem 0 1rem;font-size:.82rem;color:var(--muted)}
+  .reg-portal-back a{color:var(--primary);font-weight:600;cursor:pointer;text-decoration:none}
+  .reg-portal-back a:hover{text-decoration:underline}
 </style>
 {% endblock %}
 
@@ -377,90 +440,141 @@
 
       <!-- ── REGISTER PANEL ── -->
       <div id="registerPanel" class="hidden">
-        <div class="auth-form-title">Start Free Trial</div>
-        <div class="auth-form-sub">Set up your clinic in minutes</div>
 
-        <!-- Step bar -->
-        <div class="reg-step-bar" id="regStepBar">
-          <div class="reg-step active" id="rsDot0"><div class="reg-step-num">1</div><div class="reg-step-label">Clinic</div></div>
-          <div class="reg-step-line" id="rsLine0"></div>
-          <div class="reg-step" id="rsDot1"><div class="reg-step-num">2</div><div class="reg-step-label">Doctor</div></div>
-          <div class="reg-step-line" id="rsLine1"></div>
-          <div class="reg-step" id="rsDot2"><div class="reg-step-num">3</div><div class="reg-step-label">Account</div></div>
+        <!-- Dark gradient header (mirrors Get Started modal) -->
+        <div class="reg-portal-head">
+          <div class="reg-portal-badge"><span class="reg-portal-badge-dot"></span>Free for {{ trial_days }} days &mdash; no payment required</div>
+          <div class="reg-portal-logo">{{ app_name }}</div>
+          <h2 class="reg-portal-title">Start Your Free Trial</h2>
+          <p class="reg-portal-sub">Set up your clinic in under 2 minutes.</p>
         </div>
 
-        <!-- Step 1: Clinic -->
-        <div class="reg-panel active" id="regStep0">
-          <div class="form-group">
-            <label class="form-label">Clinic Web Address <span style="color:var(--danger)">*</span></label>
-            <div class="subdomain-wrap" id="subdomainWrap">
-              <input class="subdomain-input" id="regClinic" type="text"
-                     placeholder="your-clinic"
-                     maxlength="63"
-                     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                     oninput="formatSubdomain(this)">
-              <span class="subdomain-suffix">.{{ base_domain or 'your-domain.com' }}</span>
+        <!-- Form body -->
+        <div class="reg-portal-body">
+        <form id="regForm" novalidate autocomplete="off">
+          <div class="reg-grid">
+
+            <!-- Clinic Name -->
+            <div class="reg-field full">
+              <label class="reg-label" for="regClinicName">Clinic Name <span class="req">*</span></label>
+              <div class="reg-iw">
+                <input type="text" id="regClinicName" class="has-badge" placeholder="e.g. Sunrise Medical Clinic" autocomplete="off">
+                <div class="reg-avail" id="regAvail"></div>
+              </div>
             </div>
-            <div class="subdomain-preview hidden" id="clinicPreview"></div>
-            <div class="subdomain-status" id="clinicCheck"></div>
-            <div class="subdomain-counter" id="subdomainCounter">0 / 63</div>
-            <ul class="subdomain-rules">
-              <li>Lowercase letters (a–z), numbers (0–9) and hyphens (-) only</li>
-              <li>Must start with a letter &nbsp;·&nbsp; Cannot start or end with a hyphen</li>
-              <li>No spaces or special characters &nbsp;·&nbsp; 3 to 63 characters</li>
-            </ul>
-          </div>
-          <div class="form-group">
-            <label class="form-label">City</label>
-            <input class="form-control" id="regCity" type="text" placeholder="e.g. Karachi">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Address</label>
-            <input class="form-control" id="regAddress" type="text" placeholder="Clinic address">
-          </div>
-          <div class="reg-nav">
-            <button class="btn btn-outline btn-sm" onclick="switchTab('login')">Cancel</button>
-            <button class="btn btn-primary" onclick="regNext(1)">Next →</button>
-          </div>
-        </div>
 
-        <!-- Step 2: Doctor -->
-        <div class="reg-panel" id="regStep1">
-          <div class="form-group">
-            <label class="form-label">Doctor / Owner Name <span style="color:var(--danger)">*</span></label>
-            <input class="form-control" id="regName" type="text" placeholder="Dr. Ahmed Khan">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Contact Phone <span style="color:var(--danger)">*</span></label>
-            <input class="form-control" id="regPhone" type="tel" placeholder="+92 300 0000000">
-          </div>
-          <div class="reg-nav">
-            <button class="btn btn-outline btn-sm" onclick="regNext(0)">← Back</button>
-            <button class="btn btn-primary" onclick="regNext(2)">Next →</button>
-          </div>
-        </div>
+            <!-- Physician Name -->
+            <div class="reg-field">
+              <label class="reg-label" for="regPhysician">Physician Name <span class="req">*</span></label>
+              <div class="reg-iw">
+                <input type="text" id="regPhysician" placeholder="Dr. Ahmed Khan">
+              </div>
+              <div class="reg-hint" id="regPhysicianHint"></div>
+            </div>
 
-        <!-- Step 3: Account -->
-        <div class="reg-panel" id="regStep2">
-          <div class="form-group">
-            <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
-            <input class="form-control" id="regEmail" type="email" placeholder="doctor@clinic.com">
-            <div class="form-hint">This will be your login ID</div>
+            <!-- Contact / WhatsApp -->
+            <div class="reg-field">
+              <label class="reg-label" for="regContact">Contact / WhatsApp <span class="req">*</span></label>
+              <div class="reg-iw" style="display:flex;gap:.5rem">
+                <input type="tel" id="regContact" placeholder="+92 300 1234567" style="flex:1">
+                {% if phone_otp_enabled %}
+                <button type="button" id="regSendOtp" title="Send verification code to phone" class="reg-otp-btn" aria-label="Send phone verification code"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify</button>
+                {% endif %}
+              </div>
+              <div class="reg-hint" id="regContactHint"></div>
+            </div>
+
+            {% if phone_otp_enabled %}
+            <div class="reg-field full" id="regOtpRow" style="display:none">
+              <label class="reg-label" for="regOtp">Verification Code <span class="req">*</span></label>
+              <div class="reg-iw" style="display:flex;gap:.5rem">
+                <input type="text" id="regOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+                <button type="button" id="regVerifyOtp" class="reg-verify-btn">Verify</button>
+              </div>
+              <div class="reg-hint" id="regOtpHint"></div>
+            </div>
+            {% endif %}
+
+            <!-- Email -->
+            <div class="reg-field">
+              <label class="reg-label" for="regEmail">Email Address <span class="req">*</span></label>
+              <div class="reg-iw" style="display:flex;gap:.5rem">
+                <input type="email" id="regEmail" placeholder="doctor@clinic.com" style="flex:1">
+                {% if email_otp_enabled %}
+                <button type="button" id="regSendEmailOtp" title="Send verification code to email" class="reg-otp-btn" aria-label="Send email verification code"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify</button>
+                {% endif %}
+              </div>
+              <div class="reg-hint" id="regEmailHint"></div>
+            </div>
+
+            {% if email_otp_enabled %}
+            <div class="reg-field full" id="regEmailOtpRow" style="display:none">
+              <label class="reg-label" for="regEmailOtp">Email Verification Code <span class="req">*</span></label>
+              <div class="reg-iw" style="display:flex;gap:.5rem">
+                <input type="text" id="regEmailOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+                <button type="button" id="regVerifyEmailOtp" class="reg-verify-btn">Verify</button>
+              </div>
+              <div class="reg-hint" id="regEmailOtpHint"></div>
+            </div>
+            {% endif %}
+
+            <!-- Password -->
+            <div class="reg-field">
+              <label class="reg-label" for="regPassword">Password <span class="req">*</span></label>
+              <div class="reg-iw reg-pw-wrap">
+                <input type="password" id="regPassword" placeholder="Min. 8 characters">
+                <button type="button" class="reg-pw-btn" id="regPwBtn" aria-label="Toggle visibility">
+                  <svg id="regEyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg id="regEyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </button>
+              </div>
+              <div class="reg-hint" id="regPasswordHint"></div>
+            </div>
+
+            <!-- Country -->
+            <div class="reg-field">
+              <label class="reg-label" for="regCountryInput">Country</label>
+              <div class="reg-iw reg-search-wrap">
+                <input type="text" id="regCountryInput" class="reg-search-input" placeholder="Search country..." autocomplete="off">
+                <input type="hidden" id="regCountry">
+                <span class="reg-search-arrow">&#9662;</span>
+                <div class="reg-search-dropdown hidden" id="regCountryDropdown"></div>
+              </div>
+              <div class="reg-hint" id="regCountryHint"></div>
+            </div>
+
+            <!-- City -->
+            <div class="reg-field">
+              <label class="reg-label" for="regCityInput">City</label>
+              <div class="reg-iw reg-search-wrap">
+                <input type="text" id="regCityInput" class="reg-search-input" placeholder="Select country first..." autocomplete="off" disabled>
+                <input type="hidden" id="regCity">
+                <span class="reg-search-arrow">&#9662;</span>
+                <div class="reg-search-dropdown hidden" id="regCityDropdown"></div>
+              </div>
+              <div class="reg-hint" id="regCityHint"></div>
+            </div>
+
+            <!-- Address -->
+            <div class="reg-field full">
+              <label class="reg-label" for="regAddress">Clinic Address <span class="req">*</span></label>
+              <div class="reg-iw">
+                <textarea id="regAddress" placeholder="Street, City, Province"></textarea>
+              </div>
+              <div class="reg-hint" id="regAddressHint"></div>
+            </div>
+
+            <div class="reg-err-box" id="regErrBox"></div>
+
+            <div class="reg-field full" style="gap:.6rem">
+              <button type="submit" class="btn btn-primary btn-full btn-lg" id="regSubmitBtn" style="margin-top:.1rem">Complete Registration &rarr;</button>
+              <div style="text-align:center;font-size:.74rem;color:#94A3B8">By registering you agree to our terms of service.</div>
+            </div>
+
           </div>
-          <div class="form-group">
-            <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
-            <input class="form-control" id="regPassword" type="password" placeholder="Min 8 characters">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Confirm Password <span style="color:var(--danger)">*</span></label>
-            <input class="form-control" id="regPasswordConfirm" type="password" placeholder="Repeat password">
-          </div>
-          <div class="form-error hidden" id="regGlobalErr" style="margin-bottom:.75rem;font-size:.85rem"></div>
-          <div class="reg-nav">
-            <button class="btn btn-outline btn-sm" onclick="regNext(1)">← Back</button>
-            <button class="btn btn-success" id="regSubmitBtn" onclick="doRegister()">🚀 Start Free Trial</button>
-          </div>
-        </div>
+        </form>
+        <div class="reg-portal-back"><a onclick="switchTab('login')">← Back to Sign In</a></div>
+        </div><!-- /reg-portal-body -->
       </div>
 
       <!-- ── PROVISIONING PANEL ── -->
@@ -505,11 +619,15 @@
       <div class="topbar-name">{{ app_name }}</div>
     </div>
     <div class="topbar-right">
-      <div class="user-chip">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <span class="user-name" id="userDisplayName">{{ session_user }}</span>
+      <div class="user-chip" id="userChip" {% if is_guest %}style="display:none"{% endif %}>
+        <div class="user-avatar" id="userAvatar"></div>
+        <span class="user-name" id="userDisplayName"></span>
       </div>
+      {% if is_guest %}
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('authScreen').classList.remove('hidden');document.getElementById('dashScreen').classList.add('hidden')">Sign In</button>
+      {% else %}
       <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
+      {% endif %}
     </div>
   </div>
 
@@ -519,9 +637,9 @@
   <!-- Status card -->
   <div id="statusCard" class="status-card sc-trial fade-up" style="margin-bottom:1.5rem">
     <div class="sc-left">
-      <div class="sc-badge"><span class="sc-badge-dot"></span><span id="statusLabel">Loading…</span></div>
-      <div class="sc-title" id="statusTitle">—</div>
-      <div class="sc-sub" id="statusSub">—</div>
+      <div class="sc-badge"><span class="sc-badge-dot"></span><span id="statusLabel">Fetching…</span></div>
+      <div class="sc-title" id="statusTitle"></div>
+      <div class="sc-sub" id="statusSub"></div>
       <div class="sc-pills" id="scPills"></div>
     </div>
     <div class="sc-right">
@@ -534,11 +652,11 @@
   <div class="cards-row fade-up">
     <div class="info-card">
       <div class="info-card-title">Subscription Details</div>
-      <div id="subDetails"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+      <div id="subDetails"><div style="display:flex;justify-content:center;padding:2rem"><div class="reg-spinner" style="width:22px;height:22px;border-color:#e2e8f0;border-top-color:#2563eb"></div></div></div>
     </div>
     <div class="info-card">
       <div class="info-card-title">Clinic Info</div>
-      <div id="clinicDetails"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+      <div id="clinicDetails"><div style="display:flex;justify-content:center;padding:2rem"><div class="reg-spinner" style="width:22px;height:22px;border-color:#e2e8f0;border-top-color:#2563eb"></div></div></div>
     </div>
   </div>
 
@@ -736,10 +854,14 @@ let currentSub = null, currentEmail = '', regRequestName = '', provPollTimer = n
 let _provEmail = '', _provPass = '';
 
 // ── API ───────────────────────────────────────────────────────────────────────
+function getCsrf() {
+  if (window.frappe && frappe.csrf_token) return frappe.csrf_token;
+  const m = document.querySelector('meta[name="csrf-token"]');
+  return m ? (m.getAttribute('content') || '') : '';
+}
+
 async function api(method, args = {}, allowGuest = false) {
-  const headers = {'Content-Type': 'application/json'};
-  if (!allowGuest) headers['X-Frappe-CSRF-Token'] = frappe.csrf_token || '';
-  else headers['X-Frappe-CSRF-Token'] = frappe.csrf_token || '';
+  const headers = {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': getCsrf()};
   const resp = await fetch(`/api/method/${method}`, {
     method: 'POST',
     headers,
@@ -757,22 +879,29 @@ async function api(method, args = {}, allowGuest = false) {
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
+  const authCard = document.querySelector('.auth-card');
+  const authBox  = document.querySelector('.auth-box');
   ['loginPanel','registerPanel','forgotPanel','provPanel'].forEach(id => {
     document.getElementById(id).classList.add('hidden');
   });
   ['tabLogin','tabRegister'].forEach(id => document.getElementById(id).classList.remove('active'));
-  if (tab === 'login') {
-    document.getElementById('loginPanel').classList.remove('hidden');
-    document.getElementById('tabLogin').classList.add('active');
-  } else if (tab === 'register') {
+  if (tab === 'register') {
     document.getElementById('registerPanel').classList.remove('hidden');
-    document.getElementById('tabRegister').classList.add('active');
-    showRegStep(0);
-  } else if (tab === 'forgot') {
-    document.getElementById('forgotPanel').classList.remove('hidden');
-  } else if (tab === 'prov') {
-    document.getElementById('provPanel').classList.remove('hidden');
-    document.getElementById('tabRegister').classList.add('active');
+    if (authCard) authCard.classList.add('reg-mode');
+    if (authBox)  authBox.classList.add('reg-mode');
+    portalLoadCountries();
+  } else {
+    if (authCard) authCard.classList.remove('reg-mode');
+    if (authBox)  authBox.classList.remove('reg-mode');
+    if (tab === 'login') {
+      document.getElementById('loginPanel').classList.remove('hidden');
+      document.getElementById('tabLogin').classList.add('active');
+    } else if (tab === 'forgot') {
+      document.getElementById('forgotPanel').classList.remove('hidden');
+    } else if (tab === 'prov') {
+      document.getElementById('provPanel').classList.remove('hidden');
+      document.getElementById('tabRegister').classList.add('active');
+    }
   }
 }
 
@@ -817,192 +946,416 @@ async function doLogin() {
 }
 
 async function doLogout() {
-  try { await fetch('/api/method/logout', {method:'POST', headers:{'X-Frappe-CSRF-Token': frappe.csrf_token||''}}); }
+  try { await fetch('/api/method/logout', {method:'POST', headers:{'X-Frappe-CSRF-Token': getCsrf()}}); }
   catch(_) {}
   window.location.reload();
 }
 
 // ── REGISTER ─────────────────────────────────────────────────────────────────
-let clinicAvailTimer = null, clinicAvailable = false;
+const EMAIL_OTP_ENABLED = {{ 'true' if email_otp_enabled else 'false' }};
+const PHONE_OTP_ENABLED = {{ 'true' if phone_otp_enabled else 'false' }};
 
-// Reserved subdomain words — same list as server
-const _SD_RESERVED = new Set([
-  'www','mail','ftp','smtp','imap','pop','ns1','ns2','ns3','vpn','cdn',
-  'admin','api','app','portal','support','help','dashboard','status',
-  'root','localhost','dev','staging','test','demo','beta','alpha',
-  'blog','shop','store','static','assets','media','images','docs',
-  'git','webmail','cpanel','ssl','remote',
-]);
+let portalClinicOk = false, portalEmailBlocked = false;
+let portalEmailVerified = false, portalPhoneVerified = false;
+let portalCheckTimer = null, portalEmailTimer = null;
+let portalAllCountries = [], portalAllCities = [], portalCountriesLoaded = false;
 
-function validateSubdomain(val) {
-  if (!val)           return {ok:false, msg:'', type:'empty'};
-  if (val.length < 3) return {ok:false, msg:`Too short — need at least 3 characters (${val.length}/3)`, type:'format'};
-  if (val.length > 63) return {ok:false, msg:'Too long — maximum 63 characters', type:'format'};
-  if (/^[0-9]/.test(val))      return {ok:false, msg:'Must start with a letter (a–z), not a number', type:'format'};
-  if (val.startsWith('-'))      return {ok:false, msg:'Cannot start with a hyphen ( - )', type:'format'};
-  if (val.endsWith('-'))        return {ok:false, msg:'Cannot end with a hyphen ( - )', type:'format'};
-  if (val.includes('--'))       return {ok:false, msg:'No consecutive hyphens allowed ( -- )', type:'format'};
-  if (/[^a-z0-9-]/.test(val))  return {ok:false, msg:'Only lowercase letters (a–z), numbers (0–9) and hyphens (-) allowed', type:'format'};
-  if (_SD_RESERVED.has(val))   return {ok:false, msg:`"${val}" is a reserved word — please choose another name`, type:'format'};
-  return {ok:true};
+const PHONE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify';
+const EMAIL_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify';
+
+function portalMarkField(input, hintId, msg, isErr) {
+  input.classList.toggle('f-err', isErr);
+  const h = document.getElementById(hintId);
+  if (h) { h.className = 'reg-hint ' + (isErr ? 'err' : ''); h.textContent = msg || ''; }
+  return !isErr;
 }
 
-function formatSubdomain(input) {
-  const pos   = input.selectionStart;
-  const raw   = input.value;
-  // Auto-transform: lowercase, spaces→hyphens, strip invalid chars
-  const clean = raw.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  if (raw !== clean) {
-    const shrink = raw.length - clean.length;
-    input.value  = clean;
-    try { input.setSelectionRange(Math.max(0,pos-shrink), Math.max(0,pos-shrink)); } catch(_){}
-  }
-  // Character counter
-  const ctr = document.getElementById('subdomainCounter');
-  if (ctr) {
-    ctr.textContent = `${clean.length} / 63`;
-    ctr.className   = clean.length > 63 ? 'subdomain-counter over'
-                    : clean.length > 55 ? 'subdomain-counter warn'
-                    : 'subdomain-counter';
-  }
-  runClinicValidation(clean);
+function portalSetEmailHint(msg, isErr) {
+  const email = document.getElementById('regEmail');
+  const h = document.getElementById('regEmailHint');
+  if (email) email.classList.toggle('f-err', isErr);
+  if (h) { h.className = 'reg-hint ' + (isErr ? 'err' : ''); h.textContent = msg || ''; }
 }
 
-function runClinicValidation(val) {
-  clearTimeout(clinicAvailTimer);
-  clinicAvailable = false;
-
-  const wrap    = document.getElementById('subdomainWrap');
-  const statusEl = document.getElementById('clinicCheck');
-  const prevEl  = document.getElementById('clinicPreview');
-
-  // Preview URL
-  if (val) {
-    prevEl.textContent = PORTAL_DOMAIN ? `${val}.${PORTAL_DOMAIN}` : val;
-    prevEl.classList.remove('hidden');
-  } else {
-    prevEl.classList.add('hidden');
-  }
-
-  // Reset wrap state
-  wrap.className = 'subdomain-wrap';
-
-  if (!val) { statusEl.innerHTML = ''; return; }
-
-  const v = validateSubdomain(val);
-  if (!v.ok) {
-    if (v.type !== 'empty') {
-      wrap.classList.add('sd-error');
-      statusEl.innerHTML = `<span style="color:var(--danger)">✗ ${esc(v.msg)}</span>`;
-    }
+function portalCheckClinicName() {
+  const clinic = document.getElementById('regClinicName');
+  if (!clinic) return;
+  const val = clinic.value.trim();
+  portalClinicOk = false;
+  const avail = document.getElementById('regAvail');
+  if (!val) {
+    if (avail) { avail.className = 'reg-avail'; avail.innerHTML = ''; }
+    clinic.classList.remove('f-ok', 'f-err');
     return;
   }
-
-  // Valid format — debounce availability check
-  statusEl.innerHTML = '<span style="color:var(--muted);font-size:.78rem">⏳ Checking availability…</span>';
-  clinicAvailTimer = setTimeout(async () => {
-    try {
-      const r = await api('pw_subscription.api.check_clinic_name', {clinic_name: val}, true);
-      if (r.available) {
-        clinicAvailable = true;
-        wrap.classList.add('sd-success');
-        statusEl.innerHTML = `<span style="color:var(--success)">✓ Available — your address will be <strong>${esc(PORTAL_DOMAIN ? val+'.'+PORTAL_DOMAIN : val)}</strong></span>`;
+  if (avail) { avail.className = 'reg-avail spin'; avail.innerHTML = '<div class="reg-spinner" style="width:12px;height:12px;border:2px solid #E2E8F0;border-top-color:#94A3B8"></div> Checking…'; }
+  fetch('/api/method/pw_subscription.api.check_clinic_name?clinic_name=' + encodeURIComponent(val))
+    .then(r => r.json())
+    .then(data => {
+      const d = data.message;
+      if (d.available) {
+        portalClinicOk = true;
+        if (avail) { avail.className = 'reg-avail ok'; avail.innerHTML = '✓ Available'; }
+        clinic.classList.remove('f-err'); clinic.classList.add('f-ok');
       } else {
-        clinicAvailable = false;
-        wrap.classList.add('sd-error');
-        let html = `<span style="color:var(--danger)">✗ ${esc(r.message || 'Name already taken')}`;
-        if (r.suggestions && r.suggestions.length)
-          html += ` — try: ${r.suggestions.map(s=>`<strong>${esc(s)}</strong>`).join(' or ')}`;
-        html += '</span>';
-        statusEl.innerHTML = html;
+        portalClinicOk = false;
+        if (avail) { avail.className = 'reg-avail err'; avail.innerHTML = '✗ Taken'; }
+        clinic.classList.remove('f-ok'); clinic.classList.add('f-err');
       }
-    } catch(_) {
-      statusEl.innerHTML = '<span style="color:var(--muted)">Could not check availability. Try again.</span>';
-    }
-  }, 700);
+    })
+    .catch(() => { if (avail) { avail.className = 'reg-avail'; avail.innerHTML = ''; } portalClinicOk = false; });
 }
 
-function showRegStep(n) {
-  for (let i = 0; i < 3; i++) {
-    document.getElementById(`regStep${i}`).classList.remove('active');
-    const dot = document.getElementById(`rsDot${i}`);
-    dot.classList.remove('active','done');
-    if (i < n) dot.classList.add('done');
-    else if (i === n) dot.classList.add('active');
+function portalCheckEmail() {
+  const email = document.getElementById('regEmail');
+  if (!email) return;
+  const val = email.value.trim();
+  portalEmailBlocked = false;
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!val || !emailRe.test(val)) return;
+  fetch('/api/method/pw_subscription.api.check_email?email=' + encodeURIComponent(val))
+    .then(r => r.json())
+    .then(data => {
+      if (data.message && data.message.available) { portalEmailBlocked = false; portalSetEmailHint('', false); }
+      else { portalEmailBlocked = true; portalSetEmailHint('This email is already registered. Please use a different email.', true); }
+    })
+    .catch(() => { portalEmailBlocked = false; });
+}
+
+function portalValidateAll() {
+  const clinic    = document.getElementById('regClinicName');
+  const physician = document.getElementById('regPhysician');
+  const email     = document.getElementById('regEmail');
+  const password  = document.getElementById('regPassword');
+  const contact   = document.getElementById('regContact');
+  const address   = document.getElementById('regAddress');
+  let ok = true;
+
+  if (!clinic.value.trim() || !portalClinicOk) { clinic.classList.add('f-err'); ok = false; }
+  if (!portalMarkField(physician, 'regPhysicianHint', 'Physician name is required.', !physician.value.trim())) ok = false;
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.value.trim()) { portalMarkField(email, 'regEmailHint', 'Email is required.', true); ok = false; }
+  else if (!emailRe.test(email.value.trim())) { portalMarkField(email, 'regEmailHint', 'Enter a valid email address.', true); ok = false; }
+  else if (portalEmailBlocked) { email.classList.add('f-err'); ok = false; }
+
+  if (password.value.length < 8) { portalMarkField(password, 'regPasswordHint', 'Password must be at least 8 characters.', true); ok = false; }
+
+  const phoneRaw    = contact.value.trim();
+  const phoneDigits = phoneRaw.replace(/[\s\-().]/g, '');
+  const phoneRe     = /^\+?[0-9]{7,15}$/;
+  if (!phoneRaw) { portalMarkField(contact, 'regContactHint', 'Contact number is required.', true); ok = false; }
+  else if (!phoneRe.test(phoneDigits)) { portalMarkField(contact, 'regContactHint', 'Enter a valid phone number (e.g. +92 300 1234567).', true); ok = false; }
+
+  if (EMAIL_OTP_ENABLED || PHONE_OTP_ENABLED) {
+    const satisfied = (EMAIL_OTP_ENABLED && portalEmailVerified) || (PHONE_OTP_ENABLED && portalPhoneVerified);
+    if (!satisfied) {
+      if (EMAIL_OTP_ENABLED && PHONE_OTP_ENABLED) { portalMarkField(email, 'regEmailHint', 'Please verify your email or phone number before registering.', true); ok = false; }
+      else if (EMAIL_OTP_ENABLED) { portalMarkField(email, 'regEmailHint', 'Please verify your email address by clicking Send Code.', true); ok = false; }
+      else { portalMarkField(contact, 'regContactHint', 'Please verify your phone number by clicking Send Code.', true); ok = false; }
+    }
   }
-  document.getElementById(`regStep${n}`).classList.add('active');
+
+  if (!portalMarkField(address, 'regAddressHint', 'Address is required.', !address.value.trim())) ok = false;
+  return ok;
 }
 
-function regNext(to) {
-  const from = to > 0 ? to - 1 : to + 1;
-  if (to > from && !validateRegStep(from)) return;
-  showRegStep(to);
-}
-
-function validateRegStep(step) {
-  if (step === 0) {
-    const c = document.getElementById('regClinic').value.trim();
-    if (!c) {
-      document.getElementById('subdomainWrap').classList.add('sd-error');
-      document.getElementById('clinicCheck').innerHTML = '<span style="color:var(--danger)">✗ Clinic web address is required</span>';
-      document.getElementById('regClinic').focus();
-      return false;
+function buildPortalDropdown(inputEl, dropdownEl, hiddenEl, items, labelKey, onSelect) {
+  function render(filter) {
+    const lc = (filter || '').toLowerCase();
+    const filtered = lc ? items.filter(i => (labelKey ? i[labelKey] : i).toLowerCase().includes(lc)) : items;
+    if (!filtered.length) {
+      dropdownEl.innerHTML = '<div class="reg-dropdown-empty">No results</div>';
+    } else {
+      dropdownEl.innerHTML = filtered.slice(0, 80).map(item => {
+        const label = labelKey ? item[labelKey] : item;
+        return `<div class="reg-dropdown-item" data-label="${label.replace(/"/g,'&quot;')}">${label}</div>`;
+      }).join('');
+      dropdownEl.querySelectorAll('.reg-dropdown-item').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const val = el.dataset.label;
+          inputEl.value = val; hiddenEl.value = val;
+          inputEl.classList.remove('f-err');
+          dropdownEl.classList.add('hidden');
+          if (onSelect) onSelect(val);
+        });
+      });
     }
-    const v = validateSubdomain(c);
-    if (!v.ok) {
-      toast('Fix the clinic name error before continuing.', 'error');
-      return false;
-    }
-    if (!clinicAvailable) {
-      toast('Availability check pending — please wait a moment or choose a different name.', 'error');
-      return false;
-    }
+    dropdownEl.classList.remove('hidden');
   }
-  if (step === 1) {
-    const n = document.getElementById('regName').value.trim();
-    const p = document.getElementById('regPhone').value.trim();
-    if (!n) { document.getElementById('regName').classList.add('error'); toast('Doctor name is required.','error'); return false; }
-    if (!p) { document.getElementById('regPhone').classList.add('error'); toast('Contact phone is required.','error'); return false; }
-  }
-  return true;
+  inputEl.addEventListener('input', () => { hiddenEl.value = ''; render(inputEl.value); });
+  inputEl.addEventListener('focus', () => render(inputEl.value));
+  inputEl.addEventListener('blur', () => {
+    setTimeout(() => dropdownEl.classList.add('hidden'), 180);
+    const val = inputEl.value.trim();
+    if (val && hiddenEl.value !== val) {
+      const match = items.find(i => (labelKey ? i[labelKey] : i).toLowerCase() === val.toLowerCase());
+      if (match) { const label = labelKey ? match[labelKey] : match; inputEl.value = label; hiddenEl.value = label; if (onSelect) onSelect(label); }
+      else { inputEl.value = ''; hiddenEl.value = ''; }
+    }
+  });
 }
 
-async function doRegister() {
-  if (!validateRegStep(2)) return;
-  const email    = document.getElementById('regEmail').value.trim();
-  const pass     = document.getElementById('regPassword').value;
-  const passConf = document.getElementById('regPasswordConfirm').value;
-  const errEl    = document.getElementById('regGlobalErr');
-  errEl.classList.add('hidden');
-
-  if (!email || !pass) { showError(errEl,'Email and password are required.'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError(errEl,'Invalid email address.'); return; }
-  if (pass.length < 8) { showError(errEl,'Password must be at least 8 characters.'); return; }
-  if (pass !== passConf) { showError(errEl,'Passwords do not match.'); return; }
-
-  const btn = document.getElementById('regSubmitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-inline"></span>Creating clinic…';
+async function onPortalCountrySelect(country) {
+  const cityInp  = document.getElementById('regCityInput');
+  const cityDrop = document.getElementById('regCityDropdown');
+  const cityHid  = document.getElementById('regCity');
+  cityInp.value = ''; cityHid.value = ''; cityDrop.classList.add('hidden');
+  cityInp.disabled = true; cityInp.placeholder = 'Loading cities…';
   try {
-    const r = await api('pw_subscription.api.register_clinic', {
-      clinic_name:    document.getElementById('regClinic').value.trim(),
-      email,
-      physician_name: document.getElementById('regName').value.trim(),
-      password:       pass,
-      contact:        document.getElementById('regPhone').value.trim(),
-      address:        document.getElementById('regAddress').value.trim(),
-      city:           document.getElementById('regCity').value.trim(),
-    }, true);
-    _provEmail = email;
-    _provPass  = pass;
-    regRequestName = r.request_name;
-    switchTab('prov');
-    startProvPolling(r.request_name);
+    const resp = await fetch('/api/method/pw_subscription.api.get_cities_by_country?country=' + encodeURIComponent(country));
+    const data = await resp.json();
+    portalAllCities = data.message || [];
+    cityInp.disabled = false;
+    cityInp.placeholder = portalAllCities.length ? 'Search city…' : 'No cities — type manually';
+    buildPortalDropdown(cityInp, cityDrop, cityHid, portalAllCities, 'city_name', null);
   } catch(e) {
-    showError(errEl, extractMsg(e));
-    btn.disabled = false;
-    btn.innerHTML = '🚀 Start Free Trial';
+    cityInp.disabled = false; cityInp.placeholder = 'Search city…'; portalAllCities = [];
   }
+}
+
+async function portalLoadCountries() {
+  if (portalCountriesLoaded) return;
+  try {
+    const resp = await fetch('/api/method/pw_subscription.api.get_countries');
+    const data = await resp.json();
+    portalAllCountries = data.message || [];
+    portalCountriesLoaded = true;
+    buildPortalDropdown(
+      document.getElementById('regCountryInput'),
+      document.getElementById('regCountryDropdown'),
+      document.getElementById('regCountry'),
+      portalAllCountries, null, onPortalCountrySelect
+    );
+  } catch(e) { console.warn('Could not load countries', e); }
+}
+
+// Initialize register form event listeners
+(function initPortalRegForm() {
+  const clinic    = document.getElementById('regClinicName');
+  const physician = document.getElementById('regPhysician');
+  const email     = document.getElementById('regEmail');
+  const password  = document.getElementById('regPassword');
+  const contact   = document.getElementById('regContact');
+  const address   = document.getElementById('regAddress');
+  const errBox    = document.getElementById('regErrBox');
+  const submitBtn = document.getElementById('regSubmitBtn');
+  const form      = document.getElementById('regForm');
+
+  if (!form) return;
+
+  // Clinic availability
+  clinic.addEventListener('input', () => { clearTimeout(portalCheckTimer); portalCheckTimer = setTimeout(portalCheckClinicName, 480); });
+  clinic.addEventListener('blur', () => { clearTimeout(portalCheckTimer); if (clinic.value.trim()) portalCheckClinicName(); });
+
+  // Email availability + OTP reset
+  email.addEventListener('input', () => {
+    clearTimeout(portalEmailTimer);
+    portalEmailBlocked = false;
+    portalSetEmailHint('', false);
+    portalEmailTimer = setTimeout(portalCheckEmail, 600);
+    if (EMAIL_OTP_ENABLED && portalEmailVerified) {
+      portalEmailVerified = false;
+      const row = document.getElementById('regEmailOtpRow');
+      const inp = document.getElementById('regEmailOtp');
+      const vBtn = document.getElementById('regVerifyEmailOtp');
+      const sBtn = document.getElementById('regSendEmailOtp');
+      if (row) row.style.display = 'none';
+      if (inp) { inp.disabled = false; inp.value = ''; }
+      if (vBtn) { vBtn.disabled = false; vBtn.textContent = 'Verify'; }
+      if (sBtn) { sBtn.disabled = false; sBtn.innerHTML = EMAIL_ICON_SVG; }
+    }
+  });
+  email.addEventListener('blur', () => { clearTimeout(portalEmailTimer); if (email.value.trim()) portalCheckEmail(); });
+
+  // Clear field errors on input
+  [physician, contact, password, address].forEach(inp => inp.addEventListener('input', () => inp.classList.remove('f-err')));
+
+  // Password toggle
+  const pwBtn   = document.getElementById('regPwBtn');
+  const eyeShow = document.getElementById('regEyeShow');
+  const eyeHide = document.getElementById('regEyeHide');
+  if (pwBtn) {
+    pwBtn.addEventListener('click', () => {
+      const isText = password.type === 'text';
+      password.type = isText ? 'password' : 'text';
+      eyeShow.style.display = isText ? '' : 'none';
+      eyeHide.style.display = isText ? 'none' : '';
+    });
+  }
+
+  // Phone OTP
+  if (PHONE_OTP_ENABLED) {
+    const sendOtpBtn   = document.getElementById('regSendOtp');
+    const otpRow       = document.getElementById('regOtpRow');
+    const otpInput     = document.getElementById('regOtp');
+    const verifyOtpBtn = document.getElementById('regVerifyOtp');
+
+    contact.addEventListener('input', () => {
+      if (portalPhoneVerified) {
+        portalPhoneVerified = false;
+        if (otpRow) otpRow.style.display = 'none';
+        if (otpInput) { otpInput.disabled = false; }
+        if (verifyOtpBtn) { verifyOtpBtn.disabled = false; verifyOtpBtn.textContent = 'Verify'; }
+        if (sendOtpBtn) { sendOtpBtn.disabled = false; sendOtpBtn.innerHTML = PHONE_ICON_SVG; }
+      }
+    });
+
+    if (sendOtpBtn) {
+      sendOtpBtn.addEventListener('click', async () => {
+        const phoneRaw    = contact.value.trim();
+        const phoneDigits = phoneRaw.replace(/[\s\-().]/g, '');
+        const phoneRe     = /^\+?[0-9]{7,15}$/;
+        if (!phoneRaw) { portalMarkField(contact, 'regContactHint', 'Contact number is required.', true); return; }
+        if (!phoneRe.test(phoneDigits)) { portalMarkField(contact, 'regContactHint', 'Enter a valid phone number (e.g. +92 300 1234567).', true); return; }
+        sendOtpBtn.disabled = true;
+        sendOtpBtn.innerHTML = '<div class="reg-spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff"></div>';
+        try {
+          await api('pw_subscription.api.send_phone_otp', { phone: phoneRaw }, true);
+          if (otpRow) otpRow.style.display = '';
+          if (otpInput) { otpInput.value = ''; }
+          portalPhoneVerified = false;
+          setHint('regOtpHint', 'Code sent! Enter it below.', false);
+          let secs = 60;
+          const timer = setInterval(() => {
+            sendOtpBtn.title = `Resend in ${--secs}s`;
+            if (secs <= 0) { clearInterval(timer); sendOtpBtn.disabled = false; sendOtpBtn.innerHTML = PHONE_ICON_SVG; sendOtpBtn.title = 'Send verification code to phone'; }
+          }, 1000);
+        } catch(err) {
+          portalMarkField(contact, 'regContactHint', err.message || 'Failed to send code. Try again.', true);
+          sendOtpBtn.disabled = false; sendOtpBtn.innerHTML = PHONE_ICON_SVG;
+        }
+      });
+    }
+
+    if (verifyOtpBtn) {
+      verifyOtpBtn.addEventListener('click', async () => {
+        const otp = otpInput.value.trim();
+        if (!otp) { setHint('regOtpHint', 'Enter the 6-digit code.', true); return; }
+        verifyOtpBtn.disabled = true; verifyOtpBtn.textContent = 'Verifying…';
+        try {
+          const r = await api('pw_subscription.api.verify_phone_otp', { phone: contact.value.trim(), otp }, true);
+          if (r && r.valid) {
+            portalPhoneVerified = true;
+            setHint('regOtpHint', 'Phone verified!', false);
+            if (otpInput) otpInput.disabled = true;
+            verifyOtpBtn.textContent = 'Verified';
+            contact.classList.remove('f-err');
+            const ch = document.getElementById('regContactHint'); if (ch) ch.textContent = '';
+          } else {
+            const reason = r && r.reason;
+            setHint('regOtpHint', reason === 'expired' ? 'Code expired. Click Send Code to get a new one.' : 'Incorrect code. Try again.', true);
+            verifyOtpBtn.disabled = false; verifyOtpBtn.textContent = 'Verify';
+          }
+        } catch(err) {
+          setHint('regOtpHint', 'Verification failed. Try again.', true);
+          verifyOtpBtn.disabled = false; verifyOtpBtn.textContent = 'Verify';
+        }
+      });
+    }
+  }
+
+  // Email OTP
+  if (EMAIL_OTP_ENABLED) {
+    const sendEmailOtpBtn   = document.getElementById('regSendEmailOtp');
+    const emailOtpRow       = document.getElementById('regEmailOtpRow');
+    const emailOtpInput     = document.getElementById('regEmailOtp');
+    const verifyEmailOtpBtn = document.getElementById('regVerifyEmailOtp');
+    const emailRe           = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (sendEmailOtpBtn) {
+      sendEmailOtpBtn.addEventListener('click', async () => {
+        const emailVal = email.value.trim();
+        if (!emailVal) { portalMarkField(email, 'regEmailHint', 'Email is required.', true); return; }
+        if (!emailRe.test(emailVal)) { portalMarkField(email, 'regEmailHint', 'Enter a valid email address.', true); return; }
+        if (portalEmailBlocked) { portalMarkField(email, 'regEmailHint', 'This email is already registered. Please use a different email.', true); return; }
+        sendEmailOtpBtn.disabled = true;
+        sendEmailOtpBtn.innerHTML = '<div class="reg-spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff"></div>';
+        try {
+          await api('pw_subscription.api.send_email_otp', { email: emailVal }, true);
+          if (emailOtpRow) emailOtpRow.style.display = '';
+          if (emailOtpInput) { emailOtpInput.value = ''; }
+          portalEmailVerified = false;
+          setHint('regEmailOtpHint', 'Code sent! Check your inbox.', false);
+          let secs = 60;
+          const timer = setInterval(() => {
+            sendEmailOtpBtn.title = `Resend in ${--secs}s`;
+            if (secs <= 0) { clearInterval(timer); sendEmailOtpBtn.disabled = false; sendEmailOtpBtn.innerHTML = EMAIL_ICON_SVG; sendEmailOtpBtn.title = 'Send verification code to email'; }
+          }, 1000);
+        } catch(err) {
+          portalMarkField(email, 'regEmailHint', err.message || 'Failed to send code. Try again.', true);
+          sendEmailOtpBtn.disabled = false; sendEmailOtpBtn.innerHTML = EMAIL_ICON_SVG;
+        }
+      });
+    }
+
+    if (verifyEmailOtpBtn) {
+      verifyEmailOtpBtn.addEventListener('click', async () => {
+        const otp = emailOtpInput.value.trim();
+        if (!otp) { setHint('regEmailOtpHint', 'Enter the 6-digit code.', true); return; }
+        verifyEmailOtpBtn.disabled = true; verifyEmailOtpBtn.textContent = 'Verifying…';
+        try {
+          const r = await api('pw_subscription.api.verify_email_otp', { email: email.value.trim(), otp }, true);
+          if (r && r.valid) {
+            portalEmailVerified = true;
+            setHint('regEmailOtpHint', 'Email verified!', false);
+            if (emailOtpInput) emailOtpInput.disabled = true;
+            verifyEmailOtpBtn.textContent = 'Verified';
+            email.classList.remove('f-err');
+            const eh = document.getElementById('regEmailHint'); if (eh) eh.textContent = '';
+          } else {
+            const reason = r && r.reason;
+            setHint('regEmailOtpHint', reason === 'expired' ? 'Code expired. Click Send Code to get a new one.' : 'Incorrect code. Try again.', true);
+            verifyEmailOtpBtn.disabled = false; verifyEmailOtpBtn.textContent = 'Verify';
+          }
+        } catch(err) {
+          setHint('regEmailOtpHint', 'Verification failed. Try again.', true);
+          verifyEmailOtpBtn.disabled = false; verifyEmailOtpBtn.textContent = 'Verify';
+        }
+      });
+    }
+  }
+
+  // Form submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (errBox) errBox.style.display = 'none';
+    if (!portalValidateAll()) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-inline"></span>Creating clinic…';
+
+    _provEmail = email.value.trim();
+    _provPass  = password.value;
+
+    try {
+      const r = await api('pw_subscription.api.register_clinic', {
+        clinic_name:    clinic.value.trim(),
+        physician_name: physician.value.trim(),
+        email:          email.value.trim(),
+        password:       password.value,
+        contact:        contact.value.trim(),
+        country:        document.getElementById('regCountry').value.trim(),
+        city:           document.getElementById('regCity').value.trim(),
+        address:        address.value.trim(),
+      }, true);
+      regRequestName = r.request_name;
+      switchTab('prov');
+      startProvPolling(r.request_name);
+    } catch(e) {
+      if (errBox) { errBox.textContent = e.message || 'Registration failed. Please try again.'; errBox.style.display = 'block'; }
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Complete Registration &rarr;';
+    }
+  });
+})();
+
+function setHint(hintId, msg, isErr) {
+  const h = document.getElementById(hintId);
+  if (!h) return;
+  h.textContent = msg;
+  h.style.color = isErr ? '#dc2626' : '#059669';
 }
 
 // ── PROVISIONING POLL ─────────────────────────────────────────────────────────
@@ -1369,7 +1722,7 @@ async function uploadFile(file) {
   fd.append('folder', 'Home/Attachments');
   const resp = await fetch('/api/method/upload_file', {
     method: 'POST',
-    headers: {'X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+    headers: {'X-Frappe-CSRF-Token': getCsrf()},
     body: fd,
   });
   const data = await resp.json();

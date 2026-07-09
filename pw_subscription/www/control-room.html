@@ -1144,6 +1144,7 @@ function renderTable(sites) {
         <div class="clinic-name">${esc(s.clinic_name)}</div>
         <div class="site-url"><a href="${esc(s.site_url)}" target="_blank" style="color:var(--muted)">${esc(s.site_name || '')}</a></div>
         ${s.physician_name ? `<div class="physician">${esc(s.physician_name)}</div>` : ''}
+        ${s.contact_email ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">${esc(s.contact_email)}</div>` : ''}
       </td>
       <td>${statusBadge}${suspBadge}</td>
       <td>${daysPill(s.days_remaining, s.status)}</td>
