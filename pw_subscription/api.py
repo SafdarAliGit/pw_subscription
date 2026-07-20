@@ -554,7 +554,7 @@ def check_email(email):
 
 @frappe.whitelist(allow_guest=True)
 def register_clinic(clinic_name, email, physician_name, password, contact, address,
-                    country=None, city=None):
+                    country=None, city=None, clinic_mode="Clinic"):
     import re as _re
     clinic_name    = (clinic_name or "").strip()
     email          = (email or "").strip()
@@ -634,6 +634,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
         "country": country or None,
         "city": city or None,
         "address": address,
+        "clinic_mode": clinic_mode or "Clinic",
         "initial_password": password,
         "site_name": site_name,
         "status": "Trial",
@@ -654,6 +655,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
         "contact_phone": contact,
         "site_name": site_name,
         "subscription": sub_doc.name,
+        "clinic_mode": clinic_mode or "Clinic",
         "status": "Pending",
     })
     prov_doc.insert(ignore_permissions=True)
@@ -819,6 +821,18 @@ def get_control_room_data():
         limit=0,
         ignore_permissions=True,
     )
+
+    # Fetch clinic_mode separately — column may not exist on older sites
+    try:
+        mode_rows = frappe.db.sql(
+            "SELECT name, clinic_mode FROM `tabPW Subscription`",
+            as_dict=True,
+        )
+        mode_map = {r.name: r.clinic_mode or "Clinic" for r in mode_rows}
+    except Exception:
+        mode_map = {}
+    for s in subs:
+        s["clinic_mode"] = mode_map.get(s.name, "Clinic")
 
     # Get latest provisioning request per subscription
     prov_map = {}

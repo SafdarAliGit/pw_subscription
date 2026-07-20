@@ -8,6 +8,7 @@
  "field_order": [
   "clinic_name",
   "physician_name",
+  "clinic_mode",
   "contact_email",
   "contact_phone",
   "cb_top",
@@ -38,6 +39,13 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Physician Name"
+  },
+  {
+   "default": "Clinic",
+   "fieldname": "clinic_mode",
+   "fieldtype": "Select",
+   "label": "Clinic Mode",
+   "options": "Clinic\nHospital"
   },
   {
    "fieldname": "contact_email",

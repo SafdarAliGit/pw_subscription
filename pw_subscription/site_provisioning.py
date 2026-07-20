@@ -267,6 +267,23 @@ def _provision_site(request_name):
         )
         _log(request_name, "✓ Migrations applied.")
 
+        # ── Step 3c: Set clinic_mode on new site ────────────────────────────
+        clinic_mode = (getattr(doc, "clinic_mode", None) or "Clinic").strip()
+        _log(request_name, f"Setting clinic_mode = {clinic_mode}...")
+        try:
+            _run(
+                ["--site", site_name, "execute", "frappe.db.sql",
+                 "--kwargs", json.dumps({
+                     "query": "UPDATE `tabPW Clinic Settings` SET clinic_mode=%s WHERE name='PW Clinic Settings'",
+                     "values": [clinic_mode],
+                     "auto_commit": 1,
+                 })],
+                request_name, "set clinic_mode", timeout=30,
+            )
+            _log(request_name, f"✓ clinic_mode = {clinic_mode}")
+        except Exception as _cm_exc:
+            _log(request_name, f"⚠ clinic_mode set skipped: {str(_cm_exc)[:200]}")
+
         _log(request_name, "Configuring your account...")
         if contact_email:
             _log(request_name, f"Creating clinic login account ({contact_email})...")
@@ -274,6 +291,20 @@ def _provision_site(request_name):
                 site_name, contact_email, first_name, last_name, admin_pass,
             )
             _log(request_name, f"✓ Clinic account ready: {contact_email}")
+
+            # Link / create the PW Doctor record for this user on the clinic site
+            full_name = f"{first_name} {last_name}".strip()
+            try:
+                _run(
+                    ["--site", site_name, "execute",
+                     "prescription_writter.install.setup_doctor_from_user",
+                     "--args", json.dumps([contact_email, full_name])],
+                    None, "setup PW Doctor", timeout=30,
+                )
+                _log(request_name, f"✓ PW Doctor record linked to {contact_email}")
+            except Exception as _dr_exc:
+                _log(request_name, f"⚠ PW Doctor setup skipped: {str(_dr_exc)[:200]}")
+
         _log(request_name, "✓ Account configured.")
 
         # ── Step 5: Production setup ──────────────────────────────────────────

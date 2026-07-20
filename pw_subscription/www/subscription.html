@@ -400,6 +400,27 @@
   .reg-hint.ok    { color: #10B981; }
   .reg-hint.err   { color: #EF4444; }
   .reg-hint.muted { color: #94A3B8; }
+  /* Practice Type picker */
+  .pw-mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .pw-mode-card {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    gap: 5px; padding: 16px 12px 14px; border: 2px solid #E2E8F0; border-radius: 14px;
+    cursor: pointer; transition: border-color .18s, background .18s, box-shadow .18s;
+    background: #F8FAFC; text-align: center; user-select: none;
+  }
+  .pw-mode-card:hover { border-color: #93C5FD; background: #F0F9FF; }
+  .pw-mode-card input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pw-mode-card.active { border-color: #2563EB; background: #EFF6FF; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .pw-mode-card-icon { font-size: 26px; line-height: 1; }
+  .pw-mode-card-title { font-weight: 700; font-size: 14px; color: #1E293B; }
+  .pw-mode-card-sub { font-size: 11.5px; color: #64748B; line-height: 1.35; }
+  .pw-mode-card-check {
+    position: absolute; top: 7px; right: 7px; width: 18px; height: 18px;
+    border-radius: 50%; background: #2563EB; color: #fff; font-size: 10px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0); transition: opacity .18s, transform .18s;
+  }
+  .pw-mode-card.active .pw-mode-card-check { opacity: 1; transform: scale(1); }
   .reg-err-box {
     grid-column: 1 / -1; background: #FEF2F2; border: 1px solid #FECACA;
     border-radius: 10px; padding: .75rem 1rem; font-size: .84rem; color: #DC2626; display: none;
@@ -986,8 +1007,8 @@
       <form id="regForm" novalidate autocomplete="off">
         <div class="reg-grid">
 
-          <!-- Clinic Name — full width with live availability -->
-          <div class="reg-field full">
+          <!-- Clinic Name — left column -->
+          <div class="reg-field" style="grid-column:1">
             <label class="reg-label" for="regClinicName">Clinic Name <span class="req">*</span></label>
             <div class="reg-iw">
               <input type="text" id="regClinicName" class="has-badge" placeholder="e.g. Sunrise Medical Clinic" autocomplete="off">
@@ -995,13 +1016,34 @@
             </div>
           </div>
 
-          <!-- Physician Name -->
-          <div class="reg-field">
+          <!-- Physician Name — right column -->
+          <div class="reg-field" style="grid-column:2">
             <label class="reg-label" for="regPhysician">Physician Name <span class="req">*</span></label>
             <div class="reg-iw">
               <input type="text" id="regPhysician" placeholder="Dr. Ahmed Khan">
             </div>
             <div class="reg-hint" id="regPhysicianHint"></div>
+          </div>
+
+          <!-- Practice Type -->
+          <div class="reg-field full">
+            <label class="reg-label">Practice Type <span class="req">*</span></label>
+            <div class="pw-mode-picker">
+              <label class="pw-mode-card active" id="modeClinicCard" for="modeClinic">
+                <input type="radio" name="clinicMode" id="modeClinic" value="Clinic" checked>
+                <div class="pw-mode-card-icon">🏥</div>
+                <div class="pw-mode-card-title">Clinic</div>
+                <div class="pw-mode-card-sub">Single doctor<br>practice</div>
+                <div class="pw-mode-card-check">✓</div>
+              </label>
+              <label class="pw-mode-card" id="modeHospitalCard" for="modeHospital">
+                <input type="radio" name="clinicMode" id="modeHospital" value="Hospital">
+                <div class="pw-mode-card-icon">🏨</div>
+                <div class="pw-mode-card-title">Hospital</div>
+                <div class="pw-mode-card-sub">Multiple doctors<br>&amp; departments</div>
+                <div class="pw-mode-card-check">✓</div>
+              </label>
+            </div>
           </div>
 
           <!-- Contact -->
@@ -1077,8 +1119,8 @@
             <div class="reg-hint" id="regCountryHint"></div>
           </div>
 
-          <!-- City (searchable, populated after country select) -->
-          <div class="reg-field">
+          <!-- City — left column -->
+          <div class="reg-field" style="grid-column:1">
             <label class="reg-label" for="regCityInput">City</label>
             <div class="reg-iw reg-search-wrap">
               <input type="text" id="regCityInput" class="reg-search-input" placeholder="Select country first..." autocomplete="off" disabled>
@@ -1089,8 +1131,8 @@
             <div class="reg-hint" id="regCityHint"></div>
           </div>
 
-          <!-- Address — full width -->
-          <div class="reg-field full">
+          <!-- Address — right column -->
+          <div class="reg-field" style="grid-column:2">
             <label class="reg-label" for="regAddress">Clinic Address <span class="req">*</span></label>
             <div class="reg-iw">
               <textarea id="regAddress" placeholder="Street, City, Province"></textarea>
@@ -2034,6 +2076,7 @@
         body: JSON.stringify({
           clinic_name:    f.clinic.value.trim(),
           physician_name: f.physician.value.trim(),
+          clinic_mode:    (document.querySelector('input[name="clinicMode"]:checked') || {}).value || 'Clinic',
           email:          f.email.value.trim(),
           password:       f.password.value,
           contact:        f.contact.value.trim(),
@@ -2069,6 +2112,15 @@
       errBox.textContent = msg;
       errBox.style.display = "block";
     }
+
+    // Practice Type card highlight
+    document.querySelectorAll('input[name="clinicMode"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        document.querySelectorAll('.pw-mode-card').forEach(function(card) {
+          card.classList.toggle('active', card.querySelector('input[name="clinicMode"]').checked);
+        });
+      });
+    });
   })();
 
   let _rsPassVisible = false;

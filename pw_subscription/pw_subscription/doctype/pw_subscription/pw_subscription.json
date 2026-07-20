@@ -8,6 +8,7 @@
  "field_order": [
   "clinic_name",
   "physician_name",
+  "clinic_mode",
   "contact_email",
   "cb_top",
   "status",
@@ -41,6 +42,14 @@
  "fields": [
   {"fieldname":"clinic_name","fieldtype":"Data","in_list_view":1,"label":"Clinic Name","reqd":1,"unique":1,"search_index":1,"bold":1},
   {"fieldname":"physician_name","fieldtype":"Data","in_list_view":1,"label":"Physician Name"},
+  {
+ "default": "Clinic",
+ "fieldname": "clinic_mode",
+ "fieldtype": "Select",
+ "in_list_view": 1,
+ "label": "Clinic Mode",
+ "options": "Clinic\nHospital"
+},
   {"fieldname":"contact_email","fieldtype":"Data","label":"Email","options":"Email"},
   {"fieldname":"cb_top","fieldtype":"Column Break"},
   {"fieldname":"status","fieldtype":"Select","in_list_view":1,"label":"Status","options":"Trial\nActive\nGrace Period\nExpired\nCancelled","default":"Trial","reqd":1},
