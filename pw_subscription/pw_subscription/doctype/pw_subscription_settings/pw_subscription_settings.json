@@ -9,6 +9,7 @@
   "sb_general",
   "app_name",
   "tagline",
+  "allow_application_creation_by_website_user",
   "sb_plan",
   "monthly_fee",
   "trial_days",
@@ -54,6 +55,7 @@
   {"fieldname":"sb_general","fieldtype":"Section Break","label":"App Info"},
   {"fieldname":"app_name","fieldtype":"Data","label":"App Name","default":"CureDesk","reqd":1},
   {"fieldname":"tagline","fieldtype":"Data","label":"Website Tagline"},
+  {"fieldname":"allow_application_creation_by_website_user","fieldtype":"Check","label":"Allow Application Creation By Website User","default":"0","description":"When enabled, the Get Started / Start Free Trial buttons and registration form are shown on the subscription page so website visitors can self-provision a clinic application."},
 
   {"fieldname":"sb_plan","fieldtype":"Section Break","label":"Subscription Settings"},
   {"fieldname":"monthly_fee","fieldtype":"Currency","label":"Monthly Fee (PKR)","reqd":1,"options":"PKR"},

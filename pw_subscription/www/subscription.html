@@ -645,7 +645,7 @@
   </div>
   <div class="pw-nav-right">
     <a href="/subscription-portal" class="pw-nav-cta">Subscription Portal</a>
-    <a href="#" class="pw-nav-cta" data-open-reg>Get Started</a>
+    {% if allow_app_creation %}<a href="#" class="pw-nav-cta" data-open-reg>Get Started</a>{% endif %}
   </div>
 </nav>
 
@@ -665,7 +665,7 @@
       <h1>The <span style="color:#60a5fa">Smartest</span> Way to Write Prescriptions</h1>
       <p>{{ tagline }} — built for busy doctors who need speed, accuracy, and professionalism in every prescription.</p>
       <div class="pw-hero-buttons">
-        <a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>
+        {% if allow_app_creation %}<a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>{% endif %}
         <a href="#features" class="btn-ghost">See Features</a>
       </div>
     </div>
@@ -709,7 +709,7 @@
         {{ tagline }} — built for busy doctors who need speed, accuracy, and professionalism in every prescription.
       </p>
       <div class="pw-hero-buttons">
-        <a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>
+        {% if allow_app_creation %}<a href="#" class="btn-primary" data-open-reg>Start Free Trial &rarr;</a>{% endif %}
         <a href="#features" class="btn-ghost">See Features</a>
       </div>
     </div>
@@ -844,7 +844,7 @@
           <li>Full data ownership &amp; privacy</li>
           <li>Dedicated support via phone &amp; email</li>
         </ul>
-        <a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>
+        {% if allow_app_creation %}<a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>{% endif %}
       </div>
       {% endfor %}
     {% else %}
@@ -870,7 +870,7 @@
         <li>Full data ownership &amp; privacy</li>
         <li>Dedicated support via phone &amp; email</li>
       </ul>
-      <a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>
+      {% if allow_app_creation %}<a href="#" class="pricing-cta" data-open-reg>Start Your Free Trial &rarr;</a>{% endif %}
     </div>
     {% endif %}
   </div>
@@ -987,6 +987,7 @@
   <p style="margin-top:.5rem">&copy; {{ frappe.utils.now()[:4] }} Safdar Ali. All rights reserved.</p>
 </footer>
 
+{% if allow_app_creation %}
 <!-- REGISTRATION MODAL -->
 <div class="reg-overlay" id="regOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
   <div class="reg-modal">
@@ -1268,6 +1269,7 @@
 
   </div>
 </div>
+{% endif %}
 
 <script>
   // FAQ accordion
@@ -1313,6 +1315,7 @@
     startAuto();
   })();
 
+  {% if allow_app_creation %}
   // ── REGISTRATION MODAL ──
   (function () {
     function getCsrf() {
@@ -2133,6 +2136,7 @@
     el.textContent  = _rsPassVisible ? pass : "•".repeat(Math.min(pass.length, 12) || 8);
     btn.textContent = _rsPassVisible ? "Hide" : "Show";
   }
+  {% endif %}
 
 </script>
 </body>
