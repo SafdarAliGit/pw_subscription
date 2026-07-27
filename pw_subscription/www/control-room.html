@@ -114,8 +114,6 @@
   .badge-expired{background:rgba(239,68,68,.15);color:#F87171}
   .badge-cancelled{background:rgba(100,116,139,.15);color:#94A3B8}
   .badge-suspended{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.3)}
-  .unsuspend-inline-btn{display:inline-flex;align-items:center;gap:.25rem;margin-left:.4rem;padding:.15rem .5rem;font-size:.72rem;font-weight:600;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:4px;cursor:pointer;white-space:nowrap}
-  .unsuspend-inline-btn:hover{background:rgba(34,197,94,.18)}
   .badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
   /* Online/offline */
@@ -136,7 +134,7 @@
   .action-wrap{position:relative}
   .action-btn{background:#0F172A;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.35rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
   .action-btn:hover{border-color:var(--primary);color:var(--primary)}
-  .action-menu{position:absolute;right:0;top:calc(100% + 4px);background:#1E293B;border:1px solid var(--border);border-radius:10px;min-width:200px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden}
+  .action-menu{position:fixed;background:#1E293B;border:1px solid var(--border);border-radius:10px;min-width:200px;z-index:9990;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden}
   .action-item{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;font-size:.82rem;color:var(--text);cursor:pointer;transition:.12s}
   .action-item:hover{background:rgba(255,255,255,.06);color:#fff}
   .action-item.danger:hover{background:rgba(239,68,68,.1);color:var(--danger)}
@@ -1218,10 +1216,7 @@ function renderTable(sites) {
   }
   body.innerHTML = sites.map(s => {
     const statusBadge = statusB(s.status);
-    const suspBadge = s.is_suspended
-      ? `<span class="badge badge-suspended" style="margin-left:.4rem">⛔ Suspended</span>
-         <button class="unsuspend-inline-btn" onclick="openUnsuspend('${esc(s.name)}')" title="Unsuspend this site">✅ Unsuspend</button>`
-      : '';
+    const suspBadge = s.is_suspended ? `<span class="badge badge-suspended" style="margin-left:.4rem">⛔ Suspended</span>` : '';
     const expiry = s.subscription_end || s.trial_end || s.grace_end || '';
     const provBadge = provB(s.provisioning_status);
     return `
@@ -1439,8 +1434,12 @@ async function doSuspend() {
   if (!currentSub) return;
   const reason = document.getElementById('suspendReason').value.trim();
   try {
-    await api('pw_subscription.api.suspend_site', {subscription_name: currentSub.name, reason});
-    toast('Site access has been blocked.', 'warning', 'Site suspended');
+    const r = await api('pw_subscription.api.suspend_site', {subscription_name: currentSub.name, reason});
+    if (r && r.bench_error) {
+      toast('Marked suspended in DB but maintenance_mode could not be set — check error log.', 'warning', 'Site suspended (partial)');
+    } else {
+      toast('Site access has been blocked.', 'warning', 'Site suspended');
+    }
     closeModal('modalSuspend');
     loadData();
   } catch (e) { toast(extractMsg(e), 'error', 'Could not suspend site'); }
@@ -1449,8 +1448,12 @@ async function doSuspend() {
 async function doUnsuspend() {
   if (!currentSub) return;
   try {
-    await api('pw_subscription.api.unsuspend_site', {subscription_name: currentSub.name});
-    toast('Site access has been restored.', 'success', 'Site unsuspended');
+    const r = await api('pw_subscription.api.unsuspend_site', {subscription_name: currentSub.name});
+    if (r && r.bench_error) {
+      toast('Marked active in DB but maintenance_mode could not be cleared — check error log.', 'warning', 'Site unsuspended (partial)');
+    } else {
+      toast('Site access has been restored.', 'success', 'Site unsuspended');
+    }
     closeModal('modalSuspend');
     loadData();
   } catch (e) { toast(extractMsg(e), 'error', 'Could not unsuspend site'); }
@@ -1676,9 +1679,15 @@ function flashLive() {
 // ── Dropdown menus ────────────────────────────────────────────────────────────
 function toggleMenu(btn, e) {
   e.stopPropagation();
-  closeAllMenus();
   const menu = btn.nextElementSibling;
-  menu.style.display = menu.style.display === 'none' ? '' : 'none';
+  const isOpen = menu.style.display !== 'none';
+  closeAllMenus();
+  if (!isOpen) {
+    const r = btn.getBoundingClientRect();
+    menu.style.top  = (r.bottom + 4) + 'px';
+    menu.style.right = (window.innerWidth - r.right) + 'px';
+    menu.style.display = '';
+  }
 }
 
 function closeAllMenus() {
@@ -1686,6 +1695,7 @@ function closeAllMenus() {
 }
 
 document.addEventListener('click', closeAllMenus);
+document.addEventListener('scroll', closeAllMenus, true);
 
 // ── Create New Site ──────────────────────────────────────────────────────────
 const CNS_PHONE_OTP_ENABLED = {{ 'true' if phone_otp_enabled else 'false' }};

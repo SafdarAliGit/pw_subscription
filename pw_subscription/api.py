@@ -1141,19 +1141,26 @@ def suspend_site(subscription_name, reason=None):
     except Exception:
         mode = "Soft Block"
 
+    bench_error = None
     if sub.site_name:
-        from pw_subscription.site_provisioning import _do_suspend_site
-        _do_suspend_site(sub.site_name)
+        try:
+            from pw_subscription.site_provisioning import _do_suspend_site
+            _do_suspend_site(sub.site_name)
+        except Exception as e:
+            bench_error = str(e)
+            frappe.log_error(bench_error, f"suspend_site bench failed: {sub.site_name}")
 
     sub.is_suspended = 1
     sub.suspended_on = now()
     sub.suspension_reason = reason or "Suspended by administrator"
     sub.save(ignore_permissions=True)
-    _log_action(sub.name, "Suspended",
-                f"Site suspended ({mode}). Reason: {reason or 'N/A'}.")
+    note = f"Site suspended ({mode}). Reason: {reason or 'N/A'}."
+    if bench_error:
+        note += f" (maintenance_mode could not be set: {bench_error[:120]})"
+    _log_action(sub.name, "Suspended", note)
     frappe.db.commit()
     _publish_sub_changed(sub)
-    return {"success": True, "mode": mode}
+    return {"success": True, "mode": mode, "bench_error": bench_error}
 
 
 @frappe.whitelist()
@@ -1169,16 +1176,23 @@ def unsuspend_site(subscription_name):
     except Exception:
         mode = "Soft Block"
 
+    bench_error = None
     if sub.site_name:
-        from pw_subscription.site_provisioning import _do_unsuspend_site
-        _do_unsuspend_site(sub.site_name)
+        try:
+            from pw_subscription.site_provisioning import _do_unsuspend_site
+            _do_unsuspend_site(sub.site_name)
+        except Exception as e:
+            bench_error = str(e)
+            frappe.log_error(bench_error, f"unsuspend_site bench failed: {sub.site_name}")
 
     sub.is_suspended = 0
     sub.suspended_on = None
     sub.suspension_reason = ""
     sub.save(ignore_permissions=True)
-    _log_action(sub.name, "Activated",
-                f"Site unsuspended ({mode}).")
+    note = f"Site unsuspended ({mode})."
+    if bench_error:
+        note += f" (maintenance_mode could not be cleared: {bench_error[:120]})"
+    _log_action(sub.name, "Activated", note)
     frappe.db.commit()
     _publish_sub_changed(sub)
     return {"success": True}
