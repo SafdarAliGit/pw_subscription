@@ -15,6 +15,28 @@ def _get_settings():
     return frappe.get_single("PW Subscription Settings")
 
 
+def _read_maintenance_modes():
+    """Return {site_name: bool} from each customer site's site_config.json."""
+    import json, os
+    result = {}
+    try:
+        sites_dir = os.path.join(
+            os.path.abspath(os.path.join(frappe.get_site_path(), "..", "..")),
+            "sites",
+        )
+        for entry in os.listdir(sites_dir):
+            cfg_path = os.path.join(sites_dir, entry, "site_config.json")
+            if os.path.isfile(cfg_path):
+                try:
+                    with open(cfg_path) as f:
+                        result[entry] = bool(json.load(f).get("maintenance_mode", 0))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return result
+
+
 def _require_portal_access():
     """Allow System Manager or PW Admin; throw for everyone else."""
     if frappe.session.user == "Guest":
@@ -866,6 +888,22 @@ def get_control_room_data():
     except Exception:
         monthly_fee = 0
 
+    # Sync is_suspended with actual maintenance_mode in site_config.json
+    maint_map = _read_maintenance_modes()
+    needs_commit = False
+    for sub in subs:
+        if sub.site_name and not sub.is_suspended and maint_map.get(sub.site_name):
+            frappe.db.set_value(
+                "PW Subscription", sub.name,
+                {"is_suspended": 1, "suspended_on": now(),
+                 "suspension_reason": "Auto-synced: site_config maintenance_mode=1"},
+                update_modified=False,
+            )
+            sub.is_suspended = 1
+            needs_commit = True
+    if needs_commit:
+        frappe.db.commit()
+
     # Build site list with computed fields
     site_list = []
     stats = {"total": 0, "active": 0, "trial": 0, "grace": 0,
@@ -1192,7 +1230,7 @@ def unsuspend_site(subscription_name):
     note = f"Site unsuspended ({mode})."
     if bench_error:
         note += f" (maintenance_mode could not be cleared: {bench_error[:120]})"
-    _log_action(sub.name, "Activated", note)
+    _log_action(sub.name, "Unsuspended", note)
     frappe.db.commit()
     _publish_sub_changed(sub)
     return {"success": True}

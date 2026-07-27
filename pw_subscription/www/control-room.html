@@ -609,6 +609,9 @@
       <button class="modal-close" onclick="closeModal('modalSuspend')">×</button>
     </div>
     <div class="modal-body">
+      <div id="suspendStatusBanner" style="display:none;margin-bottom:.75rem;padding:.65rem 1rem;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:8px;color:#F87171;font-size:.84rem;font-weight:600">
+        ⛔ This site is currently suspended — users cannot log in.
+      </div>
       <div class="info-box" id="suspendInfo"></div>
       <div class="form-group" id="suspendReasonGroup">
         <label class="form-label">Reason</label>
@@ -616,7 +619,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modalSuspend')">Cancel</button>
+      <button class="btn btn-ghost" id="suspendCancelBtn" onclick="closeModal('modalSuspend')">Cancel</button>
       <button class="btn btn-danger" id="suspendBtn" onclick="doSuspend()">⛔ Suspend</button>
     </div>
   </div>
@@ -1448,6 +1451,8 @@ function openSuspend(name) {
   document.getElementById('suspendReason').value = '';
   document.getElementById('suspendBtn').textContent = '⛔ Suspend';
   document.getElementById('suspendBtn').onclick = doSuspend;
+  document.getElementById('suspendStatusBanner').style.display = 'none';
+  document.getElementById('suspendCancelBtn').textContent = 'Cancel';
   openModal('modalSuspend');
 }
 
@@ -1460,6 +1465,8 @@ function openUnsuspend(name) {
   document.getElementById('suspendReasonGroup').style.display = 'none';
   document.getElementById('suspendBtn').textContent = '✅ Unsuspend';
   document.getElementById('suspendBtn').onclick = doUnsuspend;
+  document.getElementById('suspendStatusBanner').style.display = '';
+  document.getElementById('suspendCancelBtn').textContent = 'Close';
   openModal('modalSuspend');
 }
 
@@ -1470,13 +1477,12 @@ async function doSuspend() {
   try {
     const r = await api('pw_subscription.api.suspend_site', {subscription_name: currentSub.name, reason});
     const partial = r && r.bench_error;
-    await btnDone('suspendBtn', partial ? 'Suspended (partial)' : 'Suspended!');
+    closeModal('modalSuspend');
     if (partial) {
       toast('Marked suspended in DB but maintenance_mode could not be set — check error log.', 'warning', 'Site suspended (partial)');
     } else {
       toast('Site access has been blocked.', 'warning', 'Site suspended');
     }
-    closeModal('modalSuspend');
     loadData();
   } catch (e) { btnLoading('suspendBtn', false); toast(extractMsg(e), 'error', 'Could not suspend site'); }
 }
@@ -1487,13 +1493,12 @@ async function doUnsuspend() {
   try {
     const r = await api('pw_subscription.api.unsuspend_site', {subscription_name: currentSub.name});
     const partial = r && r.bench_error;
-    await btnDone('suspendBtn', partial ? 'Unsuspended (partial)' : 'Unsuspended!');
+    closeModal('modalSuspend');
     if (partial) {
       toast('Marked active in DB but maintenance_mode could not be cleared — check error log.', 'warning', 'Site unsuspended (partial)');
     } else {
       toast('Site access has been restored.', 'success', 'Site unsuspended');
     }
-    closeModal('modalSuspend');
     loadData();
   } catch (e) { btnLoading('suspendBtn', false); toast(extractMsg(e), 'error', 'Could not unsuspend site'); }
 }
