@@ -1141,7 +1141,7 @@ def suspend_site(subscription_name, reason=None):
     except Exception:
         mode = "Soft Block"
 
-    if mode == "Hard Suspend" and sub.site_name:
+    if sub.site_name:
         from pw_subscription.site_provisioning import _do_suspend_site
         _do_suspend_site(sub.site_name)
 
@@ -1149,7 +1149,7 @@ def suspend_site(subscription_name, reason=None):
     sub.suspended_on = now()
     sub.suspension_reason = reason or "Suspended by administrator"
     sub.save(ignore_permissions=True)
-    _log_action(sub.name, "Cancelled",
+    _log_action(sub.name, "Suspended",
                 f"Site suspended ({mode}). Reason: {reason or 'N/A'}.")
     frappe.db.commit()
     _publish_sub_changed(sub)
@@ -1169,7 +1169,7 @@ def unsuspend_site(subscription_name):
     except Exception:
         mode = "Soft Block"
 
-    if mode == "Hard Suspend" and sub.site_name:
+    if sub.site_name:
         from pw_subscription.site_provisioning import _do_unsuspend_site
         _do_unsuspend_site(sub.site_name)
 

@@ -62,7 +62,7 @@ def update_subscription_statuses():
 
             # Auto-suspend if configured and not already suspended
             if should_suspend and not doc.is_suspended:
-                if suspension_mode == "Hard Suspend" and doc.site_name:
+                if doc.site_name:
                     try:
                         from pw_subscription.site_provisioning import _do_suspend_site
                         _do_suspend_site(doc.site_name)
@@ -219,7 +219,7 @@ def auto_suspend_expired_sites():
 
     for s in expired:
         try:
-            if mode == "Hard Suspend" and s.site_name:
+            if s.site_name:
                 from pw_subscription.site_provisioning import _do_suspend_site
                 _do_suspend_site(s.site_name)
             frappe.db.set_value("PW Subscription", s.name, {
