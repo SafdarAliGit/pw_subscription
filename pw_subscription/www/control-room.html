@@ -339,6 +339,9 @@
   .cns-bar-fill.done{background:var(--success)}.cns-bar-fill.fail{background:var(--danger)}
   .cns-status-row{display:flex;align-items:center;gap:.6rem;font-size:.83rem;font-weight:600;margin-bottom:.6rem}
   .cns-spinner{width:13px;height:13px;border:2px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:jpSpin .75s linear infinite;flex-shrink:0}
+  .btn-spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:jpSpin .55s linear infinite;vertical-align:middle;margin-right:4px}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .btn-done-flash{background:#10B981!important;border-color:#10B981!important;transition:background .15s,border-color .15s}
   .cns-field-row{display:flex;gap:.5rem;align-items:flex-start}
   .cns-field-row .form-control{flex:1;min-width:0}
   .cns-otp-btn{flex-shrink:0;width:auto;min-width:52px;padding:.35rem .5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1;background:linear-gradient(135deg,var(--primary),#1d4ed8);color:#fff;border:none;cursor:pointer;transition:all .2s;align-self:stretch}
@@ -551,7 +554,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalActivate')">Cancel</button>
-      <button class="btn btn-success" onclick="doActivate()">✅ Activate Now</button>
+      <button class="btn btn-success" id="activateBtn" onclick="doActivate()">✅ Activate Now</button>
     </div>
   </div>
 </div>
@@ -572,7 +575,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalExtend')">Cancel</button>
-      <button class="btn btn-primary" onclick="doExtend()">⏰ Extend Trial</button>
+      <button class="btn btn-primary" id="extendBtn" onclick="doExtend()">⏰ Extend Trial</button>
     </div>
   </div>
 </div>
@@ -593,7 +596,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalCancel')">Back</button>
-      <button class="btn btn-danger" onclick="doCancel()">🚫 Cancel Subscription</button>
+      <button class="btn btn-danger" id="cancelBtn" onclick="doCancel()">🚫 Cancel Subscription</button>
     </div>
   </div>
 </div>
@@ -656,7 +659,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalDelete')">Cancel</button>
-      <button class="btn btn-danger" onclick="doDelete()">🗑 Delete Permanently</button>
+      <button class="btn btn-danger" id="deleteBtn" onclick="doDelete()">🗑 Delete Permanently</button>
     </div>
   </div>
 </div>
@@ -677,7 +680,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalApprove')">Cancel</button>
-      <button class="btn btn-success" onclick="doApprove()">✅ Approve & Activate</button>
+      <button class="btn btn-success" id="approveBtn" onclick="doApprove()">✅ Approve & Activate</button>
     </div>
   </div>
 </div>
@@ -916,7 +919,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalReject')">Cancel</button>
-      <button class="btn btn-danger" onclick="doReject()">❌ Reject</button>
+      <button class="btn btn-danger" id="rejectBtn" onclick="doReject()">❌ Reject</button>
     </div>
   </div>
 </div>
@@ -1304,6 +1307,33 @@ async function pingOne(s) {
   }
 }
 
+// ── Button loading / done helpers ─────────────────────────────────────────────
+function btnLoading(id, loading) {
+  const btn = typeof id === 'string' ? document.getElementById(id) : id;
+  if (!btn) return;
+  if (loading) {
+    btn._origHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="btn-spin"></span> Working…';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn._origHTML || btn.innerHTML;
+    btn.disabled = false;
+    delete btn._origHTML;
+  }
+}
+
+function btnDone(id, label, ms = 650) {
+  const btn = typeof id === 'string' ? document.getElementById(id) : id;
+  if (!btn) return Promise.resolve();
+  btn.innerHTML = '✅ ' + (label || 'Done!');
+  btn.disabled = true;
+  btn.classList.add('btn-done-flash');
+  return new Promise(res => setTimeout(() => {
+    btn.classList.remove('btn-done-flash');
+    res();
+  }, ms));
+}
+
 // ── Action: Activate ──────────────────────────────────────────────────────────
 function openActivate(name) {
   const s = allSites.find(x => x.name === name);
@@ -1347,6 +1377,7 @@ async function doActivate() {
   const months = opt && opt.dataset.months ? opt.dataset.months : null;
 
   if (!endDate) { toast('Please select a plan or enter an end date first.', 'warning', 'Missing info'); return; }
+  btnLoading('activateBtn', true);
   try {
     await api('pw_subscription.api.activate_subscription', {
       subscription_name: currentSub.name,
@@ -1359,7 +1390,7 @@ async function doActivate() {
     toast('Subscription is now active.', 'success', 'Activated');
     closeModal('modalActivate');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Activation failed'); }
+  } catch (e) { btnLoading('activateBtn', false); toast(extractMsg(e), 'error', 'Activation failed'); }
 }
 
 // ── Action: Extend Trial ──────────────────────────────────────────────────────
@@ -1375,12 +1406,13 @@ function openExtend(name) {
 async function doExtend() {
   if (!currentSub) return;
   const days = document.getElementById('extendDays').value;
+  btnLoading('extendBtn', true);
   try {
     const r = await api('pw_subscription.api.extend_trial', {subscription_name: currentSub.name, extra_days: days});
     toast(`Trial extended — new end date: ${r.new_end}.`, 'success', 'Trial extended');
     closeModal('modalExtend');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Could not extend trial'); }
+  } catch (e) { btnLoading('extendBtn', false); toast(extractMsg(e), 'error', 'Could not extend trial'); }
 }
 
 // ── Action: Cancel ────────────────────────────────────────────────────────────
@@ -1396,12 +1428,13 @@ function openCancel(name) {
 async function doCancel() {
   if (!currentSub) return;
   const notes = document.getElementById('cancelNotes').value.trim();
+  btnLoading('cancelBtn', true);
   try {
     await api('pw_subscription.api.cancel_subscription', {subscription_name: currentSub.name, notes});
     toast('The subscription has been cancelled.', 'warning', 'Cancelled');
     closeModal('modalCancel');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Could not cancel'); }
+  } catch (e) { btnLoading('cancelBtn', false); toast(extractMsg(e), 'error', 'Could not cancel'); }
 }
 
 // ── Action: Suspend / Unsuspend ──────────────────────────────────────────────
@@ -1433,34 +1466,41 @@ function openUnsuspend(name) {
 async function doSuspend() {
   if (!currentSub) return;
   const reason = document.getElementById('suspendReason').value.trim();
+  btnLoading('suspendBtn', true);
   try {
     const r = await api('pw_subscription.api.suspend_site', {subscription_name: currentSub.name, reason});
-    if (r && r.bench_error) {
+    const partial = r && r.bench_error;
+    await btnDone('suspendBtn', partial ? 'Suspended (partial)' : 'Suspended!');
+    if (partial) {
       toast('Marked suspended in DB but maintenance_mode could not be set — check error log.', 'warning', 'Site suspended (partial)');
     } else {
       toast('Site access has been blocked.', 'warning', 'Site suspended');
     }
     closeModal('modalSuspend');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Could not suspend site'); }
+  } catch (e) { btnLoading('suspendBtn', false); toast(extractMsg(e), 'error', 'Could not suspend site'); }
 }
 
 async function doUnsuspend() {
   if (!currentSub) return;
+  btnLoading('suspendBtn', true);
   try {
     const r = await api('pw_subscription.api.unsuspend_site', {subscription_name: currentSub.name});
-    if (r && r.bench_error) {
+    const partial = r && r.bench_error;
+    await btnDone('suspendBtn', partial ? 'Unsuspended (partial)' : 'Unsuspended!');
+    if (partial) {
       toast('Marked active in DB but maintenance_mode could not be cleared — check error log.', 'warning', 'Site unsuspended (partial)');
     } else {
       toast('Site access has been restored.', 'success', 'Site unsuspended');
     }
     closeModal('modalSuspend');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Could not unsuspend site'); }
+  } catch (e) { btnLoading('suspendBtn', false); toast(extractMsg(e), 'error', 'Could not unsuspend site'); }
 }
 
 // ── Action: Send Reminder ────────────────────────────────────────────────────
 async function sendReminder(name) {
+  toast('Sending renewal reminder…', 'info', 'Sending');
   try {
     const r = await api('pw_subscription.api.send_reminder_manual', {subscription_name: name});
     toast(r.message || 'Renewal reminder sent to the customer.', 'success', 'Reminder sent');
@@ -1496,12 +1536,13 @@ async function loadLog(req) {
 
 async function doRetry() {
   if (!currentProvReq) return;
+  btnLoading('retryBtn', true);
   try {
     await api('pw_subscription.api.retry_site_creation', {request_name: currentProvReq});
     toast('Site creation has been re-queued and will start shortly.', 'success', 'Retry queued');
     closeModal('modalLog');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Retry failed'); }
+  } catch (e) { btnLoading('retryBtn', false); toast(extractMsg(e), 'error', 'Retry failed'); }
 }
 
 // ── Action: Delete ────────────────────────────────────────────────────────────
@@ -1518,6 +1559,7 @@ async function doDelete() {
   if (!currentSub) return;
   const confirm = document.getElementById('deleteConfirm').value.trim();
   if (confirm !== 'DELETE') { toast('Type DELETE in the box above to confirm this action.', 'warning', 'Confirmation required'); return; }
+  btnLoading('deleteBtn', true);
   try {
     const r = await api('pw_subscription.api.delete_site_permanently', {
       subscription_name: currentSub.name, confirm_text: 'DELETE'
@@ -1525,7 +1567,7 @@ async function doDelete() {
     toast(r.message || 'Site and all associated records have been permanently removed.', 'success', 'Site deleted');
     closeModal('modalDelete');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Deletion failed'); }
+  } catch (e) { btnLoading('deleteBtn', false); toast(extractMsg(e), 'error', 'Deletion failed'); }
 }
 
 // ── Action: Approve / Reject Proof ────────────────────────────────────────────
@@ -1544,12 +1586,13 @@ function openApprove(proofName) {
 async function doApprove() {
   if (!currentProof) return;
   const notes = document.getElementById('approveNotes').value.trim();
+  btnLoading('approveBtn', true);
   try {
     const r = await api('pw_subscription.api.approve_payment', {proof_name: currentProof.name, admin_notes: notes});
     toast(`Payment approved. Subscription is now active until ${r.new_end}.`, 'success', 'Payment approved');
     closeModal('modalApprove');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Approval failed'); }
+  } catch (e) { btnLoading('approveBtn', false); toast(extractMsg(e), 'error', 'Approval failed'); }
 }
 
 function openReject(proofName) {
@@ -1567,12 +1610,13 @@ async function doReject() {
   if (!currentProof) return;
   const notes = document.getElementById('rejectNotes').value.trim();
   if (!notes) { toast('Please provide a reason — it will be sent to the customer.', 'warning', 'Reason required'); return; }
+  btnLoading('rejectBtn', true);
   try {
     await api('pw_subscription.api.reject_payment', {proof_name: currentProof.name, admin_notes: notes});
     toast('Payment proof rejected. The customer has been notified.', 'warning', 'Proof rejected');
     closeModal('modalReject');
     loadData();
-  } catch (e) { toast(extractMsg(e), 'error', 'Rejection failed'); }
+  } catch (e) { btnLoading('rejectBtn', false); toast(extractMsg(e), 'error', 'Rejection failed'); }
 }
 
 // ── Realtime ─────────────────────────────────────────────────────────────────
@@ -1684,7 +1728,21 @@ function toggleMenu(btn, e) {
   closeAllMenus();
   if (!isOpen) {
     const r = btn.getBoundingClientRect();
-    menu.style.top  = (r.bottom + 4) + 'px';
+    // measure menu height before showing it
+    menu.style.visibility = 'hidden';
+    menu.style.display = '';
+    const menuH = menu.offsetHeight;
+    menu.style.display = 'none';
+    menu.style.visibility = '';
+
+    const spaceBelow = window.innerHeight - r.bottom - 8;
+    const spaceAbove = r.top - 8;
+    if (menuH > spaceBelow && spaceAbove > spaceBelow) {
+      // flip upward
+      menu.style.top = Math.max(8, r.top - menuH - 4) + 'px';
+    } else {
+      menu.style.top = (r.bottom + 4) + 'px';
+    }
     menu.style.right = (window.innerWidth - r.right) + 'px';
     menu.style.display = '';
   }
