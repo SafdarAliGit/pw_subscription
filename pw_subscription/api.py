@@ -938,6 +938,7 @@ def get_control_room_data():
             "grace_end": str(sub.grace_end) if sub.grace_end else "",
             "payment_reference": sub.payment_reference or "",
             "creation": str(sub.creation)[:10] if sub.creation else "",
+            "clinic_mode": sub.clinic_mode or "Clinic",
             "provisioning_status": prov.status if prov else "None",
             "provisioning_request": prov.name if prov else "",
             "provisioning_url": prov.site_url if prov else "",
