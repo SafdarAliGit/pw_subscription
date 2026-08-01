@@ -839,23 +839,15 @@ def get_control_room_data():
         fields=["name", "clinic_name", "physician_name", "contact_email",
                 "contact_phone", "site_name", "status", "is_suspended",
                 "trial_start", "trial_end", "subscription_start", "subscription_end",
-                "grace_end", "payment_reference", "creation"],
+                "grace_end", "payment_reference", "creation", "clinic_mode"],
         order_by="creation desc",
         limit=0,
         ignore_permissions=True,
     )
 
-    # Fetch clinic_mode separately — column may not exist on older sites
-    try:
-        mode_rows = frappe.db.sql(
-            "SELECT name, clinic_mode FROM `tabPW Subscription`",
-            as_dict=True,
-        )
-        mode_map = {r.name: r.clinic_mode or "Clinic" for r in mode_rows}
-    except Exception:
-        mode_map = {}
     for s in subs:
-        s["clinic_mode"] = mode_map.get(s.name, "Clinic")
+        if not s.get("clinic_mode"):
+            s["clinic_mode"] = "Clinic"
 
     # Get latest provisioning request per subscription
     prov_map = {}
