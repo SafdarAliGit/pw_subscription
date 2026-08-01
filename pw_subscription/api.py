@@ -707,6 +707,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
             "provisioning_request": prov_doc.name,
             "provisioning_url": "",
             "prov_error": "",
+            "clinic_mode": clinic_mode or "Clinic",
         })
     except Exception:
         pass
