@@ -13,7 +13,7 @@ def get_context(context):
 
     try:
         settings = frappe.get_single("PW Subscription Settings")
-        context.app_name = settings.app_name or "CureDesk"
+        context.app_name = settings.app_name or "CoreLogics"
         context.bank_details = settings.bank_details or ""
         context.contact_email = settings.contact_email or ""
         context.contact_phone = settings.contact_phone or ""
@@ -54,7 +54,7 @@ def get_context(context):
                 plan["badge"] = ""
     except Exception:
         frappe.log_error(frappe.get_traceback(), "subscription-portal get_context")
-        context.app_name = "CureDesk"
+        context.app_name = "CoreLogics"
         context.bank_details = ""
         context.contact_email = ""
         context.contact_phone = ""

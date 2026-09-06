@@ -130,7 +130,7 @@ def _send_reminder_email(sub, days_left, settings):
     """Send a renewal reminder email to a subscription holder."""
     try:
         sender = (settings.sender_email or "").strip() or None
-        app_name = settings.app_name or "CureDesk"
+        app_name = settings.app_name or "CoreLogics"
         contact_email = settings.contact_email or ""
         contact_phone = settings.contact_phone or ""
         monthly_fee = settings.monthly_fee or 0

@@ -7,8 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "sb_general",
+  "company_name",
   "app_name",
   "tagline",
+  "founder_name",
   "allow_application_creation_by_website_user",
   "sb_plan",
   "monthly_fee",
@@ -24,6 +26,7 @@
   "sb_contact",
   "contact_email",
   "contact_phone",
+  "contact_address",
   "cb_contact",
   "bank_details",
   "sb_email",
@@ -53,8 +56,10 @@
  ],
  "fields": [
   {"fieldname":"sb_general","fieldtype":"Section Break","label":"App Info"},
-  {"fieldname":"app_name","fieldtype":"Data","label":"App Name","default":"CureDesk","reqd":1},
-  {"fieldname":"tagline","fieldtype":"Data","label":"Website Tagline"},
+  {"fieldname":"company_name","fieldtype":"Data","label":"Company Name","default":"CoreLogics","reqd":1,"description":"The parent company / brand name shown on the website and portals."},
+  {"fieldname":"app_name","fieldtype":"Data","label":"App Name","default":"CoreLogics","reqd":1},
+  {"fieldname":"tagline","fieldtype":"Data","label":"Website Tagline","description":"Short tagline shown in the website hero and footer (e.g. 'Business Software Built Right')"},
+  {"fieldname":"founder_name","fieldtype":"Data","label":"Founder Name","default":"Safdar Ali","description":"Name shown on the About and Home pages"},
   {"fieldname":"allow_application_creation_by_website_user","fieldtype":"Check","label":"Allow Application Creation By Website User","default":"0","description":"When enabled, the Get Started / Start Free Trial buttons and registration form are shown on the subscription page so website visitors can self-provision a clinic application."},
 
   {"fieldname":"sb_plan","fieldtype":"Section Break","label":"Subscription Settings"},
@@ -73,6 +78,7 @@
   {"fieldname":"sb_contact","fieldtype":"Section Break","label":"Contact & Payment"},
   {"fieldname":"contact_email","fieldtype":"Data","label":"Support Email","options":"Email"},
   {"fieldname":"contact_phone","fieldtype":"Data","label":"Support Phone / WhatsApp"},
+  {"fieldname":"contact_address","fieldtype":"Data","label":"Office Address","default":"Ghazali Town, Khapur, Pakistan"},
   {"fieldname":"cb_contact","fieldtype":"Column Break"},
   {"fieldname":"bank_details","fieldtype":"Long Text","label":"Bank Account Details","description":"Shown to customers on the payment page"},
 

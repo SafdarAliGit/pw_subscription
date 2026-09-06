@@ -15,7 +15,7 @@ def create_settings():
     try:
         doc = frappe.get_single("PW Subscription Settings")
         if not doc.app_name:
-            doc.app_name = "CureDesk"
+            doc.app_name = "CoreLogics"
             doc.tagline = "The smartest prescription writing platform for modern clinics"
             doc.monthly_fee = 2000
             doc.trial_days = 7

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ company_name }} — Specialised Software</title>
+<script>window.frappe = window.frappe || {};</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,
+  .website-page-container>.container>.page-title,h1.page-title{display:none!important}
+  .page-content,.website-page-container,.container{padding-top:0!important;margin-top:0!important;max-width:100%!important;padding-left:0!important;padding-right:0!important}
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#EFF6FF;
+    --success:#10B981;--warning:#F59E0B;--danger:#EF4444;
+    --dark:#0F172A;--dark2:#1E293B;--dark3:#334155;
+    --muted:#64748B;--border:#E2E8F0;--light:#F8FAFC;--white:#FFFFFF;
+    --radius:12px;--radius-lg:20px;
+    --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+    --shadow-lg:0 20px 40px rgba(0,0,0,.12);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);line-height:1.6}
+
+  /* ── NAV ── */
+  .site-nav{
+    position:fixed;top:0;left:0;right:0;z-index:200;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 5%;height:64px;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(226,232,240,.8);
+  }
+  .nav-logo{font-size:1.2rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;text-decoration:none}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{text-decoration:none;color:var(--dark3);font-size:.9rem;font-weight:500;transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--primary)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-signin{color:var(--dark3);font-size:.88rem;font-weight:600;text-decoration:none}
+  .nav-signin:hover{color:var(--primary)}
+  .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+  .nav-hamburger span{display:block;width:22px;height:2px;background:var(--dark3);border-radius:2px;transition:.2s}
+  @media(max-width:768px){
+    .nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);flex-direction:column;gap:0;padding:.5rem 0}
+    .nav-links.open{display:flex}
+    .nav-links a{padding:.75rem 5%;border-bottom:1px solid var(--border)}
+    .nav-hamburger{display:flex}
+    .nav-signin{display:none}
+  }
+
+  /* ── HERO ── */
+  .hero{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0F172A 0%,#1E293B 55%,#0A1628 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:80px 5% 70px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero-orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.18;pointer-events:none}
+  .hero-orb-1{width:420px;height:420px;background:#3B82F6;top:-100px;right:-80px}
+  .hero-orb-2{width:360px;height:360px;background:#10B981;bottom:-80px;left:-60px}
+  .hero-orb-3{width:260px;height:260px;background:#8B5CF6;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(255,255,255,.08);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);
+    padding:.4rem 1.1rem;border-radius:100px;font-size:.8rem;font-weight:600;
+    letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.75rem;
+  }
+  .hero-eyebrow-dot{width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.35)}}
+  .hero h1{
+    font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;color:#fff;
+    line-height:1.07;letter-spacing:-2px;max-width:900px;margin-bottom:1.5rem;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(135deg,#38BDF8 0%,#818CF8 50%,#F472B6 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .hero-sub{font-size:clamp(.98rem,1.6vw,1.15rem);color:rgba(255,255,255,.65);max-width:660px;margin:0 auto 2.5rem;line-height:1.85}
+  .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:5rem}
+  .btn-hp{background:var(--primary);color:#fff;padding:.9rem 2.2rem;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 8px 24px rgba(37,99,235,.4);transition:all .2s}
+  .btn-hp:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 12px 32px rgba(37,99,235,.5)}
+  .btn-hg{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:#fff;padding:.9rem 2.2rem;border-radius:10px;font-weight:600;font-size:1rem;text-decoration:none;border:1px solid rgba(255,255,255,.25);transition:all .2s}
+  .btn-hg:hover{background:rgba(255,255,255,.18)}
+
+  /* ── DIFFERENTIATORS BAR ── */
+  .diff-bar{border-top:1px solid rgba(255,255,255,.1);padding-top:2.5rem;display:flex;gap:3rem;justify-content:center;flex-wrap:wrap}
+  .diff-item{display:flex;align-items:center;gap:.6rem;color:rgba(255,255,255,.6);font-size:.88rem;font-weight:500}
+  .diff-icon{font-size:1.1rem}
+
+  /* ── SECTION COMMONS ── */
+  section{padding:88px 5%}
+  .section-tag{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .85rem;border-radius:100px;margin-bottom:.9rem}
+  .section-title{font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:800;color:var(--dark);letter-spacing:-1px;margin-bottom:.75rem}
+  .section-sub{font-size:1rem;color:var(--muted);max-width:580px;margin:0 auto}
+  .text-center{text-align:center}
+
+  /* ── APPROACH ── */
+  .approach-section{background:var(--white)}
+  .approach-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3.5rem}
+  .approach-card{background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;text-align:center;transition:transform .2s,box-shadow .2s,border-color .2s}
+  .approach-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--primary)}
+  .approach-icon{font-size:2rem;margin-bottom:1rem}
+  .approach-title{font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.5rem}
+  .approach-text{font-size:.875rem;color:var(--muted);line-height:1.7}
+
+  /* ── APPLICATIONS ── */
+  .apps-section{background:var(--light)}
+  .apps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.75rem;margin-top:3.5rem}
+  .app-card{
+    background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:2rem;position:relative;overflow:hidden;
+    transition:transform .25s,box-shadow .25s,border-color .25s;text-decoration:none;display:block;color:inherit;
+  }
+  .app-card.clickable:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--primary)}
+  .app-card-top{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+  .app-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.25rem}
+  .app-name{font-size:1.15rem;font-weight:700;color:var(--dark);margin-bottom:.25rem}
+  .app-domain{font-size:.78rem;color:var(--primary);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:.75rem}
+  .app-desc{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:1.25rem}
+  .app-features{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.25rem}
+  .app-feat{background:var(--primary-light);color:var(--primary);font-size:.72rem;font-weight:600;padding:.2rem .6rem;border-radius:100px}
+  .app-tag{display:inline-block;padding:.25rem .8rem;border-radius:100px;font-size:.75rem;font-weight:600}
+  .app-tag-live{background:#D1FAE5;color:#065F46}
+  .app-tag-soon{background:#FEF3C7;color:#92400E}
+  .app-link{display:inline-flex;align-items:center;gap:.4rem;color:var(--primary);font-size:.88rem;font-weight:600;text-decoration:none;margin-top:.9rem}
+  .app-link svg{transition:transform .2s}
+  .app-card.clickable:hover .app-link svg{transform:translateX(4px)}
+
+  /* ── COMPANY ── */
+  .company-section{background:var(--white)}
+  .company-inner{display:grid;grid-template-columns:1.1fr 1fr;gap:5rem;align-items:start;margin-top:3.5rem}
+  @media(max-width:960px){.company-inner{grid-template-columns:1fr;gap:2.5rem}}
+  .company-text h3{font-size:1.35rem;font-weight:800;color:var(--dark);letter-spacing:-.5px;margin-bottom:1rem}
+  .company-text p{font-size:.97rem;color:var(--muted);line-height:1.85;margin-bottom:1.1rem}
+  .stack-wrap{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
+  .stack-pill{background:var(--primary-light);color:var(--primary);font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:100px;border:1px solid #BFDBFE}
+  .company-values{display:flex;flex-direction:column;gap:1.1rem}
+  .value-item{display:flex;align-items:flex-start;gap:1rem;background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.25rem;transition:border-color .2s,box-shadow .2s}
+  .value-item:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+  .value-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+  .value-title{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:.25rem}
+  .value-text{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+  /* ── FOUNDER ── */
+  .founder-section{background:var(--light)}
+  .founder-inner{display:grid;grid-template-columns:1fr 1.65fr;gap:5rem;align-items:center;margin-top:3.5rem}
+  @media(max-width:960px){.founder-inner{grid-template-columns:1fr;gap:2.5rem}}
+  .founder-card{
+    background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:2.5rem;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;
+  }
+  .founder-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563EB,#7C3AED,#EC4899)}
+  .founder-avatar{
+    width:100px;height:100px;border-radius:50%;margin:0 auto 1.25rem;
+    background:linear-gradient(135deg,#2563EB,#7C3AED);
+    display:flex;align-items:center;justify-content:center;
+    font-size:2.4rem;color:#fff;font-weight:800;
+    box-shadow:0 8px 24px rgba(37,99,235,.3);
+  }
+  .founder-name{font-size:1.4rem;font-weight:800;color:var(--dark);letter-spacing:-.5px;margin-bottom:.25rem}
+  .founder-title{font-size:.85rem;color:var(--primary);font-weight:600;margin-bottom:.2rem}
+  .founder-company{font-size:.82rem;color:var(--muted);font-weight:500;margin-bottom:1.5rem}
+  .founder-skills{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;margin-bottom:1.5rem}
+  .skill-pill{background:var(--primary-light);color:var(--primary);font-size:.74rem;font-weight:600;padding:.26rem .65rem;border-radius:100px;border:1px solid #BFDBFE}
+  .founder-divider{height:1px;background:var(--border);margin:1.25rem 0}
+  .founder-links{display:flex;flex-direction:column;gap:.7rem;text-align:left}
+  .founder-link{display:flex;align-items:center;gap:.7rem;font-size:.875rem;color:var(--muted);text-decoration:none;padding:.4rem .65rem;border-radius:8px;transition:background .15s,color .15s}
+  .founder-link:hover{background:var(--primary-light);color:var(--primary)}
+
+  .founder-bio h3{font-size:1.45rem;font-weight:800;color:var(--dark);letter-spacing:-.5px;margin-bottom:1.25rem}
+  .founder-bio p{font-size:.97rem;color:var(--muted);line-height:1.85;margin-bottom:1.1rem}
+  .founder-highlights{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
+  @media(max-width:500px){.founder-highlights{grid-template-columns:1fr}}
+  .fhl{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem}
+  .fhl-icon{font-size:1.3rem;margin-bottom:.5rem}
+  .fhl-title{font-size:.85rem;font-weight:700;color:var(--dark);margin-bottom:.2rem}
+  .fhl-text{font-size:.78rem;color:var(--muted);line-height:1.5}
+
+  /* ── CONTACT STRIP ── */
+  .contact-strip{background:var(--white);padding:80px 5%}
+  .contact-strip-inner{
+    display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;
+    background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:3rem 4rem;
+  }
+  @media(max-width:900px){.contact-strip-inner{grid-template-columns:1fr;gap:2rem;padding:2rem}}
+  .cs-left h2{font-size:1.6rem;font-weight:800;color:var(--dark);letter-spacing:-.5px;margin-bottom:.65rem}
+  .cs-left p{font-size:.97rem;color:var(--muted);line-height:1.8;margin-bottom:1.75rem}
+  .cs-cta{display:inline-flex;align-items:center;gap:.5rem;background:var(--primary);color:#fff;padding:.8rem 1.8rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 6px 20px rgba(37,99,235,.35);transition:all .2s}
+  .cs-cta:hover{background:var(--primary-dark);transform:translateY(-2px)}
+  .cs-items{display:flex;flex-direction:column;gap:1.1rem}
+  .cs-item{display:flex;align-items:center;gap:.9rem}
+  .cs-item-icon{width:42px;height:42px;border-radius:11px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .cs-item-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .cs-item-val{font-size:.92rem;font-weight:600;color:var(--dark)}
+  .cs-item-val a{color:inherit;text-decoration:none}
+  .cs-item-val a:hover{color:var(--primary)}
+
+  /* ── FOOTER ── */
+  .site-footer{background:var(--dark);color:rgba(255,255,255,.6);padding:3.5rem 5% 2rem}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+  @media(max-width:768px){.footer-top{grid-template-columns:1fr;gap:2rem}}
+  .footer-logo{font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:.5rem}
+  .footer-tagline{font-size:.8rem;color:rgba(255,255,255,.35);margin-bottom:1rem}
+  .footer-desc{font-size:.85rem;line-height:1.75;max-width:300px}
+  .footer-col h4{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.08em}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.65rem}
+  .footer-col ul a{color:rgba(255,255,255,.5);font-size:.88rem;text-decoration:none;transition:color .2s}
+  .footer-col ul a:hover{color:#fff}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+  .footer-copy{font-size:.8rem}
+  .footer-legal{display:flex;gap:1.5rem}
+  .footer-legal a{color:rgba(255,255,255,.35);font-size:.8rem;text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="/home" class="nav-logo">{{ company_name }}</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/home" class="active">Home</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/contact">Contact</a></li>
+    <li><a href="/healthcare">Healthcare</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/subscription-portal" class="nav-signin">Sign In</a>
+    <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    {{ company_name }} &mdash; Business Software Company
+  </div>
+
+  <h1>
+    Software That Powers<br>
+    <span class="grad">Every Layer of Your Business</span>
+  </h1>
+
+  <p class="hero-sub">
+    {{ company_name }} designs, builds, and operates business software — from ERP implementation
+    and accounting systems to domain-specific SaaS applications.
+    Every product is grounded in real workflows and built to last.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="/about" class="btn-hp">About {{ company_name }}</a>
+    <a href="/healthcare" class="btn-hg">Explore CureDesk →</a>
+  </div>
+
+  <div class="diff-bar">
+    <div class="diff-item"><span class="diff-icon">🏗️</span> Custom Software Development</div>
+    <div class="diff-item"><span class="diff-icon">📊</span> ERPNext Implementation</div>
+    <div class="diff-item"><span class="diff-icon">💰</span> Accounting &amp; Finance</div>
+    <div class="diff-item"><span class="diff-icon">🏥</span> SaaS Applications</div>
+    <div class="diff-item"><span class="diff-icon">💸</span> Transparent Pricing</div>
+  </div>
+</section>
+
+<!-- OUR APPROACH -->
+<section class="approach-section" id="approach">
+  <div class="text-center">
+    <span class="section-tag">Our Approach</span>
+    <h2 class="section-title">How We Build Software</h2>
+    <p class="section-sub">{{ company_name }} follows four principles on every product and service we deliver.</p>
+  </div>
+
+  <div class="approach-grid">
+    <div class="approach-card">
+      <div class="approach-icon">🎯</div>
+      <div class="approach-title">Domain-First Design</div>
+      <p class="approach-text">Every feature is shaped by the actual workflow of the people who use it — business owners, clinic staff, accountants — not theoretical requirements.</p>
+    </div>
+    <div class="approach-card">
+      <div class="approach-icon">🔒</div>
+      <div class="approach-title">Isolated by Default</div>
+      <p class="approach-text">Each customer runs on their own isolated site. No shared tables, no cross-tenant leakage. Your data stays exactly where it should.</p>
+    </div>
+    <div class="approach-card">
+      <div class="approach-icon">🔗</div>
+      <div class="approach-title">Open Platform</div>
+      <p class="approach-text">Built on Frappe and ERPNext — open-source, REST API-ready, and fully customisable. No vendor lock-in, ever.</p>
+    </div>
+    <div class="approach-card">
+      <div class="approach-icon">📈</div>
+      <div class="approach-title">Continuously Evolved</div>
+      <p class="approach-text">Products are actively maintained and extended based on real usage and customer feedback. Every pain point is a potential improvement.</p>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="apps-section" id="applications">
+  <div class="text-center">
+    <span class="section-tag">Products &amp; Services</span>
+    <h2 class="section-title">What We Build &amp; Deliver</h2>
+    <p class="section-sub">From ERPNext implementation to purpose-built SaaS — a growing portfolio of business software solutions.</p>
+  </div>
+
+  <div class="apps-grid">
+
+    <!-- ERPNext Services -->
+    <div class="app-card">
+      <div class="app-card-top" style="background:linear-gradient(90deg,#F59E0B,#EF4444)"></div>
+      <div class="app-icon" style="background:#FFFBEB">📊</div>
+      <div class="app-name">ERPNext Services</div>
+      <div class="app-domain">ERP &middot; Accounting &middot; Business Software</div>
+      <p class="app-desc">
+        Full ERPNext implementation, customization, and support. Accounting, inventory, HR,
+        payroll, and manufacturing — tailored to your business processes and integrated end to end.
+      </p>
+      <div class="app-features">
+        <span class="app-feat">Implementation</span>
+        <span class="app-feat">Customization</span>
+        <span class="app-feat">Accounting</span>
+        <span class="app-feat">Inventory</span>
+        <span class="app-feat">HR &amp; Payroll</span>
+        <span class="app-feat">Support</span>
+      </div>
+      <span class="app-tag app-tag-live">Available</span>
+    </div>
+
+    <!-- Healthcare / CureDesk — LIVE -->
+    <a href="/healthcare" class="app-card clickable">
+      <div class="app-card-top" style="background:linear-gradient(90deg,#2563EB,#7C3AED)"></div>
+      <div class="app-icon" style="background:#EFF6FF">🏥</div>
+      <div class="app-name">CureDesk</div>
+      <div class="app-domain">Healthcare &middot; Clinic Management</div>
+      <p class="app-desc">
+        Complete clinic management platform — patient queue, smart prescriptions, IPD, lab &amp;
+        diagnostics, invoicing, telemedicine, appointments, and integrated financial accounting.
+      </p>
+      <div class="app-features">
+        <span class="app-feat">Patient Queue</span>
+        <span class="app-feat">Prescriptions</span>
+        <span class="app-feat">IPD</span>
+        <span class="app-feat">Lab</span>
+        <span class="app-feat">Invoicing</span>
+        <span class="app-feat">Telemedicine</span>
+        <span class="app-feat">Appointments</span>
+        <span class="app-feat">Multi-lingual</span>
+      </div>
+      <span class="app-tag app-tag-live">Live</span>
+      <div class="app-link">
+        View Full Feature List
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+    <!-- PharmaBridge — Coming Soon -->
+    <div class="app-card">
+      <div class="app-card-top" style="background:linear-gradient(90deg,#10B981,#0891B2)"></div>
+      <div class="app-icon" style="background:#ECFDF5">📦</div>
+      <div class="app-name">PharmaBridge</div>
+      <div class="app-domain">Healthcare &middot; Pharmacy</div>
+      <p class="app-desc">
+        End-to-end pharmacy management — formulary, dispensing, supplier orders, expiry tracking,
+        stock alerts, and integrated multi-branch financial reporting.
+      </p>
+      <div class="app-features">
+        <span class="app-feat">Formulary</span>
+        <span class="app-feat">Dispensing</span>
+        <span class="app-feat">Stock</span>
+        <span class="app-feat">Supplier Orders</span>
+        <span class="app-feat">Expiry Tracking</span>
+      </div>
+      <span class="app-tag app-tag-soon">Coming Soon</span>
+    </div>
+
+    <!-- LabCore — Coming Soon -->
+    <div class="app-card">
+      <div class="app-card-top" style="background:linear-gradient(90deg,#8B5CF6,#6D28D9)"></div>
+      <div class="app-icon" style="background:#F5F3FF">🔬</div>
+      <div class="app-name">LabCore</div>
+      <div class="app-domain">Healthcare &middot; Diagnostics</div>
+      <p class="app-desc">
+        Standalone diagnostic lab management — sample tracking, parameterised result entry,
+        critical value flagging, patient portal reports, and integrated billing.
+      </p>
+      <div class="app-features">
+        <span class="app-feat">Sample Tracking</span>
+        <span class="app-feat">Result Entry</span>
+        <span class="app-feat">Critical Alerts</span>
+        <span class="app-feat">Patient Portal</span>
+        <span class="app-feat">Billing</span>
+      </div>
+      <span class="app-tag app-tag-soon">Coming Soon</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT THE COMPANY -->
+<section class="company-section" id="company">
+  <div class="text-center">
+    <span class="section-tag">The Company</span>
+    <h2 class="section-title">About {{ company_name }}</h2>
+    <p class="section-sub">A focused software company building real-world applications across healthcare, business, and beyond.</p>
+  </div>
+
+  <div class="company-inner">
+
+    <div class="company-text">
+      <h3>Our mission: deliver software that actually works across every domain</h3>
+      <p>
+        {{ company_name }} is a software company that designs, builds, and operates applications
+        across multiple industries. We implement and customise ERPNext for businesses of all sizes —
+        covering accounting, inventory, HR, payroll, and manufacturing — and develop custom web
+        applications using Django and Frappe wherever a tailored solution is the right fit.
+      </p>
+      <p>
+        Our portfolio spans healthcare, retail, logistics, finance, and more. Our flagship SaaS
+        product, <strong>CureDesk</strong>, is a complete clinic management platform. Alongside it,
+        we build and maintain domain-specific applications — from pharmacy management with
+        <strong>PharmaBridge</strong> to lab diagnostics with <strong>LabCore</strong> — each
+        shaped by real operational workflows, not generic templates.
+      </p>
+      <p>
+        Whether you need a full ERP roll-out, a Django-powered web platform, a custom Frappe
+        module, or a multi-tenant SaaS product, {{ company_name }} brings the same rigour:
+        deep domain expertise, clean architecture, and software you can rely on in production.
+      </p>
+      <div class="stack-wrap">
+        <span class="stack-pill">Frappe Framework</span>
+        <span class="stack-pill">Django</span>
+        <span class="stack-pill">ERPNext</span>
+        <span class="stack-pill">Python</span>
+        <span class="stack-pill">JavaScript</span>
+        <span class="stack-pill">MariaDB</span>
+        <span class="stack-pill">Socket.IO</span>
+        <span class="stack-pill">REST API</span>
+        <span class="stack-pill">Multi-tenant SaaS</span>
+      </div>
+    </div>
+
+    <div class="company-values">
+      <div class="value-item">
+        <div class="value-icon" style="background:#EFF6FF">🎯</div>
+        <div>
+          <div class="value-title">Business-First Design</div>
+          <div class="value-text">Every feature is shaped by real workflows — from clinic to warehouse to accounting desk — not assumptions.</div>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon" style="background:#FFFBEB">📊</div>
+        <div>
+          <div class="value-title">ERPNext Expertise</div>
+          <div class="value-text">Deep hands-on experience implementing, customising, and extending ERPNext across accounting, inventory, HR, and manufacturing.</div>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon" style="background:#ECFDF5">🔒</div>
+        <div>
+          <div class="value-title">Data Isolation &amp; Security</div>
+          <div class="value-text">Each customer runs on their own isolated site. No shared database, no cross-tenant data leakage, ever.</div>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon" style="background:#F5F3FF">🔧</div>
+        <div>
+          <div class="value-title">Open Platform</div>
+          <div class="value-text">Built on Frappe + ERPNext + Django — rich REST API, full customisability, and a global open-source ecosystem.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section class="founder-section" id="founder">
+  <div class="text-center">
+    <span class="section-tag">Meet the Founder</span>
+    <h2 class="section-title">The Person Behind {{ company_name }}</h2>
+    <p class="section-sub">One developer, one clear mission — software that businesses and teams can actually rely on.</p>
+  </div>
+
+  <div class="founder-inner">
+
+    <div class="founder-card">
+      <div class="founder-avatar">{{ founder_name[0] | upper }}</div>
+      <div class="founder-name">{{ founder_name }}</div>
+      <div class="founder-title">Founder &amp; Lead Developer</div>
+      <div class="founder-company">{{ company_name }}</div>
+
+      <div class="founder-skills">
+        <span class="skill-pill">Frappe / ERPNext</span>
+        <span class="skill-pill">Django</span>
+        <span class="skill-pill">Python</span>
+        <span class="skill-pill">JavaScript</span>
+        <span class="skill-pill">SaaS Architecture</span>
+        <span class="skill-pill">Multi-tenant</span>
+        <span class="skill-pill">Business Software</span>
+      </div>
+
+      <div class="founder-divider"></div>
+
+      <div class="founder-links">
+        {% if contact_email %}
+        <a href="mailto:{{ contact_email }}" class="founder-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          {{ contact_email }}
+        </a>
+        {% endif %}
+        {% if contact_phone %}
+        <a href="tel:{{ contact_phone }}" class="founder-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          {{ contact_phone }}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="founder-bio">
+      <h3>Building software that actually works across every industry</h3>
+      <p>
+        {{ founder_name }} is a full-stack developer with deep expertise in business software,
+        ERP systems, and multi-domain SaaS applications. He designs and delivers end-to-end
+        solutions — from ERPNext implementation across accounting, inventory, HR, and manufacturing,
+        to custom web platforms built with Django and Frappe for industries where off-the-shelf
+        tools fall short.
+      </p>
+      <p>
+        With hands-on mastery of Frappe, ERPNext, and Django, {{ founder_name }} architects and
+        ships every product and service at {{ company_name }} — from database design and Python
+        backend through JavaScript frontend and production DevOps. Whether it's a retail system,
+        a logistics platform, a financial tool, or a healthcare application, every solution is
+        shaped by real operational needs, not theoretical requirements.
+      </p>
+      <p>
+        {{ company_name }}'s growing portfolio spans multiple domains — healthcare (CureDesk),
+        pharmacy (PharmaBridge), diagnostics (LabCore), and custom business applications.
+        ERPNext implementation &amp; customisation services are available across any industry, now.
+      </p>
+
+      <div class="founder-highlights">
+        <div class="fhl">
+          <div class="fhl-icon">🏗️</div>
+          <div class="fhl-title">Full-Stack Engineer</div>
+          <div class="fhl-text">Python, Django, JavaScript, database design, DevOps — end to end, solo.</div>
+        </div>
+        <div class="fhl">
+          <div class="fhl-icon">🌍</div>
+          <div class="fhl-title">Multi-Domain Expertise</div>
+          <div class="fhl-text">Delivering software across healthcare, retail, logistics, finance, and more.</div>
+        </div>
+        <div class="fhl">
+          <div class="fhl-icon">⚡</div>
+          <div class="fhl-title">Real-Time Systems</div>
+          <div class="fhl-text">Live queues, instant notifications, real-time sync via Socket.IO.</div>
+        </div>
+        <div class="fhl">
+          <div class="fhl-icon">🌐</div>
+          <div class="fhl-title">Multi-Lingual &amp; Multi-Tenant</div>
+          <div class="fhl-text">EN / UR / AR UI with per-tenant data isolation across one SaaS platform.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT STRIP -->
+<section class="contact-strip" id="contact">
+  <div class="contact-strip-inner">
+    <div class="cs-left">
+      <h2>Get in Touch</h2>
+      <p>
+        Questions about a product, want a live demo, or interested in a custom module?
+        {{ company_name }} responds fast.
+      </p>
+      <a href="/contact" class="cs-cta">
+        Contact Us
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="cs-items">
+      {% if contact_email %}
+      <div class="cs-item">
+        <div class="cs-item-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
+        <div>
+          <div class="cs-item-label">Email</div>
+          <div class="cs-item-val"><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></div>
+        </div>
+      </div>
+      {% endif %}
+      {% if contact_phone %}
+      <div class="cs-item">
+        <div class="cs-item-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+        </div>
+        <div>
+          <div class="cs-item-label">Phone / WhatsApp</div>
+          <div class="cs-item-val"><a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="cs-item">
+        <div class="cs-item-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div>
+          <div class="cs-item-label">Company</div>
+          <div class="cs-item-val">{{ company_name }}</div>
+        </div>
+      </div>
+      <div class="cs-item">
+        <div class="cs-item-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="cs-item-label">Address</div>
+          <div class="cs-item-val">{{ contact_address }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">{{ company_name }}</div>
+      <div class="footer-tagline">{{ tagline }}</div>
+      <p class="footer-desc">
+        ERPNext implementation, customisation, and purpose-built SaaS for healthcare and business.
+        Open-source platform. Transparent pricing. Real-world focus.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/healthcare">Healthcare</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="/subscription-portal">Sign In</a></li>
+        <li><a href="/subscription-portal">Register</a></li>
+        <li><a href="/subscription-portal">Subscription</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2025 {{ company_name }}. All rights reserved.</span>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('navToggle').addEventListener('click', function(){
+  document.getElementById('navLinks').classList.toggle('open');
+});
+</script>
+</body>
+</html>

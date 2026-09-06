@@ -431,7 +431,7 @@ def _send_welcome_email(doc, site_url, admin_password, settings):
         if not settings.enable_welcome_email:
             return
         sender   = (settings.sender_email or "").strip() or None
-        app_name = settings.app_name or "CureDesk"
+        app_name = settings.app_name or "CoreLogics"
         subject  = f"Your {app_name} clinic is ready — {doc.site_name}"
         body = f"""
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1E293B">

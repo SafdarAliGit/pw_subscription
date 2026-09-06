@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — {{ company_name }}</title>
+<script>window.frappe = window.frappe || {};</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,
+  .website-page-container>.container>.page-title,h1.page-title{display:none!important}
+  .page-content,.website-page-container,.container{padding-top:0!important;margin-top:0!important;max-width:100%!important;padding-left:0!important;padding-right:0!important}
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#EFF6FF;
+    --success:#10B981;--warning:#F59E0B;--danger:#EF4444;
+    --dark:#0F172A;--dark2:#1E293B;--dark3:#334155;
+    --muted:#64748B;--border:#E2E8F0;--light:#F8FAFC;--white:#FFFFFF;
+    --radius:12px;--radius-lg:20px;
+    --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+    --shadow-lg:0 20px 40px rgba(0,0,0,.12);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);line-height:1.6}
+
+  /* ── NAV ── */
+  .site-nav{
+    position:fixed;top:0;left:0;right:0;z-index:200;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 5%;height:64px;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(226,232,240,.8);
+  }
+  .nav-logo{font-size:1.2rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;text-decoration:none}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{text-decoration:none;color:var(--dark3);font-size:.9rem;font-weight:500;transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--primary)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-signin{color:var(--dark3);font-size:.88rem;font-weight:600;text-decoration:none}
+  .nav-signin:hover{color:var(--primary)}
+  .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+  .nav-hamburger span{display:block;width:22px;height:2px;background:var(--dark3);border-radius:2px;transition:.2s}
+  @media(max-width:768px){
+    .nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);flex-direction:column;gap:0;padding:.5rem 0}
+    .nav-links.open{display:flex}
+    .nav-links a{padding:.75rem 5%;border-bottom:1px solid var(--border)}
+    .nav-hamburger{display:flex}
+    .nav-signin{display:none}
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-hero{
+    background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0A1628 100%);
+    padding:120px 5% 72px;text-align:center;position:relative;overflow:hidden;
+  }
+  .page-hero-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;pointer-events:none}
+  .page-hero-orb-1{width:300px;height:300px;background:#3B82F6;top:-70px;right:-50px}
+  .page-hero-orb-2{width:240px;height:240px;background:#10B981;bottom:-50px;left:-40px}
+  .page-hero-eyebrow{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+    color:rgba(255,255,255,.75);padding:.35rem .9rem;border-radius:100px;
+    font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.25rem;
+  }
+  .page-hero h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.9rem}
+  .page-hero p{font-size:1rem;color:rgba(255,255,255,.6);max-width:520px;margin:0 auto;line-height:1.8}
+
+  /* ── CONTACT SECTION ── */
+  .contact-section{padding:80px 5%;background:var(--white)}
+  .contact-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:5rem;align-items:start;max-width:1200px;margin:0 auto}
+  @media(max-width:960px){.contact-grid{grid-template-columns:1fr;gap:3rem}}
+
+  /* ── INFO COLUMN ── */
+  .contact-info-col h2{font-size:1.5rem;font-weight:800;color:var(--dark);letter-spacing:-.5px;margin-bottom:.75rem}
+  .contact-info-col > p{font-size:.97rem;color:var(--muted);line-height:1.85;margin-bottom:2rem}
+  .contact-items{display:flex;flex-direction:column;gap:1.1rem;margin-bottom:2.5rem}
+  .contact-item{display:flex;align-items:center;gap:1rem}
+  .contact-item-icon{
+    width:46px;height:46px;border-radius:12px;
+    background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .contact-item-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+  .contact-item-val{font-size:.95rem;font-weight:600;color:var(--dark)}
+  .contact-item-val a{color:inherit;text-decoration:none}
+  .contact-item-val a:hover{color:var(--primary)}
+
+  /* quick links */
+  .quick-links-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+  .quick-links{display:flex;flex-direction:column;gap:.5rem}
+  .quick-link{display:inline-flex;align-items:center;gap:.5rem;font-size:.9rem;font-weight:600;color:var(--primary);text-decoration:none;padding:.4rem 0;transition:gap .15s}
+  .quick-link:hover{gap:.75rem}
+  .quick-link svg{transition:transform .15s}
+  .quick-link:hover svg{transform:translateX(3px)}
+
+  /* ── FORM COLUMN ── */
+  .contact-form-wrap{
+    background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:2.5rem;box-shadow:var(--shadow);
+  }
+  .form-title{font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:.3rem}
+  .form-subtitle{font-size:.85rem;color:var(--muted);margin-bottom:1.75rem}
+  .form-group{margin-bottom:1.1rem}
+  .form-label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em}
+  .form-control{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:.65rem 1rem;font-size:.9rem;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s;color:var(--dark);font-family:'Inter',sans-serif}
+  .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  textarea.form-control{resize:vertical;min-height:130px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:500px){.field-row{grid-template-columns:1fr}}
+  .btn-submit{
+    background:var(--primary);color:#fff;padding:.8rem 2rem;border-radius:9px;
+    font-size:.95rem;font-weight:600;border:none;cursor:pointer;width:100%;
+    transition:background .2s,transform .15s;margin-top:.25rem;
+    display:flex;align-items:center;justify-content:center;gap:.5rem;
+  }
+  .btn-submit:hover{background:var(--primary-dark);transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .btn-submit.loading .spinner{display:block}
+  .form-status{margin-top:.85rem;font-size:.875rem;font-weight:600;padding:.65rem 1rem;border-radius:8px;display:none}
+  .form-status.success{background:#D1FAE5;color:#065F46;display:block}
+  .form-status.error{background:#FEE2E2;color:#991B1B;display:block}
+
+  /* ── FAQ ── */
+  .faq-section{padding:72px 5%;background:var(--light)}
+  .faq-section-inner{max-width:760px;margin:0 auto}
+  .section-tag{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .85rem;border-radius:100px;margin-bottom:.9rem}
+  .section-title{font-size:clamp(1.65rem,3vw,2.2rem);font-weight:800;color:var(--dark);letter-spacing:-1px;margin-bottom:.75rem}
+  .section-sub{font-size:1rem;color:var(--muted)}
+  .text-center{text-align:center}
+  .faq-list{margin-top:2.5rem;display:flex;flex-direction:column;gap:.75rem}
+  .faq-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+  .faq-item.open{border-color:var(--primary)}
+  .faq-q{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;cursor:pointer;font-size:.95rem;font-weight:600;color:var(--dark);gap:1rem}
+  .faq-icon{width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .2s}
+  .faq-icon svg{color:var(--primary);transition:transform .25s}
+  .faq-item.open .faq-icon{background:var(--primary)}
+  .faq-item.open .faq-icon svg{color:#fff;transform:rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+  .faq-a-inner{padding:0 1.4rem 1.1rem;font-size:.9rem;color:var(--muted);line-height:1.8}
+  .faq-item.open .faq-a{max-height:300px}
+
+  /* ── FOOTER ── */
+  .site-footer{background:var(--dark);color:rgba(255,255,255,.6);padding:3rem 5% 2rem}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+  @media(max-width:768px){.footer-top{grid-template-columns:1fr;gap:2rem}}
+  .footer-logo{font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:.5rem}
+  .footer-tagline{font-size:.8rem;color:rgba(255,255,255,.35);margin-bottom:1rem}
+  .footer-desc{font-size:.85rem;line-height:1.75;max-width:300px}
+  .footer-col h4{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.08em}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.65rem}
+  .footer-col ul a{color:rgba(255,255,255,.5);font-size:.88rem;text-decoration:none;transition:color .2s}
+  .footer-col ul a:hover{color:#fff}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+  .footer-copy{font-size:.8rem}
+  .footer-legal{display:flex;gap:1.5rem}
+  .footer-legal a{color:rgba(255,255,255,.35);font-size:.8rem;text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="/home" class="nav-logo">{{ company_name }}</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/home">Home</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/contact" class="active">Contact</a></li>
+    <li><a href="/healthcare">Healthcare</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/subscription-portal" class="nav-signin">Sign In</a>
+    <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-hero">
+  <div class="page-hero-orb page-hero-orb-1"></div>
+  <div class="page-hero-orb page-hero-orb-2"></div>
+  <div class="page-hero-eyebrow">Contact Us</div>
+  <h1>Get in Touch</h1>
+  <p>Have a question about our products or services, or ready to get started? We'd love to hear from you.</p>
+</div>
+
+<!-- CONTACT -->
+<section class="contact-section">
+  <div class="contact-grid">
+
+    <!-- INFO -->
+    <div class="contact-info-col">
+      <h2>Let's talk</h2>
+      <p>
+        Whether you're evaluating our products, need a custom module, want an ERP implementation,
+        or just want a live demo — drop us a message and {{ company_name }} will get back to you fast.
+      </p>
+
+      <div class="contact-items">
+        {% if contact_email %}
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <div>
+            <div class="contact-item-label">Email</div>
+            <div class="contact-item-val"><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></div>
+          </div>
+        </div>
+        {% endif %}
+        {% if contact_phone %}
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          </div>
+          <div>
+            <div class="contact-item-label">Phone / WhatsApp</div>
+            <div class="contact-item-val"><a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div>
+            <div class="contact-item-label">Company</div>
+            <div class="contact-item-val">{{ company_name }}</div>
+          </div>
+        </div>
+        {% if contact_address %}
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <div class="contact-item-label">Address</div>
+            <div class="contact-item-val">{{ contact_address }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="quick-links-title">Quick Links</div>
+      <div class="quick-links">
+        <a href="/healthcare" class="quick-link">
+          View CureDesk Features
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/subscription-portal" class="quick-link">
+          Start Free Trial
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/about" class="quick-link">
+          About {{ company_name }}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="contact-form-wrap">
+      <div class="form-title">Send us a message</div>
+      <div class="form-subtitle">We typically reply within one business day.</div>
+
+      <form id="contactForm">
+        <div class="field-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="cfName" placeholder="Dr. Ahmad Khan" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone (optional)</label>
+            <input type="tel" class="form-control" id="cfPhone" placeholder="+92 300 0000000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="cfEmail" placeholder="you@clinic.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <select class="form-control" id="cfSubject">
+            <option value="">— Select a topic —</option>
+            <option>Request a Demo</option>
+            <option>Pricing &amp; Plans</option>
+            <option>Custom Module</option>
+            <option>Technical Support</option>
+            <option>General Inquiry</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" id="cfMessage" placeholder="Tell us about your clinic and what you're looking for..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="cfBtn">
+          <span class="btn-label">Send Message</span>
+          <span class="spinner"></span>
+        </button>
+        <div class="form-status" id="cfStatus"></div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">{{ company_name }}</div>
+      <div class="footer-tagline">{{ tagline }}</div>
+      <p class="footer-desc">ERPNext implementation, customisation, and purpose-built SaaS. CureDesk — complete clinic management on Frappe &amp; ERPNext.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/healthcare">Healthcare</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="/subscription-portal">Sign In</a></li>
+        <li><a href="/subscription-portal">Register</a></li>
+        <li><a href="/subscription-portal">Subscription</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2025 {{ company_name }}. All rights reserved.</span>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('navToggle').addEventListener('click', function(){
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+// Contact form
+document.getElementById('contactForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var btn = document.getElementById('cfBtn');
+  var status = document.getElementById('cfStatus');
+  btn.classList.add('loading');
+  btn.querySelector('.btn-label').textContent = 'Sending…';
+  btn.disabled = true;
+
+  var payload = {
+    name:    document.getElementById('cfName').value,
+    email:   document.getElementById('cfEmail').value,
+    phone:   document.getElementById('cfPhone').value,
+    subject: document.getElementById('cfSubject').value,
+    message: document.getElementById('cfMessage').value,
+  };
+
+  fetch('/api/method/pw_subscription.api.submit_contact_form', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Frappe-CSRF-Token': frappe.csrf_token || ''},
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){
+    status.textContent = '✓ Message sent! We\'ll be in touch within one business day.';
+    status.className = 'form-status success';
+    document.getElementById('contactForm').reset();
+  })
+  .catch(function(){
+    status.textContent = 'Could not send right now. Please email us directly.';
+    status.className = 'form-status error';
+  })
+  .finally(function(){
+    btn.classList.remove('loading');
+    btn.querySelector('.btn-label').textContent = 'Send Message';
+    btn.disabled = false;
+  });
+});
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 app_name = "pw_subscription"
 app_title = "PW Subscription"
 app_publisher = "Safdar Ali"
-app_description = "SaaS Subscription Management for CureDesk"
+app_description = "SaaS Subscription Management for CoreLogics"
 app_email = "safdar211@gmail.com"
 app_license = "MIT"
 app_logo_url = "/assets/pw_subscription/images/logo.png"

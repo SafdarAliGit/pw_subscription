@@ -40,7 +40,7 @@ def get_context(context):
     context.title = "CureDesk — Subscription Plans"
     try:
         settings = frappe.get_single("PW Subscription Settings")
-        context.app_name = settings.app_name or "CureDesk"
+        context.app_name = settings.app_name or "CoreLogics"
         context.tagline = settings.tagline or "The smartest prescription writing platform"
         context.monthly_fee = settings.monthly_fee or 0
         context.trial_days = settings.trial_days or 7
@@ -80,7 +80,7 @@ def get_context(context):
         context.email_otp_enabled = bool(settings.get("enable_email_otp"))
         context.allow_app_creation = bool(settings.get("allow_application_creation_by_website_user"))
     except Exception:
-        context.app_name = "CureDesk"
+        context.app_name = "CoreLogics"
         context.tagline = "The smartest prescription writing platform"
         context.monthly_fee = 0
         context.trial_days = 7

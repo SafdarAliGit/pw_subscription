@@ -137,7 +137,7 @@ def get_public_info():
     try:
         s = _get_settings()
         return {
-            "app_name":        s.app_name or "CureDesk",
+            "app_name":        s.app_name or "CoreLogics",
             "tagline":         s.tagline or "",
             "monthly_fee":     s.monthly_fee or 0,
             "trial_days":      s.trial_days or 7,
@@ -146,7 +146,7 @@ def get_public_info():
             "phone_otp_enabled": bool(s.get("enable_phone_otp")),
         }
     except Exception:
-        return {"app_name": "CureDesk", "tagline": "", "monthly_fee": 0,
+        return {"app_name": "CoreLogics", "tagline": "", "monthly_fee": 0,
                 "trial_days": 7, "contact_email": "", "contact_phone": "",
                 "phone_otp_enabled": False}
 
@@ -369,7 +369,7 @@ def send_email_otp(email):
     frappe.cache.set(cache_key, otp)
     frappe.cache.expire(cache_key, 600)  # 10-minute expiry
 
-    app_name = s.app_name or "CureDesk"
+    app_name = s.app_name or "CoreLogics"
     sender   = s.sender_email or None
 
     subject = f"{app_name} — Your Email Verification Code"
@@ -1545,19 +1545,30 @@ def start_backup_job(subscription_name):
 
 def _job_backup(subscription_name, pw_job_id, user):
     sub = frappe.get_doc("PW Subscription", subscription_name)
+    site_name = sub.site_name
     try:
-        _emit_progress(pw_job_id, user, "running", line=f"Starting backup for {sub.site_name}…", percent=5)
+        _emit_progress(pw_job_id, user, "running", line=f"Starting backup for {site_name}…", percent=5)
         _run_streaming(
-            ["--site", sub.site_name, "backup", "--with-files"],
+            ["--site", site_name, "backup", "--with-files"],
             pw_job_id, user, timeout=350,
         )
-        _log_action(sub.name, "Extended", f"Manual backup created for {sub.site_name}.")
-        frappe.db.commit()
-        _emit_progress(pw_job_id, user, "success",
-                       line=f"Backup completed successfully for {sub.site_name}.", percent=100)
     except Exception as e:
         _emit_progress(pw_job_id, user, "error", line=str(e)[:600])
         frappe.log_error(str(e), f"Backup job {pw_job_id}")
+        return
+
+    try:
+        frappe.db.connect()
+    except Exception:
+        pass
+    try:
+        _log_action(sub.name, "Extended", f"Manual backup created for {site_name}.")
+        frappe.db.commit()
+    except Exception as log_err:
+        frappe.log_error(str(log_err), f"Backup log {pw_job_id}")
+
+    _emit_progress(pw_job_id, user, "success",
+                   line=f"Backup completed successfully for {site_name}.", percent=100)
 
 
 @frappe.whitelist()
@@ -1591,7 +1602,8 @@ def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, pri
     from pw_subscription.site_provisioning import _bench_dir
     import os
     sub = frappe.get_doc("PW Subscription", subscription_name)
-    backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
+    site_name = sub.site_name
+    backup_dir = os.path.join(_bench_dir(), "sites", site_name, "private", "backups")
     try:
         _emit_progress(pw_job_id, user, "running", line="Preparing restore…", percent=5)
         try:
@@ -1599,7 +1611,7 @@ def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, pri
             db_pass = s.get_password("mariadb_root_password") or ""
         except Exception:
             db_pass = ""
-        cmd = ["--site", sub.site_name, "restore", os.path.join(backup_dir, db_file)]
+        cmd = ["--site", site_name, "restore", os.path.join(backup_dir, db_file)]
         if pub_file:
             p = os.path.join(backup_dir, pub_file)
             if os.path.isfile(p): cmd += ["--with-public-files", p]
@@ -1609,15 +1621,25 @@ def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, pri
         if db_pass:
             cmd += ["--mariadb-root-password", db_pass]
         _emit_progress(pw_job_id, user, "running",
-                       line=f"Restoring {sub.site_name} from {db_file}…", percent=15)
+                       line=f"Restoring {site_name} from {db_file}…", percent=15)
         _run_streaming(cmd, pw_job_id, user, timeout=650)
-        _log_action(sub.name, "Extended", f"Site restored from backup: {db_file}.")
-        frappe.db.commit()
-        _emit_progress(pw_job_id, user, "success",
-                       line=f"{sub.site_name} restored successfully.", percent=100)
     except Exception as e:
         _emit_progress(pw_job_id, user, "error", line=str(e)[:600])
         frappe.log_error(str(e), f"Restore job {pw_job_id}")
+        return
+
+    try:
+        frappe.db.connect()
+    except Exception:
+        pass
+    try:
+        _log_action(sub.name, "Extended", f"Site restored from backup: {db_file}.")
+        frappe.db.commit()
+    except Exception as log_err:
+        frappe.log_error(str(log_err), f"Restore log {pw_job_id}")
+
+    _emit_progress(pw_job_id, user, "success",
+                   line=f"{site_name} restored successfully.", percent=100)
 
 
 @frappe.whitelist()
@@ -1854,16 +1876,49 @@ def uninstall_app(subscription_name, app_name):
 
 @frappe.whitelist()
 def migrate_site(subscription_name):
-    """Run bench migrate on a managed site."""
+    """Enqueue a bench migrate and return a job_id for progress tracking."""
     frappe.only_for("System Manager")
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
-    from pw_subscription.site_provisioning import _run
-    _run(["--site", sub.site_name, "migrate"], None, "Migrate site", timeout=600)
-    _log_action(sub.name, "Extended", f"Site {sub.site_name} migrated successfully.")
-    frappe.db.commit()
-    return {"success": True, "message": f"Site {sub.site_name} migrated successfully."}
+    import uuid
+    job_id = "mig_" + str(uuid.uuid4())[:8]
+    frappe.enqueue(
+        "pw_subscription.api._job_migrate",
+        queue="default", timeout=700,
+        subscription_name=subscription_name,
+        pw_job_id=job_id, user=frappe.session.user,
+    )
+    return {"job_id": job_id, "site_name": sub.site_name}
+
+
+def _job_migrate(subscription_name, pw_job_id, user):
+    sub = frappe.get_doc("PW Subscription", subscription_name)
+    site_name = sub.site_name
+    try:
+        _emit_progress(pw_job_id, user, "running", line=f"Starting migration for {site_name}…", percent=5)
+        _run_streaming(
+            ["--site", site_name, "migrate"],
+            pw_job_id, user, timeout=650,
+        )
+    except Exception as e:
+        _emit_progress(pw_job_id, user, "error", line=str(e)[:600])
+        frappe.log_error(str(e), f"Migrate job {pw_job_id}")
+        return
+
+    # Bench migrate can run for minutes; reconnect before any DB writes.
+    try:
+        frappe.db.connect()
+    except Exception:
+        pass
+    try:
+        _log_action(subscription_name, "Extended", f"Site {site_name} migrated successfully.")
+        frappe.db.commit()
+    except Exception as log_err:
+        frappe.log_error(str(log_err), f"Migrate log {pw_job_id}")
+
+    _emit_progress(pw_job_id, user, "success",
+                   line=f"Migration completed successfully for {site_name}.", percent=100)
 
 
 # ── Email helpers ─────────────────────────────────────────────────────────────
@@ -1874,7 +1929,7 @@ def _send_activation_email(sub, end_date):
         if not s.enable_welcome_email:
             return
         sender = (s.sender_email or "").strip() or None
-        app_name = s.app_name or "CureDesk"
+        app_name = s.app_name or "CoreLogics"
         site_url = f"https://{sub.site_name}" if sub.site_name else ""
         subject = f"Your {app_name} subscription has been activated"
         body = f"""
@@ -1911,7 +1966,7 @@ def _send_rejection_email(proof, admin_notes):
         if not s.enable_welcome_email:
             return
         sender = (s.sender_email or "").strip() or None
-        app_name = s.app_name or "CureDesk"
+        app_name = s.app_name or "CoreLogics"
         subject = f"Your {app_name} payment proof could not be verified"
         reason = admin_notes or "The payment proof submitted could not be verified."
         body = f"""

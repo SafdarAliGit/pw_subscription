@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CureDesk — Healthcare · {{ company_name }}</title>
+<script>window.frappe = window.frappe || {};</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,
+  .website-page-container>.container>.page-title,h1.page-title{display:none!important}
+  .page-content,.website-page-container,.container{padding-top:0!important;margin-top:0!important;max-width:100%!important;padding-left:0!important;padding-right:0!important}
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#EFF6FF;
+    --success:#10B981;--warning:#F59E0B;--danger:#EF4444;
+    --dark:#0F172A;--dark2:#1E293B;--dark3:#334155;
+    --muted:#64748B;--border:#E2E8F0;--light:#F8FAFC;--white:#FFFFFF;
+    --radius:12px;--radius-lg:20px;
+    --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+    --shadow-lg:0 20px 40px rgba(0,0,0,.12);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);line-height:1.6}
+
+  /* ── NAV ── */
+  .site-nav{
+    position:fixed;top:0;left:0;right:0;z-index:200;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 5%;height:64px;
+    background:rgba(255,255,255,.9);backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(226,232,240,.7);
+  }
+  .nav-logo{font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;text-decoration:none}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{text-decoration:none;color:var(--dark3);font-size:.9rem;font-weight:500;transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--primary)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-signin{color:var(--dark3);font-size:.88rem;font-weight:600;text-decoration:none}
+  .nav-signin:hover{color:var(--primary)}
+  .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+  .nav-hamburger span{display:block;width:22px;height:2px;background:var(--dark3);border-radius:2px}
+  @media(max-width:768px){
+    .nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);flex-direction:column;gap:0;padding:.5rem 0}
+    .nav-links.open{display:flex}
+    .nav-links a{padding:.75rem 5%;border-bottom:1px solid var(--border)}
+    .nav-hamburger{display:flex}
+    .nav-signin{display:none}
+  }
+
+  /* ── HERO ── */
+  .hero{
+    min-height:60vh;background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0F2D4A 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:100px 5% 70px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero-orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.18;pointer-events:none}
+  .hero-orb-1{width:350px;height:350px;background:#3B82F6;top:-80px;right:-60px}
+  .hero-orb-2{width:300px;height:300px;background:#7C3AED;bottom:-60px;left:-40px}
+  .hero-breadcrumb{display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;font-size:.82rem;color:rgba(255,255,255,.5)}
+  .hero-breadcrumb a{color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s}
+  .hero-breadcrumb a:hover{color:#fff}
+  .hero-breadcrumb span{color:rgba(255,255,255,.3)}
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(255,255,255,.1);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.2);color:#fff;
+    padding:.4rem 1rem;border-radius:100px;font-size:.82rem;font-weight:500;margin-bottom:1.5rem;
+  }
+  .hero-badge-dot{width:8px;height:8px;border-radius:50%;background:#10B981;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+  .hero h1{
+    font-size:clamp(2rem,5vw,3.4rem);font-weight:900;color:#fff;
+    line-height:1.1;letter-spacing:-1px;max-width:720px;margin-bottom:1rem;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(135deg,#38BDF8 0%,#818CF8 50%,#F472B6 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .hero p{font-size:clamp(.95rem,1.5vw,1.1rem);color:rgba(255,255,255,.7);max-width:580px;margin-bottom:2rem;line-height:1.75}
+  .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .btn-hero-primary{background:var(--primary);color:#fff;padding:.85rem 2rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 8px 24px rgba(37,99,235,.4);transition:all .2s}
+  .btn-hero-primary:hover{background:var(--primary-dark);transform:translateY(-2px)}
+  .btn-hero-ghost{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:#fff;padding:.85rem 2rem;border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid rgba(255,255,255,.3);transition:all .2s}
+  .btn-hero-ghost:hover{background:rgba(255,255,255,.2)}
+
+  /* ── HIGHLIGHTS BAR ── */
+  .highlights{background:var(--white);border-bottom:1px solid var(--border)}
+  .highlights-inner{max-width:1200px;margin:0 auto;padding:1.5rem 5%;display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:center}
+  .highlight-item{display:flex;align-items:center;gap:.6rem;font-size:.88rem;font-weight:600;color:var(--dark3)}
+  .highlight-icon{font-size:1.1rem}
+
+  /* ── SECTION COMMONS ── */
+  section{padding:80px 5%}
+  .section-tag{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .85rem;border-radius:100px;margin-bottom:1rem}
+  .section-title{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;color:var(--dark);letter-spacing:-1px;margin-bottom:.75rem}
+  .section-sub{font-size:1rem;color:var(--muted);max-width:600px;margin:0 auto}
+  .text-center{text-align:center}
+
+  /* ── FEATURE GRID ── */
+  .features-section{background:var(--light)}
+  .features-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    margin-top:3rem;
+  }
+  @media(max-width:1100px){.features-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:768px){.features-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.features-grid{grid-template-columns:1fr}}
+
+  .feat-card{
+    background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:1.5rem;position:relative;overflow:hidden;
+    transition:transform .25s,box-shadow .25s,border-color .25s;
+  }
+  .feat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--primary)}
+  .feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+
+  .feat-card.c1::before{background:linear-gradient(90deg,#38bdf8,#0ea5e9)}
+  .feat-card.c2::before{background:linear-gradient(90deg,#818cf8,#6366f1)}
+  .feat-card.c3::before{background:linear-gradient(90deg,#34d399,#10b981)}
+  .feat-card.c4::before{background:linear-gradient(90deg,#f472b6,#ec4899)}
+  .feat-card.c5::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+  .feat-card.c6::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+  .feat-card.c7::before{background:linear-gradient(90deg,#a78bfa,#8b5cf6)}
+  .feat-card.c8::before{background:linear-gradient(90deg,#2dd4bf,#14b8a6)}
+  .feat-card.c9::before{background:linear-gradient(90deg,#f87171,#ef4444)}
+  .feat-card.c10::before{background:linear-gradient(90deg,#60a5fa,#3b82f6)}
+  .feat-card.c11::before{background:linear-gradient(90deg,#4ade80,#22c55e)}
+  .feat-card.c12::before{background:linear-gradient(90deg,#e879f9,#d946ef)}
+
+  .feat-card-wide{grid-column:span 2}
+  @media(max-width:480px){.feat-card-wide{grid-column:span 1}}
+
+  .feat-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+  .feat-icon{
+    width:40px;height:40px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+  }
+  .i1{background:rgba(56,189,248,.12)}  .i2{background:rgba(129,140,248,.12)}
+  .i3{background:rgba(52,211,153,.12)}  .i4{background:rgba(244,114,182,.12)}
+  .i5{background:rgba(251,191,36,.12)}  .i6{background:rgba(251,146,60,.12)}
+  .i7{background:rgba(167,139,250,.12)} .i8{background:rgba(45,212,191,.12)}
+  .i9{background:rgba(248,113,113,.12)} .i10{background:rgba(96,165,250,.12)}
+  .i11{background:rgba(74,222,128,.12)} .i12{background:rgba(232,121,249,.12)}
+
+  .feat-title{font-size:.9rem;font-weight:700;color:var(--dark)}
+  .feat-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+  .feat-list li{font-size:.78rem;color:var(--muted);padding-left:13px;position:relative;line-height:1.5}
+  .feat-list li::before{content:'▸';position:absolute;left:0;color:#CBD5E1;font-size:.65rem;top:1px}
+
+  /* wide card list — 2 column */
+  .feat-list-2col{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px}
+
+
+  /* ── CTA ── */
+  .cta-section{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);padding:80px 5%;text-align:center;position:relative;overflow:hidden}
+  .cta-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;pointer-events:none}
+  .cta-orb-1{width:300px;height:300px;background:#3B82F6;top:-80px;right:-60px}
+  .cta-orb-2{width:250px;height:250px;background:#7C3AED;bottom:-60px;left:-40px}
+  .cta-section h2{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:1rem}
+  .cta-section p{font-size:1rem;color:rgba(255,255,255,.65);max-width:520px;margin:0 auto 2.5rem}
+  .cta-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .btn-cta-primary{background:var(--primary);color:#fff;padding:.9rem 2.2rem;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 8px 24px rgba(37,99,235,.4);transition:all .2s}
+  .btn-cta-primary:hover{background:var(--primary-dark);transform:translateY(-2px)}
+  .btn-cta-ghost{background:rgba(255,255,255,.1);color:#fff;padding:.9rem 2.2rem;border-radius:10px;font-weight:600;font-size:1rem;text-decoration:none;border:1px solid rgba(255,255,255,.25);transition:all .2s}
+  .btn-cta-ghost:hover{background:rgba(255,255,255,.18)}
+
+  /* ── FAQ ── */
+  .faq-section{padding:72px 5%;background:var(--light)}
+  .faq-section-inner{max-width:760px;margin:0 auto}
+  .faq-section .section-tag{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .85rem;border-radius:100px;margin-bottom:.9rem}
+  .faq-section .section-title{font-size:clamp(1.65rem,3vw,2.2rem);font-weight:800;color:var(--dark);letter-spacing:-1px;margin-bottom:.75rem}
+  .faq-section .section-sub{font-size:1rem;color:var(--muted)}
+  .faq-list{margin-top:2.5rem;display:flex;flex-direction:column;gap:.75rem}
+  .faq-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+  .faq-item.open{border-color:var(--primary)}
+  .faq-q{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;cursor:pointer;font-size:.95rem;font-weight:600;color:var(--dark);gap:1rem}
+  .faq-icon{width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .2s}
+  .faq-icon svg{color:var(--primary);transition:transform .25s}
+  .faq-item.open .faq-icon{background:var(--primary)}
+  .faq-item.open .faq-icon svg{color:#fff;transform:rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+  .faq-a-inner{padding:0 1.4rem 1.1rem;font-size:.9rem;color:var(--muted);line-height:1.8}
+  .faq-item.open .faq-a{max-height:300px}
+
+  /* ── FOOTER ── */
+  .site-footer{background:var(--dark);color:rgba(255,255,255,.65);padding:3rem 5% 2rem}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+  @media(max-width:768px){.footer-top{grid-template-columns:1fr}}
+  .footer-brand{font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:.75rem}
+  .footer-desc{font-size:.85rem;line-height:1.75;max-width:300px}
+  .footer-col h4{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+  .footer-col ul a{color:rgba(255,255,255,.55);font-size:.88rem;text-decoration:none;transition:color .2s}
+  .footer-col ul a:hover{color:#fff}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+  .footer-copy{font-size:.82rem}
+  .footer-legal{display:flex;gap:1.5rem}
+  .footer-legal a{color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none}
+  .footer-legal a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="/home" class="nav-logo">{{ company_name }}</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/home">Home</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/contact">Contact</a></li>
+    <li><a href="/healthcare" class="active">Healthcare</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/subscription-portal" class="nav-signin">Sign In</a>
+    <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+
+  <div class="hero-breadcrumb">
+    <a href="/home">Home</a>
+    <span>/</span>
+    <span style="color:rgba(255,255,255,.75)">Healthcare</span>
+  </div>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Frappe · Multi-Clinic · Multi-Lingual
+  </div>
+
+  <h1>
+    {{ app_name }}<br>
+    <span class="grad">Complete Clinic Platform</span>
+  </h1>
+
+  <p>
+    From patient check-in to final invoice — everything a modern clinic needs in one platform.
+    12 purpose-built modules covering the complete clinical and financial workflow.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="/subscription-portal" class="btn-hero-primary">Start {{ trial_days }}-Day Free Trial</a>
+    <a href="#features" class="btn-hero-ghost">Explore Features ↓</a>
+  </div>
+</div>
+
+<!-- HIGHLIGHTS BAR -->
+<div class="highlights">
+  <div class="highlights-inner">
+    <div class="highlight-item"><span class="highlight-icon">🏥</span> Multi-Clinic Tenancy</div>
+    <div class="highlight-item"><span class="highlight-icon">🌐</span> English · Urdu · Arabic</div>
+    <div class="highlight-item"><span class="highlight-icon">⚡</span> Real-Time via Socket.IO</div>
+    <div class="highlight-item"><span class="highlight-icon">💰</span> Financial Accounting</div>
+    <div class="highlight-item"><span class="highlight-icon">💻</span> Telemedicine Built-In</div>
+    <div class="highlight-item"><span class="highlight-icon">🛡️</span> Role-Based Access</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="text-center">
+    <span class="section-tag">Features</span>
+    <h2 class="section-title">Everything Your Clinic Needs</h2>
+    <p class="section-sub">12 purpose-built modules covering the entire clinical and financial workflow.</p>
+  </div>
+
+  <div class="features-grid">
+
+    <!-- 1. Patient & Queue -->
+    <div class="feat-card c1">
+      <div class="feat-header">
+        <div class="feat-icon i1">🧑‍⚕️</div>
+        <div class="feat-title">Patient &amp; Queue</div>
+      </div>
+      <ul class="feat-list">
+        <li>QR / barcode scan check-in</li>
+        <li>Walk-in registration with vitals</li>
+        <li>Live token queue with real-time updates</li>
+        <li>Visit history &amp; patient search</li>
+        <li>Allergies, emergency contacts, family history</li>
+        <li>Queue stats: total / completed / pending</li>
+      </ul>
+    </div>
+
+    <!-- 2. Prescription Writing -->
+    <div class="feat-card c2">
+      <div class="feat-header">
+        <div class="feat-icon i2">📝</div>
+        <div class="feat-title">Prescription Writing</div>
+      </div>
+      <ul class="feat-list">
+        <li>Medicine with dosage, frequency &amp; duration</li>
+        <li>Lab test &amp; imaging recommendations</li>
+        <li>Diagnosis taxonomy (categorised)</li>
+        <li>Instruction library + custom notes</li>
+        <li>Follow-up scheduling &amp; reminders</li>
+        <li>Branded print with doctor license</li>
+      </ul>
+    </div>
+
+    <!-- 3. Medicines & Inventory -->
+    <div class="feat-card c3">
+      <div class="feat-header">
+        <div class="feat-icon i3">💊</div>
+        <div class="feat-title">Medicines &amp; Inventory</div>
+      </div>
+      <ul class="feat-list">
+        <li>Formulary with brand &amp; generic search</li>
+        <li>Multi-language dose labels (EN / UR / AR)</li>
+        <li>Real-time stock lookup &amp; management</li>
+        <li>Bulk CSV import</li>
+        <li>Categories, companies, dose units</li>
+        <li>Data manager (enable / disable / price)</li>
+      </ul>
+    </div>
+
+    <!-- 4. Lab & Diagnostics -->
+    <div class="feat-card c4">
+      <div class="feat-header">
+        <div class="feat-icon i4">🔬</div>
+        <div class="feat-title">Lab &amp; Diagnostics</div>
+      </div>
+      <ul class="feat-list">
+        <li>Test order from prescription</li>
+        <li>Parameterised result entry with ranges</li>
+        <li>Critical value flagging</li>
+        <li>Lab invoice generation</li>
+        <li>Result templates per test</li>
+        <li>Bulk CSV import for tests</li>
+      </ul>
+    </div>
+
+    <!-- 5. Invoicing & Payments -->
+    <div class="feat-card c5">
+      <div class="feat-header">
+        <div class="feat-icon i5">🧾</div>
+        <div class="feat-title">Invoicing &amp; Payments</div>
+      </div>
+      <ul class="feat-list">
+        <li>OPD, medicine &amp; general invoices</li>
+        <li>Sales Invoice auto-creation</li>
+        <li>Payment entry (Cash / Card / Cheque / Online)</li>
+        <li>Credit notes &amp; cancellation</li>
+        <li>POS session open / close with reconciliation</li>
+        <li>Invoice status tracking &amp; history</li>
+      </ul>
+    </div>
+
+    <!-- 6. Appointments -->
+    <div class="feat-card c6">
+      <div class="feat-header">
+        <div class="feat-icon i6">📅</div>
+        <div class="feat-title">Appointments</div>
+      </div>
+      <ul class="feat-list">
+        <li>Patient self-booking portal</li>
+        <li>Doctor schedule &amp; time-slot management</li>
+        <li>Holiday &amp; leave blocking</li>
+        <li>Accept / reject with auto-refund</li>
+        <li>Pre-visit token on acceptance</li>
+        <li>Appointment status workflow</li>
+      </ul>
+    </div>
+
+    <!-- 7. IPD – Inpatient -->
+    <div class="feat-card c7">
+      <div class="feat-header">
+        <div class="feat-icon i7">🏥</div>
+        <div class="feat-title">IPD – Inpatient</div>
+      </div>
+      <ul class="feat-list">
+        <li>Ward / floor / room / bed management</li>
+        <li>Admission, transfer &amp; discharge</li>
+        <li>Prescription rounds &amp; diet orders</li>
+        <li>Procedure scheduling with OR conflict check</li>
+        <li>Consent forms &amp; clearance checklist</li>
+        <li>Discharge summary PDF export</li>
+      </ul>
+    </div>
+
+    <!-- 8. Purchase & Expenses -->
+    <div class="feat-card c8">
+      <div class="feat-header">
+        <div class="feat-icon i8">🛒</div>
+        <div class="feat-title">Purchase &amp; Expenses</div>
+      </div>
+      <ul class="feat-list">
+        <li>Purchase orders &amp; invoices</li>
+        <li>Supplier management</li>
+        <li>Purchase return (Debit Note)</li>
+        <li>Expense entry with GL journal posting</li>
+        <li>Recurring expense templates</li>
+        <li>Daily / monthly expense summary</li>
+      </ul>
+    </div>
+
+    <!-- 9. Online Visit – wide -->
+    <div class="feat-card c9 feat-card-wide">
+      <div class="feat-header">
+        <div class="feat-icon i9">💻</div>
+        <div class="feat-title">Online Visit (Telemedicine)</div>
+      </div>
+      <ul class="feat-list feat-list-2col">
+        <li>Guest self-service request (no login)</li>
+        <li>Multi-provider video: Jitsi, Zoom, Meet, WhatsApp</li>
+        <li>Symptom &amp; medication history capture</li>
+        <li>Stripe, PayPal, JazzCash, EasyPaisa payments</li>
+        <li>Staff accept / reject / complete workflow</li>
+        <li>Automatic &amp; manual refund handling</li>
+        <li>Real-time new-request notifications to staff</li>
+        <li>Visit token tracking for patient status check</li>
+      </ul>
+    </div>
+
+    <!-- 10. Analytics -->
+    <div class="feat-card c10">
+      <div class="feat-header">
+        <div class="feat-icon i10">📊</div>
+        <div class="feat-title">Analytics &amp; Dashboard</div>
+      </div>
+      <ul class="feat-list">
+        <li>Revenue trends &amp; daily visit stats</li>
+        <li>POS session performance metrics</li>
+        <li>Expense summary by category</li>
+        <li>Ward admissions report</li>
+        <li>Queue &amp; control-board view</li>
+        <li>Extensible via PW Revenue Source</li>
+      </ul>
+    </div>
+
+    <!-- 11. Financial Accounting -->
+    <div class="feat-card c11">
+      <div class="feat-header">
+        <div class="feat-icon i11">💰</div>
+        <div class="feat-title">Financial Accounting</div>
+      </div>
+      <ul class="feat-list">
+        <li>Auto Sales Invoice from prescription</li>
+        <li>POS Invoice for point-of-sale</li>
+        <li>Payment &amp; journal entry creation</li>
+        <li>Chart of accounts &amp; ledger management</li>
+        <li>Daily / monthly financial reports</li>
+        <li>Per-clinic isolated accounting books</li>
+      </ul>
+    </div>
+
+    <!-- 12. Settings & Multi-lang -->
+    <div class="feat-card c12">
+      <div class="feat-header">
+        <div class="feat-icon i12">⚙️</div>
+        <div class="feat-title">Settings &amp; Multi-lingual</div>
+      </div>
+      <ul class="feat-list">
+        <li>Clinic branding, logo &amp; stamp</li>
+        <li>English, Urdu &amp; Arabic UI + prescriptions</li>
+        <li>Role-based page access control</li>
+        <li>Holiday, fee &amp; account configuration</li>
+        <li>Service packages &amp; room types</li>
+        <li>Doctor &amp; staff profile management</li>
+      </ul>
+    </div>
+
+    <!-- Portal band -->
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-orb cta-orb-1"></div>
+  <div class="cta-orb cta-orb-2"></div>
+  <h2>Ready to Transform Your Clinic?</h2>
+  <p>
+    Start your {{ trial_days }}-day free trial today — no credit card required.
+    Full access to all features, zero commitment.
+  </p>
+  <div class="cta-buttons">
+    <a href="/subscription-portal" class="btn-cta-primary">Start Free Trial</a>
+    <a href="/contact" class="btn-cta-ghost">Talk to Us</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="faq-section-inner">
+    <div class="text-center">
+      <span class="section-tag">FAQ</span>
+      <h2 class="section-title">Common Questions</h2>
+      <p class="section-sub">Quick answers before you reach out.</p>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-q">
+          How long is the free trial and what's included?
+          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">The trial lasts {{ trial_days }} days with full access to all CureDesk features — no credit card required. Your clinic data is preserved when you subscribe after the trial.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Can I run CureDesk for multiple clinics or branches?
+          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. CureDesk is built for multi-clinic tenancy. Each clinic gets its own isolated site with separate data and branding. Contact us for multi-branch pricing.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Does CureDesk integrate with accounting systems?
+          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Yes — tightly. CureDesk auto-creates Sales Invoices, POS Invoices, Payment Entries, and Journal Entries. Stock levels are synced live with your inventory system.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          What languages does CureDesk support?
+          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">The UI and printed prescriptions are available in English, Urdu, and Arabic. Dose labels on prescriptions automatically render in the selected language.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Can I request a custom module or feature?
+          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Absolutely. {{ company_name }} takes on custom development work. Describe your requirements using the contact form and we'll get back to you with a scope and timeline.</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">{{ company_name }}</div>
+      <p class="footer-desc">
+        {{ app_name }} — healthcare software built on Frappe.
+        Multi-clinic, multi-lingual, real-time. Designed to let clinicians focus on care.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/healthcare">Healthcare</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="/subscription-portal">Sign In</a></li>
+        <li><a href="/subscription-portal">Register</a></li>
+        <li><a href="/subscription-portal">Subscription</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2025 {{ company_name }}. All rights reserved.</span>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('navToggle').addEventListener('click', function(){
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+document.querySelectorAll('.faq-q').forEach(function(q){
+  q.addEventListener('click', function(){
+    var item = this.closest('.faq-item');
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('open'); });
+    if(!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

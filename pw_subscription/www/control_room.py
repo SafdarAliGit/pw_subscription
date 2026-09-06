@@ -14,13 +14,13 @@ def get_context(context):
 
     try:
         settings = frappe.get_single("PW Subscription Settings")
-        context.app_name = settings.app_name or "CureDesk"
+        context.app_name = settings.app_name or "CoreLogics"
         context.enable_site_ping = bool(settings.enable_site_ping)
         context.ping_timeout = settings.ping_timeout or 5
         context.phone_otp_enabled = bool(settings.get("enable_phone_otp"))
         context.email_otp_enabled = bool(settings.get("enable_email_otp"))
     except Exception:
-        context.app_name = "CureDesk"
+        context.app_name = "CoreLogics"
         context.enable_site_ping = True
         context.ping_timeout = 5
         context.phone_otp_enabled = False

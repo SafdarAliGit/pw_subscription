@@ -3,12 +3,12 @@
 
 {% block page_title %}{% endblock %}
 {% block head_include %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,.website-page-container>.container>.page-title,h1.page-title{display:none!important}
   .page-content,.website-page-container,.container{padding-top:0!important;margin-top:0!important}
   *,*::before,*::after{box-sizing:border-box}
-  body{font-family:'Inter',sans-serif;background:#F1F5F9;min-height:100vh;color:#1E293B}
+  body{font-family:'Inter',sans-serif;background:linear-gradient(180deg,#F0F4FF 0%,#F1F5F9 100%);min-height:100vh;color:#1E293B}
   :root{
     --primary:#2563EB;--primary-dark:#1D4ED8;--success:#10B981;--warning:#F59E0B;
     --danger:#EF4444;--muted:#64748B;--border:#E2E8F0;--white:#fff;
@@ -28,8 +28,8 @@
   /* ── Buttons ── */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.25rem;border-radius:9px;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
   .btn:disabled{opacity:.55;cursor:not-allowed}
-  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
-  .btn-success{background:var(--success);color:#fff}.btn-success:hover:not(:disabled){background:#059669}
+  .btn-primary{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.3)}.btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#1D4ED8,#1E40AF);box-shadow:0 6px 16px rgba(37,99,235,.4);transform:translateY(-1px)}
+  .btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3)}.btn-success:hover:not(:disabled){background:linear-gradient(135deg,#059669,#047857)}
   .btn-ghost{background:#EEF2FF;color:var(--primary);border:1px solid #C7D2FE}.btn-ghost:hover:not(:disabled){background:#E0E7FF}
   .btn-danger-ghost{background:#FFF1F2;color:var(--danger);border:1px solid #FECDD3}.btn-danger-ghost:hover:not(:disabled){background:#FFE4E6}
   .btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-outline:hover:not(:disabled){background:var(--light)}
@@ -57,19 +57,20 @@
   /* ══════════════════════════════════════════
      AUTH SCREEN
   ══════════════════════════════════════════ */
-  .auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1.25rem 4rem;background:linear-gradient(160deg,#EFF6FF 0%,#F1F5F9 55%,#F0FDF4 100%)}
+  .auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1.25rem 4rem;background:linear-gradient(145deg,#0F172A 0%,#1E293B 50%,#0A1628 100%);position:relative;overflow:hidden}
+  .auth-wrap::before{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(37,99,235,.18) 0%,transparent 70%);top:-150px;right:-150px;pointer-events:none}
+  .auth-wrap::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(124,58,237,.12) 0%,transparent 70%);bottom:-100px;left:-100px;pointer-events:none}
   .auth-box{width:100%;max-width:440px}
   .auth-box.reg-mode{max-width:700px}
 
   .auth-brand{text-align:center;margin-bottom:2rem}
-  .auth-brand-dot{width:52px;height:52px;background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;box-shadow:0 4px 14px rgba(37,99,235,.3)}
-  .auth-brand-dot svg{width:28px;height:28px;fill:#fff}
-  .auth-brand-name{font-size:1.5rem;font-weight:800;color:#0F172A;letter-spacing:-.5px}
-  .auth-brand-sub{font-size:.85rem;color:var(--muted);margin-top:.25rem}
-  .auth-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--shadow)}
-  .auth-tabs{display:flex;background:var(--light);border-radius:10px;padding:.25rem;margin-bottom:1.75rem;gap:.25rem}
-  .auth-tab{flex:1;text-align:center;padding:.55rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--muted);transition:.15s;border:none;background:transparent}
-  .auth-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .auth-brand-dot{width:56px;height:56px;background:linear-gradient(135deg,#2563EB,#7C3AED);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(37,99,235,.5),0 0 0 4px rgba(37,99,235,.15)}
+  .auth-brand-name{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+  .auth-brand-sub{font-size:.85rem;color:rgba(255,255,255,.5);margin-top:.25rem}
+  .auth-card{background:rgba(255,255,255,.97);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:2rem;box-shadow:0 32px 80px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.05)}
+  .auth-tabs{display:flex;background:#F1F5F9;border-radius:12px;padding:.3rem;margin-bottom:1.75rem;gap:.3rem}
+  .auth-tab{flex:1;text-align:center;padding:.6rem;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;color:#64748B;transition:all .2s;border:none;background:transparent}
+  .auth-tab.active{background:#fff;color:#2563EB;box-shadow:0 2px 8px rgba(0,0,0,.1)}
   .auth-form-title{font-size:1.1rem;font-weight:700;color:#0F172A;margin-bottom:.3rem}
   .auth-form-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.5rem}
   .auth-footer{text-align:center;margin-top:1.25rem;font-size:.82rem;color:var(--muted)}
@@ -124,13 +125,13 @@
   /* ══════════════════════════════════════════
      DASHBOARD
   ══════════════════════════════════════════ */
-  .dash-wrap{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .dash-wrap{max-width:960px;margin:0 auto;padding:1.75rem 1.5rem 5rem}
 
   /* Topbar */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;background:#fff;border:1px solid rgba(226,232,240,.8);border-radius:16px;padding:.85rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
   .topbar-brand{display:flex;align-items:center;gap:.65rem}
   .topbar-dot{width:9px;height:9px;border-radius:50%;background:var(--success);animation:blink 2s infinite}
-  .topbar-name{font-size:1.1rem;font-weight:800;color:#0F172A;letter-spacing:-.3px}
+  .topbar-name{font-size:1rem;font-weight:800;color:#0F172A;letter-spacing:-.3px}
   .topbar-right{display:flex;align-items:center;gap:.75rem}
   .user-chip{display:flex;align-items:center;gap:.55rem;background:#fff;border:1px solid var(--border);border-radius:100px;padding:.35rem .75rem .35rem .45rem;font-size:.82rem}
   .user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -149,7 +150,7 @@
   .sc-title{font-size:1.45rem;font-weight:900;color:#fff;margin-bottom:.25rem;letter-spacing:-.3px}
   .sc-sub{font-size:.88rem;color:rgba(255,255,255,.75)}
   .sc-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
-  .sc-pill{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.14);color:#fff;padding:.28rem .8rem;border-radius:100px;font-size:.76rem}
+  .sc-pill{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);color:#fff;padding:.28rem .85rem;border-radius:100px;font-size:.78rem;border:1px solid rgba(255,255,255,.2)}
   .sc-right{text-align:center;position:relative;z-index:1}
   .countdown-num{font-size:3.5rem;font-weight:900;color:#fff;line-height:1}
   .countdown-label{font-size:.8rem;color:rgba(255,255,255,.7);margin-top:.2rem}
@@ -161,7 +162,7 @@
   /* Info cards */
   .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem}
   @media(max-width:620px){.cards-row{grid-template-columns:1fr}}
-  .info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.35rem;box-shadow:var(--shadow)}
+  .info-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.04)}
   .info-card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.85rem}
   .info-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)}
   .info-row:last-child{border:none}
@@ -174,7 +175,7 @@
   .badge-expired,.badge-cancelled{background:#FFF1F2;color:var(--danger)}
 
   /* Section */
-  .section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.4rem;box-shadow:var(--shadow)}
+  .section{background:#fff;border:1px solid rgba(226,232,240,.8);border-radius:18px;padding:1.75rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.03)}
   .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem}
   .section-title{font-size:1rem;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:.5rem}
   .section-badge{background:var(--primary);color:#fff;border-radius:100px;font-size:.72rem;font-weight:700;padding:.18rem .6rem}
@@ -191,9 +192,9 @@
   .plan-section-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.85rem}
   .plan-section-hd span:first-child{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
   .plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.85rem}
-  .plan-card{position:relative;border:2px solid var(--border);border-radius:14px;padding:1.2rem 1rem 1rem;cursor:pointer;transition:all .2s;text-align:center;background:#fff;overflow:hidden;user-select:none}
-  .plan-card:hover{border-color:var(--primary);box-shadow:0 4px 18px rgba(37,99,235,.12);transform:translateY(-2px)}
-  .plan-card.selected{border-color:var(--primary);background:#EFF6FF;box-shadow:0 4px 22px rgba(37,99,235,.18)}
+  .plan-card{position:relative;border:2px solid var(--border);border-radius:16px;padding:1.4rem 1.1rem 1.2rem;cursor:pointer;transition:all .2s;text-align:center;background:#fff;overflow:hidden;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .plan-card:hover{border-color:var(--primary);box-shadow:0 8px 24px rgba(37,99,235,.15);transform:translateY(-3px)}
+  .plan-card.selected{border-color:var(--primary);background:linear-gradient(135deg,#EFF6FF,#F0F9FF);box-shadow:0 8px 28px rgba(37,99,235,.2)}
   .plan-check{position:absolute;top:.5rem;right:.5rem;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .2s}
   .plan-card.selected .plan-check{opacity:1;transform:scale(1)}
   .plan-badge{display:inline-block;font-size:.66rem;font-weight:700;padding:.16rem .5rem;border-radius:100px;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.04em;line-height:1.5}
@@ -227,8 +228,8 @@
   .plan-summary-price{font-size:1.1rem;font-weight:900;color:var(--primary)}
 
   /* Upload */
-  .upload-area{border:2px dashed var(--border);border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:.15s;position:relative;background:var(--light)}
-  .upload-area:hover,.upload-area.drag-over{border-color:var(--primary);background:#EFF6FF}
+  .upload-area{border:2px dashed #CBD5E1;border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;position:relative;background:#F8FAFC}
+  .upload-area:hover,.upload-area.drag-over{border-color:var(--primary);background:#EFF6FF;box-shadow:0 0 0 4px rgba(37,99,235,.06)}
   .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
   .upload-icon{font-size:1.75rem;margin-bottom:.4rem}
   .upload-text{font-size:.86rem;color:var(--muted)}
@@ -391,22 +392,24 @@
     <!-- Brand -->
     <div class="auth-brand">
       <div class="auth-brand-dot">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <div class="auth-brand-name">{{ app_name }} Subscription Portal</div>
+      <div class="auth-brand-sub">Manage your subscription</div>
+      <div style="margin-top:.75rem"><a href="/home" style="color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem">← Back to website</a></div>
     </div>
 
     <div class="auth-card">
       <!-- Tabs -->
       <div class="auth-tabs">
         <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
-        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">New Clinic</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Get Started</button>
       </div>
 
       <!-- ── LOGIN PANEL ── -->
       <div id="loginPanel">
         <div class="auth-form-title">Welcome back</div>
-        <div class="auth-form-sub">Sign in with your clinic credentials</div>
+        <div class="auth-form-sub">Sign in to your account</div>
 
         <div class="form-group">
           <label class="form-label">Email Address</label>
@@ -425,7 +428,7 @@
         <button class="btn btn-primary btn-full btn-lg" id="loginBtn" onclick="doLogin()">Sign In</button>
 
         <div class="auth-footer">
-          New clinic? <a onclick="switchTab('register')">Register free trial →</a>
+          New here? <a onclick="switchTab('register')">Register free trial →</a>
         </div>
       </div>
 
@@ -457,7 +460,7 @@
           <div class="reg-portal-badge"><span class="reg-portal-badge-dot"></span>Free for {{ trial_days }} days &mdash; no payment required</div>
           <div class="reg-portal-logo">{{ app_name }}</div>
           <h2 class="reg-portal-title">Start Your Free Trial</h2>
-          <p class="reg-portal-sub">Set up your clinic in under 2 minutes.</p>
+          <p class="reg-portal-sub">Set up your account in under 2 minutes.</p>
         </div>
 
         <!-- Form body -->
@@ -465,40 +468,40 @@
         <form id="regForm" novalidate autocomplete="off">
           <div class="reg-grid">
 
-            <!-- Clinic Name -->
+            <!-- Business / App Name -->
             <div class="reg-field full">
-              <label class="reg-label" for="regClinicName">Clinic Name <span class="req">*</span></label>
+              <label class="reg-label" for="regClinicName">Business / App Name <span class="req">*</span></label>
               <div class="reg-iw">
-                <input type="text" id="regClinicName" class="has-badge" placeholder="e.g. Sunrise Medical Clinic" autocomplete="off">
+                <input type="text" id="regClinicName" class="has-badge" placeholder="e.g. My Business" autocomplete="off">
                 <div class="reg-avail" id="regAvail"></div>
               </div>
             </div>
 
-            <!-- Physician Name -->
+            <!-- Owner / Admin Name -->
             <div class="reg-field">
-              <label class="reg-label" for="regPhysician">Physician Name <span class="req">*</span></label>
+              <label class="reg-label" for="regPhysician">Owner / Admin Name <span class="req">*</span></label>
               <div class="reg-iw">
-                <input type="text" id="regPhysician" placeholder="Dr. Ahmed Khan">
+                <input type="text" id="regPhysician" placeholder="e.g. John Smith">
               </div>
               <div class="reg-hint" id="regPhysicianHint"></div>
             </div>
 
-            <!-- Practice Type -->
+            <!-- Account Type -->
             <div class="reg-field full">
-              <label class="reg-label">Practice Type <span class="req">*</span></label>
+              <label class="reg-label">Account Type <span class="req">*</span></label>
               <div class="pw-mode-picker">
                 <label class="pw-mode-card active" id="spModeClinicCard">
                   <input type="radio" name="spClinicMode" id="spModeClinic" value="Clinic" checked>
-                  <div class="pw-mode-card-icon">🏥</div>
-                  <div class="pw-mode-card-title">Clinic</div>
-                  <div class="pw-mode-card-sub">Single doctor<br>practice</div>
+                  <div class="pw-mode-card-icon">🏢</div>
+                  <div class="pw-mode-card-title">Solo</div>
+                  <div class="pw-mode-card-sub">Single user</div>
                   <div class="pw-mode-card-check">✓</div>
                 </label>
                 <label class="pw-mode-card" id="spModeHospitalCard">
                   <input type="radio" name="spClinicMode" id="spModeHospital" value="Hospital">
-                  <div class="pw-mode-card-icon">🏨</div>
-                  <div class="pw-mode-card-title">Hospital</div>
-                  <div class="pw-mode-card-sub">Multiple doctors<br>&amp; departments</div>
+                  <div class="pw-mode-card-icon">🏛️</div>
+                  <div class="pw-mode-card-title">Business</div>
+                  <div class="pw-mode-card-sub">Multiple users<br>&amp; teams</div>
                   <div class="pw-mode-card-check">✓</div>
                 </label>
               </div>
@@ -589,7 +592,7 @@
 
             <!-- Address -->
             <div class="reg-field full">
-              <label class="reg-label" for="regAddress">Clinic Address <span class="req">*</span></label>
+              <label class="reg-label" for="regAddress">Business Address <span class="req">*</span></label>
               <div class="reg-iw">
                 <textarea id="regAddress" placeholder="Street, City, Province"></textarea>
               </div>
@@ -613,7 +616,7 @@
       <div id="provPanel" class="hidden">
         <div class="prov-card">
           <div class="prov-icon" id="provIcon">⚙️</div>
-          <div class="prov-title" id="provTitle">Setting up your clinic…</div>
+          <div class="prov-title" id="provTitle">Setting up your account…</div>
           <div class="prov-sub" id="provSub">This takes 2–5 minutes. You can close this tab and come back.</div>
           <div class="prov-steps" id="provSteps">
             <div class="prov-step"><div class="prov-step-dot" id="ps0">1</div><span class="prov-step-text" id="pt0">Backing up template</span></div>
@@ -663,19 +666,28 @@
     </div>
   </div>
 
+  <!-- Full-page loader — visible until first successful loadDashboard() -->
+  <div id="dashLoader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem;gap:1rem">
+    <div class="reg-spinner" style="width:36px;height:36px;border:3px solid #E2E8F0;border-top-color:#2563EB"></div>
+    <div style="font-size:.9rem;color:var(--muted);font-weight:500">Loading your subscription…</div>
+  </div>
+
+  <!-- Content shown after data loads -->
+  <div id="dashContent" class="hidden">
+
   <!-- Alert bar -->
   <div id="alertBar"></div>
 
-  <!-- Status card -->
-  <div id="statusCard" class="status-card sc-trial fade-up" style="margin-bottom:1.5rem">
+  <!-- Status card: hidden until loadDashboard() populates it -->
+  <div id="statusCard" class="status-card sc-trial fade-up hidden" style="margin-bottom:1.5rem">
     <div class="sc-left">
-      <div class="sc-badge"><span class="sc-badge-dot"></span><span id="statusLabel">Fetching…</span></div>
+      <div class="sc-badge"><span class="sc-badge-dot"></span><span id="statusLabel"></span></div>
       <div class="sc-title" id="statusTitle"></div>
       <div class="sc-sub" id="statusSub"></div>
       <div class="sc-pills" id="scPills"></div>
     </div>
     <div class="sc-right">
-      <div class="countdown-num" id="countdownNum">—</div>
+      <div class="countdown-num" id="countdownNum"></div>
       <div class="countdown-label" id="countdownLabel">days remaining</div>
     </div>
   </div>
@@ -684,11 +696,11 @@
   <div class="cards-row fade-up">
     <div class="info-card">
       <div class="info-card-title">Subscription Details</div>
-      <div id="subDetails"><div style="display:flex;justify-content:center;padding:2rem"><div class="reg-spinner" style="width:22px;height:22px;border-color:#e2e8f0;border-top-color:#2563eb"></div></div></div>
+      <div id="subDetails"></div>
     </div>
     <div class="info-card">
-      <div class="info-card-title">Clinic Info</div>
-      <div id="clinicDetails"><div style="display:flex;justify-content:center;padding:2rem"><div class="reg-spinner" style="width:22px;height:22px;border-color:#e2e8f0;border-top-color:#2563eb"></div></div></div>
+      <div class="info-card-title">Account Info</div>
+      <div id="clinicDetails"></div>
     </div>
   </div>
 
@@ -808,7 +820,7 @@
     <div class="section-hd">
       <div class="section-title">📜 Payment History</div>
     </div>
-    <div id="paymentHistory"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+    <div id="paymentHistory"></div>
   </div>
 
   <!-- Activity Log -->
@@ -816,7 +828,7 @@
     <div class="section-hd">
       <div class="section-title">📋 Activity Log</div>
     </div>
-    <div id="activityLog" style="max-height:320px;overflow-y:auto;padding-right:.25rem"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div></div>
+    <div id="activityLog" style="max-height:320px;overflow-y:auto;padding-right:.25rem"></div>
   </div>
 
   {% if contact_email or contact_phone %}
@@ -838,6 +850,8 @@
     </div>
   </div>
   {% endif %}
+
+  </div><!-- /dashContent -->
 
 </div><!-- /dash-wrap -->
 </div><!-- /dashScreen -->
@@ -1366,7 +1380,7 @@ async function portalLoadCountries() {
     if (!portalValidateAll()) return;
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-inline"></span>Creating clinic…';
+    submitBtn.innerHTML = '<span class="spinner-inline"></span>Creating account…';
 
     _provEmail = email.value.trim();
     _provPass  = password.value;
@@ -1437,15 +1451,15 @@ function updateProvUI(r) {
 
   if (r.status === 'Success') {
     document.getElementById('provIcon').textContent = '🎉';
-    document.getElementById('provTitle').textContent = 'Your clinic is ready!';
+    document.getElementById('provTitle').textContent = 'Your account is ready!';
 
     const siteLink = r.site_url
-      ? `<a href="${esc(r.site_url)}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:.75rem;display:inline-flex">🌐 Open Clinic →</a>`
+      ? `<a href="${esc(r.site_url)}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:.75rem;display:inline-flex">🌐 Open Application →</a>`
       : '';
     const maskedPass = _provPass ? '•'.repeat(Math.min(_provPass.length, 12)) : '••••••••';
     document.getElementById('provSub').innerHTML = `
       <div style="text-align:left;background:#fff;border:1px solid #BFDBFE;border-radius:12px;padding:1.1rem 1.25rem;margin:.75rem 0;font-size:.86rem">
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.75rem">Your Login Credentials (PW Admin)</div>
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.75rem">Your Login Credentials</div>
         <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #EFF6FF">
           <span style="color:var(--muted)">Email</span>
           <strong style="font-family:monospace;color:#0F172A;font-size:.85rem">${esc(_provEmail)}</strong>
@@ -1565,11 +1579,34 @@ function _isAuthError(msg) {
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
+const _spinnerHtml = '<div style="display:flex;justify-content:center;padding:2rem"><div class="reg-spinner" style="width:22px;height:22px;border-color:#e2e8f0;border-top-color:#2563eb"></div></div>';
+const _loadingHtml = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading…</p></div>';
+const _errHtml     = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Could not load. Refresh to try again.</p></div>';
+
+function _showAuthScreen() {
+  document.getElementById('dashScreen').classList.add('hidden');
+  document.getElementById('authScreen').classList.remove('hidden');
+}
+
 async function loadDashboard() {
+  const loader  = document.getElementById('dashLoader');
+  const content = document.getElementById('dashContent');
+
   try {
     const d = await api('pw_subscription.api.get_my_subscription');
-    currentSub = d.subscription;
+    currentSub   = d.subscription;
     currentEmail = d.email;
+
+    // Reveal content, hide loader
+    if (loader)  loader.style.display  = 'none';
+    if (content) content.classList.remove('hidden');
+
+    // Populate sections
+    document.getElementById('subDetails').innerHTML     = _spinnerHtml;
+    document.getElementById('clinicDetails').innerHTML  = _spinnerHtml;
+    document.getElementById('paymentHistory').innerHTML = _loadingHtml;
+    document.getElementById('activityLog').innerHTML    = _loadingHtml;
+
     renderDashboard(d.subscription, d.days_remaining);
     loadHistory();
     if (PING_ENABLED && currentSub.site_name) {
@@ -1578,8 +1615,16 @@ async function loadDashboard() {
   } catch(e) {
     const msg = extractMsg(e);
     if (_isAuthError(msg)) {
-      showLm('Your session has expired — please sign in again');
+      // Session expired or invalid — go back to login screen cleanly
+      _showAuthScreen();
     } else {
+      // API error — show content area with error messages
+      if (loader)  loader.style.display  = 'none';
+      if (content) content.classList.remove('hidden');
+      document.getElementById('subDetails').innerHTML     = _errHtml;
+      document.getElementById('clinicDetails').innerHTML  = _errHtml;
+      document.getElementById('paymentHistory').innerHTML = _errHtml;
+      document.getElementById('activityLog').innerHTML    = _errHtml;
       document.getElementById('alertBar').innerHTML =
         `<div class="alert alert-danger"><span class="alert-icon">⚠️</span><div>${esc(msg)}</div></div>`;
     }
@@ -1589,7 +1634,7 @@ async function loadDashboard() {
 function renderDashboard(sub, days) {
   const cls = statusClass(sub.status);
   const card = document.getElementById('statusCard');
-  card.className = `status-card sc-${cls} fade-up`;
+  card.className = `status-card sc-${cls} fade-up`; // removes 'hidden' class set in HTML
   document.getElementById('statusLabel').textContent = sub.status;
   document.getElementById('statusTitle').textContent = statusTitle(sub.status);
   document.getElementById('statusSub').textContent = statusSub(sub, days);
@@ -1630,10 +1675,10 @@ function renderDashboard(sub, days) {
     sub.grace_end          ? ['Grace Ends',  sub.grace_end]          : null,
   ].filter(Boolean).map(([l,v])=>`<div class="info-row"><span class="info-row-label">${esc(l)}</span><span class="info-row-value">${v}</span></div>`).join('');
 
-  // Clinic details
+  // Account details
   document.getElementById('clinicDetails').innerHTML = [
-    ['Clinic',    sub.clinic_name],
-    ['Doctor',    sub.physician_name],
+    ['Application', sub.clinic_name],
+    ['Owner / Admin', sub.physician_name],
     ['Email',     currentEmail],
     ['Site URL',  sub.site_name ? `<a href="https://${sub.site_name}" target="_blank" style="color:var(--primary)">${sub.site_name}</a>` : '—'],
   ].map(([l,v])=>`<div class="info-row"><span class="info-row-label">${esc(l)}</span><span class="info-row-value">${v}</span></div>`).join('');
