@@ -8,7 +8,11 @@
   "plan_label",
   "duration_months",
   "price",
-  "is_active"
+  "is_active",
+  "badge",
+  "savings_pct",
+  "monthly_equiv",
+  "plan_features"
  ],
  "fields": [
   {
@@ -41,12 +45,37 @@
    "in_list_view": 1,
    "label": "Active",
    "default": "1"
+  },
+  {
+   "fieldname": "badge",
+   "fieldtype": "Select",
+   "label": "Badge",
+   "options": "\nbest\npopular",
+   "description": "Optional highlight badge shown on the pricing card"
+  },
+  {
+   "fieldname": "savings_pct",
+   "fieldtype": "Int",
+   "label": "Savings %",
+   "description": "e.g. 20 → shows 'Save 20%' on the card"
+  },
+  {
+   "fieldname": "monthly_equiv",
+   "fieldtype": "Data",
+   "label": "Monthly Equivalent (PKR)",
+   "description": "e.g. 2500 → shown as 'PKR 2500/mo' when savings % is set"
+  },
+  {
+   "fieldname": "plan_features",
+   "fieldtype": "Small Text",
+   "label": "Plan Features",
+   "description": "One feature per line. These are shown as bullet points on the pricing card. Leave blank to use the global Plan Features list."
   }
  ],
  "idx": 0,
  "istable": 1,
  "module": "PW Subscription",
- "modified": "2026-06-16 00:00:00",
+ "modified": "2026-09-07 00:00:00",
  "modified_by": "Administrator",
  "name": "PW Subscription Plan",
  "owner": "Administrator",

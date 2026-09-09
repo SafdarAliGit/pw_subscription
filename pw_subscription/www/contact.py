@@ -7,6 +7,7 @@ def get_context(context):
 
     try:
         s = frappe.get_single("PW Subscription Settings")
+        context.company_logo   = s.company_logo or ""
         context.company_name   = s.company_name or "CoreLogics"
         context.app_name       = s.app_name or "CoreLogics"
         context.tagline        = s.tagline or "Business Software Built Right"
@@ -17,6 +18,7 @@ def get_context(context):
         context.base_domain    = s.base_domain or ""
         context.trial_days     = s.trial_days or 7
     except Exception:
+        context.company_logo  = ""
         context.company_name  = "CoreLogics"
         context.app_name      = "CoreLogics"
         context.tagline       = "Business Software Built Right"

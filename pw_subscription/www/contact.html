@@ -39,6 +39,50 @@
   .nav-right{display:flex;align-items:center;gap:1rem}
   .nav-signin{color:var(--dark3);font-size:.88rem;font-weight:600;text-decoration:none}
   .nav-signin:hover{color:var(--primary)}
+  .nav-user-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#2563EB,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;}
+  .nav-user-name{font-size:.82rem;font-weight:700;color:#334155;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .nav-signout-btn{background:none;border:1.5px solid #FEE2E2;color:#EF4444;padding:.28rem .7rem;border-radius:7px;font-size:.75rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:background .15s;white-space:nowrap;}
+  .nav-signout-btn:hover{background:#FFF1F2}
+  @media(max-width:768px){.nav-user-name{display:none}}
+  .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .modal-backdrop.active{opacity:1;pointer-events:all}
+  .modal-card{background:#fff;border-radius:24px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.22);transform:translateY(28px) scale(.97);transition:transform .3s cubic-bezier(.34,1.3,.64,1);overflow:hidden;}
+  .modal-backdrop.active .modal-card{transform:translateY(0) scale(1)}
+  .modal-header{background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 100%);padding:2rem 2rem 1.5rem;position:relative;text-align:center;}
+  .modal-header-orb{position:absolute;border-radius:50%;filter:blur(50px);opacity:.25;pointer-events:none;}
+  .modal-header-orb-1{width:160px;height:160px;background:#3B82F6;top:-40px;right:-40px}
+  .modal-header-orb-2{width:120px;height:120px;background:#7C3AED;bottom:-30px;left:-20px}
+  .modal-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;z-index:1;}
+  .modal-close:hover{background:rgba(255,255,255,.25)}
+  .modal-logo{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,.25);font-size:1.5rem;margin-bottom:1rem;position:relative;z-index:1;}
+  .modal-title{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.5px;position:relative;z-index:1}
+  .modal-subtitle{font-size:.83rem;color:rgba(255,255,255,.6);margin-top:.3rem;position:relative;z-index:1}
+  .modal-body{padding:1.75rem 2rem 2rem}
+  .form-group{margin-bottom:1.1rem}
+  .form-label{display:block;font-size:.78rem;font-weight:700;color:#334155;margin-bottom:.45rem;letter-spacing:.02em;}
+  .form-input-wrap{position:relative}
+  .form-input-icon{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:#94A3B8;pointer-events:none;}
+  .form-input{width:100%;padding:.72rem .85rem .72rem 2.4rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#0F172A;font-family:'Inter',sans-serif;background:#fff;transition:border-color .2s,box-shadow .2s;outline:none;}
+  .form-input::placeholder{color:#CBD5E1}
+  .form-input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .form-input-eye{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#94A3B8;cursor:pointer;padding:2px;transition:color .2s;}
+  .form-input-eye:hover{color:#2563EB}
+  .form-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.5rem}
+  .form-checkbox-wrap{display:flex;align-items:center;gap:.5rem;cursor:pointer}
+  .form-checkbox{width:16px;height:16px;accent-color:#2563EB;cursor:pointer}
+  .form-checkbox-label{font-size:.8rem;color:#64748B;font-weight:500}
+  .form-forgot{font-size:.8rem;color:#2563EB;font-weight:600;text-decoration:none;}
+  .form-error-msg{font-size:.78rem;color:#EF4444;margin-top:1rem;padding:.6rem .9rem;background:#FEF2F2;border-radius:8px;border-left:3px solid #EF4444;display:none;}
+  .form-error-msg.visible{display:block}
+  .btn-modal-submit{width:100%;padding:.88rem;background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 20px rgba(37,99,235,.35);transition:all .2s;}
+  .btn-modal-submit:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(37,99,235,.45)}
+  .btn-modal-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+  .btn-modal-submit .btn-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:mdspin .7s linear infinite;vertical-align:middle;margin-right:.5rem;}
+  @keyframes mdspin{to{transform:rotate(360deg)}}
+  .modal-divider{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;font-size:.75rem;color:#CBD5E1;}
+  .modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:#E2E8F0}
+  .modal-footer-note{text-align:center;font-size:.83rem;color:#64748B}
+  .modal-footer-note a{color:#2563EB;font-weight:700;text-decoration:none}
   .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
   .nav-hamburger span{display:block;width:22px;height:2px;background:var(--dark3);border-radius:2px;transition:.2s}
   @media(max-width:768px){
@@ -163,7 +207,7 @@
 
 <!-- NAV -->
 <nav class="site-nav">
-  <a href="/home" class="nav-logo">{{ company_name }}</a>
+  <a href="/home" class="nav-logo">{% if company_logo %}<img src="{{ company_logo }}" alt="{{ company_name }}" style="height:32px;width:auto;object-fit:contain;vertical-align:middle">{% else %}{{ company_name }}{% endif %}</a>
   <ul class="nav-links" id="navLinks">
     <li><a href="/home">Home</a></li>
     <li><a href="/about">About</a></li>
@@ -171,7 +215,12 @@
     <li><a href="/healthcare">Healthcare</a></li>
   </ul>
   <div class="nav-right">
-    <a href="/subscription-portal" class="nav-signin">Sign In</a>
+    <button class="nav-signin" id="navSignInBtn" style="background:none;border:none;font-family:'Inter',sans-serif;cursor:pointer;">Sign In</button>
+    <div class="nav-user-info" id="navUserInfo" style="display:none;align-items:center;gap:.6rem;">
+      <div class="nav-user-avatar" id="navAvatar"></div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <button class="nav-signout-btn" id="navSignOutBtn">Sign Out</button>
+    </div>
     <button class="nav-hamburger" id="navToggle" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -311,7 +360,7 @@
 <footer class="site-footer">
   <div class="footer-top">
     <div>
-      <div class="footer-logo">{{ company_name }}</div>
+      <div class="footer-logo">{% if company_logo %}<img src="{{ company_logo }}" alt="{{ company_name }}" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;background:rgba(255,255,255,.92);padding:4px 10px;border-radius:8px">{% else %}{{ company_name }}{% endif %}</div>
       <div class="footer-tagline">{{ tagline }}</div>
       <p class="footer-desc">ERPNext implementation, customisation, and purpose-built SaaS. CureDesk — complete clinic management on Frappe &amp; ERPNext.</p>
     </div>
@@ -385,6 +434,79 @@ document.getElementById('contactForm').addEventListener('submit', function(e){
     btn.disabled = false;
   });
 });
+</script>
+<!-- LOGIN MODAL -->
+<div class="modal-backdrop" id="loginModal" role="dialog" aria-modal="true" aria-label="Sign In">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-header-orb modal-header-orb-1"></div><div class="modal-header-orb modal-header-orb-2"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">&#x2715;</button>
+      <div class="modal-logo">🏥</div>
+      <div class="modal-title">Sign In to Your Clinic</div>
+      <div class="modal-subtitle">Access your subscription account</div>
+    </div>
+    <div class="modal-body">
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <div class="form-input-wrap">
+            <span class="form-input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+            <input type="email" id="loginEmail" name="email" class="form-input" placeholder="you@clinic.com" autocomplete="email" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="form-input-wrap">
+            <span class="form-input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+            <input type="password" id="loginPassword" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required style="padding-right:2.6rem">
+            <button type="button" class="form-input-eye" id="togglePwd" aria-label="Show password"><svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-checkbox-wrap"><input type="checkbox" class="form-checkbox" id="rememberMe"><span class="form-checkbox-label">Remember me</span></label>
+          <a href="#" class="form-forgot">Forgot password?</a>
+        </div>
+        <div class="form-error-msg" id="loginError"></div>
+        <button type="submit" class="btn-modal-submit" id="loginSubmit">Sign In</button>
+        <div class="modal-divider">or</div>
+        <div class="modal-footer-note">Don't have an account? <a href="/healthcare">Start Free Trial →</a></div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var isLoggedIn=false;
+  function initials(n){if(!n)return'?';var p=n.trim().split(/\s+/);return(p.length>1?p[0][0]+p[p.length-1][0]:n[0]).toUpperCase();}
+  function setLoggedInUI(fullName,email){isLoggedIn=true;var name=fullName||email;var ini=initials(name);document.getElementById('navSignInBtn').style.display='none';document.getElementById('navAvatar').textContent=ini;document.getElementById('navUserName').textContent=name;document.getElementById('navUserInfo').style.display='flex';}
+  function setGuestUI(){isLoggedIn=false;document.getElementById('navUserInfo').style.display='none';document.getElementById('navSignInBtn').style.display='';}
+  function doLogout(){fetch('/api/method/logout',{method:'GET'}).finally(function(){setGuestUI();});}
+  document.getElementById('navSignOutBtn').addEventListener('click',doLogout);
+  var signinBtn=document.getElementById('navSignInBtn');
+  signinBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Sign In';
+  signinBtn.style.cssText='background:none;border:none;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;color:#334155;font-size:.88rem;font-weight:600;';
+  signinBtn.addEventListener('click',function(){openModal();});
+  document.getElementById('navSignOutBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out';
+  var backdrop=document.getElementById('loginModal');
+  function openModal(){backdrop.classList.add('active');document.body.style.overflow='hidden';setTimeout(function(){document.getElementById('loginEmail').focus();},300);}
+  function closeModal(){backdrop.classList.remove('active');document.body.style.overflow='';document.getElementById('loginForm').reset();document.getElementById('loginError').classList.remove('visible');document.getElementById('loginError').textContent='';document.getElementById('loginSubmit').disabled=false;document.getElementById('loginSubmit').innerHTML='Sign In';setEye(false);}
+  document.getElementById('modalClose').addEventListener('click',closeModal);
+  backdrop.addEventListener('click',function(e){if(e.target===backdrop)closeModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&backdrop.classList.contains('active'))closeModal();});
+  var pwdInput=document.getElementById('loginPassword'),eyeBtn=document.getElementById('togglePwd'),eyeIcon=document.getElementById('eyeIcon');
+  var eyeVisible='<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>';
+  function setEye(show){pwdInput.type=show?'text':'password';eyeIcon.innerHTML=show?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>':eyeVisible;}
+  eyeBtn.addEventListener('click',function(){setEye(pwdInput.type==='password');});
+  document.getElementById('loginForm').addEventListener('submit',function(e){
+    e.preventDefault();var email=document.getElementById('loginEmail').value.trim();var pwd=document.getElementById('loginPassword').value;var errEl=document.getElementById('loginError');var btn=document.getElementById('loginSubmit');
+    errEl.classList.remove('visible');if(!email||!pwd){errEl.textContent='Please enter your email and password.';errEl.classList.add('visible');return;}
+    btn.disabled=true;btn.innerHTML='<span class="btn-spinner"></span> Signing in…';
+    fetch('/api/method/login',{method:'POST',headers:{'Content-Type':'application/json','X-Frappe-CSRF-Token':'fetch'},body:JSON.stringify({usr:email,pwd:pwd})})
+    .then(function(r){return r.json();}).then(function(data){var ok=data.message==='Logged In'||data.home_page||data.full_name;if(ok){closeModal();setLoggedInUI(data.full_name||'',email);}else{errEl.textContent=data.message||data.exc_type||'Invalid email or password.';errEl.classList.add('visible');btn.disabled=false;btn.innerHTML='Sign In';}})
+    .catch(function(){errEl.textContent='Network error. Please try again.';errEl.classList.add('visible');btn.disabled=false;btn.innerHTML='Sign In';});
+  });
+  (function checkSession(){fetch('/api/method/frappe.auth.get_logged_user').then(function(r){return r.json();}).then(function(data){var usr=data.message||'';if(!usr||usr==='Guest')return;return fetch('/api/resource/User/'+encodeURIComponent(usr)+'?fields=["full_name","email"]').then(function(r){return r.json();}).then(function(d){var u=d.data||{};setLoggedInUI(u.full_name||usr,u.email||usr);});}).catch(function(){});})();
+})();
 </script>
 </body>
 </html>

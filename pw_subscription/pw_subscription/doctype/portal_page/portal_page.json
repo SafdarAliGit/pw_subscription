@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "autoname": "field:page_name",
+ "creation": "2026-09-07 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "page_name",
+  "route",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "page_name",
+   "fieldtype": "Data",
+   "label": "Page Name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1,
+   "description": "Display name for this portal page (e.g. Healthcare, Home)"
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Route",
+   "in_list_view": 1,
+   "description": "URL path for this page (e.g. /healthcare, /home)"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-07 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PW Subscription",
+ "name": "Portal Page",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "page_name",
+ "sort_order": "ASC",
+ "title_field": "page_name"
+}

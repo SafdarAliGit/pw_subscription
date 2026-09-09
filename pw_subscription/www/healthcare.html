@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CureDesk — Healthcare · {{ company_name }}</title>
-<script>window.frappe = window.frappe || {};</script>
+<script>window.frappe = window.frappe || {}; window.frappe.csrf_token = "{{ frappe.session.csrf_token }}";</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   .navbar,.web-footer,footer.web-footer,.footer-main,.page-header,.page-head,
@@ -32,7 +32,7 @@
     background:rgba(255,255,255,.9);backdrop-filter:blur(14px);
     border-bottom:1px solid rgba(226,232,240,.7);
   }
-  .nav-logo{font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;text-decoration:none}
+  .nav-logo{font-size:1.2rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;text-decoration:none}
   .nav-links{display:flex;gap:2rem;list-style:none}
   .nav-links a{text-decoration:none;color:var(--dark3);font-size:.9rem;font-weight:500;transition:color .2s}
   .nav-links a:hover,.nav-links a.active{color:var(--primary)}
@@ -51,9 +51,14 @@
 
   /* ── HERO ── */
   .hero{
-    min-height:60vh;background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0F2D4A 100%);
+    min-height:100vh;
+    background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0F2D4A 100%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:100px 5% 70px;text-align:center;position:relative;overflow:hidden;
+    padding:80px 5% 50px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero-carousel-strip{
+    width:calc(100% - 50px);margin-top:2.5rem;height:200px;
+    position:relative;overflow:hidden;border-radius:16px;flex-shrink:0;
   }
   .hero-orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.18;pointer-events:none}
   .hero-orb-1{width:350px;height:350px;background:#3B82F6;top:-80px;right:-60px}
@@ -71,19 +76,62 @@
   .hero-badge-dot{width:8px;height:8px;border-radius:50%;background:#10B981;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
   .hero h1{
-    font-size:clamp(2rem,5vw,3.4rem);font-weight:900;color:#fff;
-    line-height:1.1;letter-spacing:-1px;max-width:720px;margin-bottom:1rem;
+    font-size:clamp(2.4rem,5.5vw,4rem);font-weight:900;color:#fff;
+    line-height:1.1;letter-spacing:-1.5px;max-width:900px;margin:0 auto 1rem;
   }
   .hero h1 .grad{
     background:linear-gradient(135deg,#38BDF8 0%,#818CF8 50%,#F472B6 100%);
     -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   }
-  .hero p{font-size:clamp(.95rem,1.5vw,1.1rem);color:rgba(255,255,255,.7);max-width:580px;margin-bottom:2rem;line-height:1.75}
-  .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .hero p{font-size:clamp(.95rem,1.5vw,1.1rem);color:rgba(255,255,255,.7);margin:0 auto 2rem;line-height:1.75}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
   .btn-hero-primary{background:var(--primary);color:#fff;padding:.85rem 2rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 8px 24px rgba(37,99,235,.4);transition:all .2s}
   .btn-hero-primary:hover{background:var(--primary-dark);transform:translateY(-2px)}
   .btn-hero-ghost{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:#fff;padding:.85rem 2rem;border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid rgba(255,255,255,.3);transition:all .2s}
   .btn-hero-ghost:hover{background:rgba(255,255,255,.2)}
+
+  /* ── HERO PORTAL BLOCK ── */
+  .btn-hero-portal{
+    display:inline-flex;align-items:center;gap:.6rem;
+    background:rgba(255,255,255,.1);backdrop-filter:blur(8px);
+    border:1.5px solid rgba(255,255,255,.28);
+    color:#fff;padding:.78rem 1.9rem;border-radius:10px;
+    font-weight:700;font-size:.95rem;font-family:'Inter',sans-serif;
+    cursor:pointer;transition:all .22s;letter-spacing:-.01em;
+  }
+  .btn-hero-portal:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5);transform:translateY(-2px)}
+
+  /* ── HERO CAROUSEL ── */
+  .pw-carousel{position:absolute;inset:0;display:flex}
+  .pw-slide{position:absolute;inset:0;background:linear-gradient(135deg,#1a2744 0%,#0F172A 100%);opacity:0;transition:opacity .9s ease;display:flex;align-items:center;justify-content:center}
+  .pw-slide.active{opacity:1}
+  .pw-slide-caption{display:flex;flex-direction:row;align-items:center;padding:1.5rem 120px;color:#fff;text-align:left;gap:2rem;width:100%;height:100%}
+  .pw-slide-icon{width:70px;height:70px;flex-shrink:0;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+  .pw-slide-text{display:flex;flex-direction:column;min-width:0;flex:1}
+  .pw-slide-caption h3{font-size:clamp(.95rem,2vw,1.4rem);font-weight:800;color:#fff;line-height:1.3;margin:0 0 .4rem;letter-spacing:-.5px}
+  .pw-slide-caption p{font-size:clamp(.78rem,1.4vw,.95rem);color:rgba(255,255,255,.75);line-height:1.6;margin:0;word-break:break-word}
+  @media(max-width:768px){
+    .pw-slide-caption{padding:1.25rem 2rem;gap:1.25rem}
+    .pw-slide-icon{width:54px;height:54px}
+  }
+  @media(max-width:480px){
+    .pw-slide-caption{padding:1rem 1.5rem;gap:1rem}
+    .pw-slide-icon{width:44px;height:44px}
+  }
+  .pw-carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:20;width:36px;height:36px;background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);border-radius:50%;color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,transform .2s;user-select:none}
+  .pw-carousel-arrow:hover{background:rgba(255,255,255,.3);transform:translateY(-50%) scale(1.08)}
+  .pw-carousel-arrow.prev{left:8px}
+  .pw-carousel-arrow.next{right:8px}
+  .pw-carousel-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:.5rem;align-items:center}
+  .pw-carousel-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.5);cursor:pointer;transition:all .3s}
+  .pw-carousel-dot.active{background:#fff;width:28px;border-radius:5px}
+
+  /* ── HERO STATS BAR ── */
+  .hero-stats-bar{width:100%;display:flex;justify-content:center;margin-top:.75rem;padding:.75rem 5% 0}
+  .hero-stats{display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap}
+  .hero-stat{text-align:center}
+  .hero-stat-num{font-size:2rem;font-weight:800;color:#fff;line-height:1}
+  .hero-stat-lbl{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.2rem}
 
   /* ── HIGHLIGHTS BAR ── */
   .highlights{background:var(--white);border-bottom:1px solid var(--border)}
@@ -169,22 +217,500 @@
   .btn-cta-ghost:hover{background:rgba(255,255,255,.18)}
 
   /* ── FAQ ── */
-  .faq-section{padding:72px 5%;background:var(--light)}
-  .faq-section-inner{max-width:760px;margin:0 auto}
-  .faq-section .section-tag{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .85rem;border-radius:100px;margin-bottom:.9rem}
-  .faq-section .section-title{font-size:clamp(1.65rem,3vw,2.2rem);font-weight:800;color:var(--dark);letter-spacing:-1px;margin-bottom:.75rem}
-  .faq-section .section-sub{font-size:1rem;color:var(--muted)}
-  .faq-list{margin-top:2.5rem;display:flex;flex-direction:column;gap:.75rem}
-  .faq-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
-  .faq-item.open{border-color:var(--primary)}
-  .faq-q{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;cursor:pointer;font-size:.95rem;font-weight:600;color:var(--dark);gap:1rem}
-  .faq-icon{width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .2s}
-  .faq-icon svg{color:var(--primary);transition:transform .25s}
-  .faq-item.open .faq-icon{background:var(--primary)}
-  .faq-item.open .faq-icon svg{color:#fff;transform:rotate(45deg)}
-  .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
-  .faq-a-inner{padding:0 1.4rem 1.1rem;font-size:.9rem;color:var(--muted);line-height:1.8}
-  .faq-item.open .faq-a{max-height:300px}
+  .faq-section{padding:80px 5%;background:linear-gradient(180deg,var(--white) 0%,var(--light) 100%)}
+  .faq-list{margin:3.5rem 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;align-items:start}
+  @media(max-width:1050px){.faq-list{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:580px){.faq-list{grid-template-columns:1fr}}
+  .faq-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;display:flex;flex-direction:column;gap:0;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+  .faq-item:hover{border-color:var(--primary);box-shadow:0 8px 28px rgba(37,99,235,.08)}
+  .faq-item.open{border-color:var(--primary);box-shadow:0 8px 28px rgba(37,99,235,.12)}
+  .faq-q-icon{width:34px;height:34px;border-radius:9px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:.9rem}
+  .faq-q-icon svg{width:17px;height:17px;color:var(--primary)}
+  .faq-q{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;font-weight:700;font-size:.92rem;color:var(--dark);line-height:1.4;user-select:none}
+  .faq-item.open .faq-q{color:var(--primary)}
+  .faq-chevron{width:17px;height:17px;flex-shrink:0;margin-top:2px;color:var(--muted);transition:transform .3s ease,color .2s}
+  .faq-item.open .faq-chevron{transform:rotate(180deg);color:var(--primary)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+  .faq-a-inner{padding-top:.9rem;margin-top:.9rem;border-top:1px solid var(--border);font-size:.85rem;color:var(--muted);line-height:1.8}
+  .faq-item.open .faq-a{max-height:320px}
+  .faq-item.open .faq-a-inner{border-color:rgba(37,99,235,.15)}
+  .faq-a-inner strong{color:var(--dark3)}
+  .faq-cta{margin:2.5rem 0 0;background:linear-gradient(135deg,var(--dark) 0%,var(--dark2) 100%);border-radius:var(--radius-lg);padding:2.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.75rem}
+  .faq-cta h3{font-size:1.3rem;font-weight:800;color:#fff;margin:0}
+  .faq-cta p{font-size:.92rem;color:rgba(255,255,255,.6);margin:0}
+  .faq-cta-links{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:.75rem}
+  .faq-btn-primary{background:var(--primary);color:#fff;padding:.7rem 1.6rem;border-radius:10px;font-weight:700;font-size:.9rem;text-decoration:none;transition:all .2s;box-shadow:0 8px 24px rgba(37,99,235,.4)}
+  .faq-btn-primary:hover{background:var(--primary-dark);transform:translateY(-2px)}
+  .faq-btn-ghost{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:#fff;padding:.7rem 1.6rem;border-radius:10px;font-weight:600;font-size:.9rem;text-decoration:none;border:1px solid rgba(255,255,255,.3);transition:all .2s}
+  .faq-btn-ghost:hover{background:rgba(255,255,255,.2)}
+  @media(max-width:640px){.faq-cta{padding:1.75rem 1.25rem}}
+
+  /* ── LOGIN MODAL ── */
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(15,23,42,.65);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    padding:1rem;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .modal-backdrop.active{opacity:1;pointer-events:all}
+
+  .modal-card{
+    background:#fff;border-radius:24px;width:100%;max-width:420px;
+    box-shadow:0 32px 80px rgba(0,0,0,.22);
+    transform:translateY(28px) scale(.97);
+    transition:transform .3s cubic-bezier(.34,1.3,.64,1);
+    overflow:hidden;
+  }
+  .modal-backdrop.active .modal-card{transform:translateY(0) scale(1)}
+
+  .modal-header{
+    background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 100%);
+    padding:2rem 2rem 1.5rem;position:relative;text-align:center;
+  }
+  .modal-header-orb{
+    position:absolute;border-radius:50%;filter:blur(50px);opacity:.25;pointer-events:none;
+  }
+  .modal-header-orb-1{width:160px;height:160px;background:#3B82F6;top:-40px;right:-40px}
+  .modal-header-orb-2{width:120px;height:120px;background:#7C3AED;bottom:-30px;left:-20px}
+  .modal-close{
+    position:absolute;top:1rem;right:1rem;
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+    color:#fff;font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .2s;z-index:1;
+  }
+  .modal-close:hover{background:rgba(255,255,255,.25)}
+  .modal-logo{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:52px;height:52px;border-radius:14px;
+    background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+    border:1.5px solid rgba(255,255,255,.25);font-size:1.5rem;margin-bottom:1rem;
+    position:relative;z-index:1;
+  }
+  .modal-title{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.5px;position:relative;z-index:1}
+  .modal-subtitle{font-size:.83rem;color:rgba(255,255,255,.6);margin-top:.3rem;position:relative;z-index:1}
+
+  .modal-body{padding:1.75rem 2rem 2rem}
+
+  .form-group{margin-bottom:1.1rem}
+  .form-label{
+    display:block;font-size:.78rem;font-weight:700;color:var(--dark3);
+    margin-bottom:.45rem;letter-spacing:.02em;
+  }
+  .form-input-wrap{position:relative}
+  .form-input-icon{
+    position:absolute;left:.85rem;top:50%;transform:translateY(-50%);
+    color:#94A3B8;font-size:.95rem;pointer-events:none;
+  }
+  .form-input{
+    width:100%;padding:.72rem .85rem .72rem 2.4rem;
+    border:1.5px solid var(--border);border-radius:10px;
+    font-size:.9rem;color:var(--dark);font-family:'Inter',sans-serif;
+    background:#fff;
+    transition:border-color .2s,box-shadow .2s;outline:none;
+  }
+  .form-input::placeholder{color:#CBD5E1}
+  .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .form-input.error{border-color:var(--danger)}
+
+  .form-input-eye{
+    position:absolute;right:.85rem;top:50%;transform:translateY(-50%);
+    background:none;border:none;color:#94A3B8;cursor:pointer;padding:2px;
+    font-size:.95rem;transition:color .2s;
+  }
+  .form-input-eye:hover{color:var(--primary)}
+
+  .form-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.5rem}
+  .form-checkbox-wrap{display:flex;align-items:center;gap:.5rem;cursor:pointer}
+  .form-checkbox{width:16px;height:16px;accent-color:var(--primary);cursor:pointer}
+  .form-checkbox-label{font-size:.8rem;color:var(--muted);font-weight:500}
+  .form-forgot{font-size:.8rem;color:var(--primary);font-weight:600;text-decoration:none;transition:color .2s}
+  .form-forgot:hover{color:var(--primary-dark)}
+
+  .form-error-msg{
+    font-size:.78rem;color:var(--danger);margin-top:1rem;
+    padding:.6rem .9rem;background:#FEF2F2;border-radius:8px;
+    border-left:3px solid var(--danger);display:none;
+  }
+  .form-error-msg.visible{display:block}
+
+  .btn-modal-submit{
+    width:100%;padding:.88rem;
+    background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+    color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.95rem;
+    cursor:pointer;font-family:'Inter',sans-serif;
+    box-shadow:0 6px 20px rgba(37,99,235,.35);
+    transition:all .2s;position:relative;overflow:hidden;
+  }
+  .btn-modal-submit:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(37,99,235,.45)}
+  .btn-modal-submit:active{transform:translateY(0)}
+  .btn-modal-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+  .btn-modal-submit .btn-spinner{
+    display:inline-block;width:16px;height:16px;
+    border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+    border-radius:50%;animation:spin .7s linear infinite;
+    vertical-align:middle;margin-right:.5rem;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .modal-divider{
+    display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;
+    font-size:.75rem;color:#CBD5E1;
+  }
+  .modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .modal-footer-note{text-align:center;font-size:.83rem;color:var(--muted)}
+  .modal-footer-note a{color:var(--primary);font-weight:700;text-decoration:none}
+  .modal-footer-note a:hover{color:var(--primary-dark)}
+
+  /* open-modal trigger style */
+  .open-login-modal{cursor:pointer}
+
+  /* ── NAV USER INFO (logged-in) ── */
+  .nav-user-avatar{
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--primary),#7C3AED);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:.72rem;font-weight:800;
+  }
+  .nav-user-name{
+    font-size:.82rem;font-weight:700;color:var(--dark3);
+    max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .nav-signout-btn{
+    background:none;border:1.5px solid #FEE2E2;color:var(--danger);
+    padding:.28rem .7rem;border-radius:7px;font-size:.75rem;font-weight:700;
+    font-family:'Inter',sans-serif;cursor:pointer;transition:background .15s;white-space:nowrap;
+  }
+  .nav-signout-btn:hover{background:#FFF1F2}
+  @media(max-width:768px){.nav-user-name{display:none}}
+
+  /* ── PORTAL MODAL (iframe) ── */
+  .pmodal-backdrop{
+    position:fixed;inset:0;z-index:900;
+    background:rgba(8,14,30,.75);backdrop-filter:blur(10px);
+    display:flex;align-items:center;justify-content:center;padding:1rem;
+    opacity:0;pointer-events:none;transition:opacity .28s ease;
+  }
+  .pmodal-backdrop.active{opacity:1;pointer-events:all}
+  .pmodal-card{
+    background:#F0F4FF;border-radius:22px;
+    width:100%;max-width:1040px;height:92vh;max-height:880px;
+    display:flex;flex-direction:column;
+    box-shadow:0 40px 120px rgba(0,0,0,.38),0 0 0 1px rgba(255,255,255,.06);
+    transform:translateY(36px) scale(.96);
+    transition:transform .32s cubic-bezier(.34,1.15,.64,1);overflow:hidden;
+  }
+  .pmodal-backdrop.active .pmodal-card{transform:translateY(0) scale(1)}
+
+  .pmodal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.85rem 1.2rem;
+    background:linear-gradient(130deg,#0F172A 0%,#1E3A5F 60%,#1E40AF 100%);
+    flex-shrink:0;gap:1rem;position:relative;overflow:hidden;
+  }
+  .pmodal-header::after{
+    content:'';position:absolute;top:-60px;right:-60px;
+    width:200px;height:200px;border-radius:50%;
+    background:rgba(255,255,255,.04);pointer-events:none;
+  }
+  .pmodal-header-left{display:flex;align-items:center;gap:.75rem;position:relative;z-index:1}
+  .pmodal-header-logo{
+    width:36px;height:36px;border-radius:10px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+  }
+  .pmodal-header-title{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1.2}
+  .pmodal-header-sub{font-size:.73rem;color:rgba(255,255,255,.5);margin-top:.15rem}
+  .pmodal-header-pill{
+    display:inline-flex;align-items:center;gap:.35rem;
+    background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);
+    color:#6EE7B7;padding:.18rem .65rem;border-radius:100px;font-size:.68rem;font-weight:700;
+    margin-left:.5rem;
+  }
+  .pmodal-header-pill-dot{width:5px;height:5px;border-radius:50%;background:#10B981}
+  .pmodal-close{
+    width:34px;height:34px;border-radius:50%;position:relative;z-index:1;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    color:rgba(255,255,255,.8);font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .2s,color .2s;flex-shrink:0;
+  }
+  .pmodal-close:hover{background:rgba(255,255,255,.22);color:#fff}
+
+  .pmodal-loader{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:#F0F4FF;z-index:2;gap:.85rem;
+    font-size:.88rem;color:var(--muted);font-weight:500;
+  }
+  .pmodal-loader-ring{
+    width:40px;height:40px;border:3px solid #E2E8F0;border-top-color:var(--primary);
+    border-radius:50%;animation:spin .75s linear infinite;
+  }
+  .pmodal-iframe-wrap{flex:1;position:relative;overflow:hidden}
+  .pmodal-iframe{width:100%;height:100%;border:none;display:block}
+  @media(max-width:640px){
+    .pmodal-card{height:96vh;border-radius:16px}
+    .pmodal-header{padding:.75rem 1rem}
+    .pmodal-header-pill{display:none}
+  }
+
+  /* ══════════════════════════════════════
+     SUBSCRIPTION SECTION
+  ══════════════════════════════════════ */
+  .sub-section{background:linear-gradient(180deg,#F0F4FF 0%,#F1F5F9 100%);padding:80px 5%}
+  .sub-inner{max-width:1000px;margin:0 auto}
+  .sub-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 1rem;gap:1rem}
+  .sub-loader-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite}
+
+  /* Status card */
+  .sc-card{border-radius:20px;padding:2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;position:relative;overflow:hidden}
+  .sc-trial{background:linear-gradient(135deg,#1E3A5F,#2563EB)}
+  .sc-active{background:linear-gradient(135deg,#065f46,#10B981)}
+  .sc-grace{background:linear-gradient(135deg,#78350f,#F59E0B)}
+  .sc-expired,.sc-cancelled{background:linear-gradient(135deg,#7f1d1d,#EF4444)}
+  .sc-card::after{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none}
+  .sc-l{position:relative;z-index:1}
+  .sc-badge2{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);color:#fff;padding:.38rem 1rem;border-radius:100px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem}
+  .sc-badge-dot2{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 2s infinite}
+  .sc-title2{font-size:1.45rem;font-weight:900;color:#fff;margin-bottom:.25rem;letter-spacing:-.3px}
+  .sc-sub2{font-size:.88rem;color:rgba(255,255,255,.75)}
+  .sc-pills2{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+  .sc-pill2{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);color:#fff;padding:.28rem .85rem;border-radius:100px;font-size:.78rem;border:1px solid rgba(255,255,255,.2)}
+  .sc-r{text-align:center;position:relative;z-index:1}
+  .sc-num{font-size:3.5rem;font-weight:900;color:#fff;line-height:1}
+  .sc-num-lbl{font-size:.8rem;color:rgba(255,255,255,.7);margin-top:.2rem}
+
+  /* Info cards row */
+  .sub-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem}
+  @media(max-width:620px){.sub-cards-row{grid-template-columns:1fr}}
+  .sub-info-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .sub-info-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.85rem}
+  .sub-info-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)}
+  .sub-info-row:last-child{border:none}
+  .sub-info-label{font-size:.82rem;color:var(--muted)}
+  .sub-info-value{font-size:.86rem;font-weight:600;color:var(--dark)}
+
+  /* Section box */
+  .sub-box{background:#fff;border:1px solid rgba(226,232,240,.8);border-radius:18px;padding:1.75rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .sub-box-title{font-size:1rem;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+
+  /* Alerts */
+  .sub-alert{padding:.9rem 1.15rem;border-radius:10px;margin-bottom:1.1rem;font-size:.88rem;display:flex;align-items:flex-start;gap:.6rem}
+  .sub-alert-icon{flex-shrink:0;font-size:1rem;line-height:1.4}
+  .sub-alert-warning{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+  .sub-alert-danger{background:#FFF1F2;border:1px solid #FECACA;color:#991B1B}
+  .sub-alert-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
+  .sub-alert-success{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
+
+  /* Plans */
+  .sub-plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.85rem}
+  .sub-plan-card{position:relative;border:2px solid var(--border);border-radius:16px;padding:1.4rem 1.1rem 1.2rem;cursor:pointer;transition:all .2s;text-align:center;background:#fff;overflow:hidden;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .sub-plan-card:hover{border-color:var(--primary);box-shadow:0 8px 24px rgba(37,99,235,.15);transform:translateY(-3px)}
+  .sub-plan-card.selected{border-color:var(--primary);background:linear-gradient(135deg,#EFF6FF,#F0F9FF);box-shadow:0 8px 28px rgba(37,99,235,.2)}
+  .sub-plan-card-static{cursor:default}.sub-plan-card-static:hover{transform:none;border-color:var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .sub-plan-check{position:absolute;top:.5rem;right:.5rem;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .2s}
+  .sub-plan-card.selected .sub-plan-check{opacity:1;transform:scale(1)}
+  .sub-plan-badge{display:inline-block;font-size:.66rem;font-weight:700;padding:.16rem .5rem;border-radius:100px;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.04em;line-height:1.5}
+  .sub-plan-badge.best{background:#D1FAE5;color:#065F46}
+  .sub-plan-badge.popular{background:#FEF3C7;color:#92400E}
+  .sub-plan-badge.empty{visibility:hidden}
+  .sub-plan-name{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:.4rem}
+  .sub-plan-price{font-size:1.5rem;font-weight:900;color:var(--primary);line-height:1}
+  .sub-plan-price-label{font-size:.68rem;color:var(--muted);margin-top:.1rem}
+  .sub-plan-per-month{font-size:.76rem;color:var(--muted);margin-top:.3rem}
+  .sub-plan-save{display:inline-block;background:#DCFCE7;color:#16A34A;font-size:.68rem;font-weight:700;padding:.13rem .45rem;border-radius:100px;margin-top:.3rem}
+
+  /* Status pills */
+  .sub-status-pill{padding:.2rem .65rem;border-radius:100px;font-size:.73rem;font-weight:700}
+  .sub-badge-trial{background:#EFF6FF;color:var(--primary)}
+  .sub-badge-active{background:#ECFDF5;color:var(--success)}
+  .sub-badge-grace{background:#FFFBEB;color:var(--warning)}
+  .sub-badge-expired,.sub-badge-cancelled{background:#FFF1F2;color:var(--danger)}
+
+  /* Steps */
+  .sub-steps{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
+  .sub-step{display:flex;align-items:flex-start;gap:.65rem}
+  .sub-step-num{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+  .sub-step-text{font-size:.86rem;color:var(--muted);line-height:1.6}
+
+  /* Bank reveal */
+  .sub-bank-reveal{border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:1.2rem;margin-top:1rem}
+  .sub-bank-hd{display:flex;align-items:center;gap:.75rem;margin-bottom:.8rem}
+  .sub-bank-box{background:#fff;border:1px solid #BFDBFE;border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;white-space:pre-line;line-height:2;font-family:monospace;color:#334155;margin-bottom:.75rem}
+  .sub-bank-hint{background:#D1FAE5;border-radius:8px;padding:.5rem .85rem;font-size:.81rem;color:#065F46;font-weight:600;text-align:center}
+
+  /* Plan summary */
+  .sub-plan-summary{display:flex;align-items:center;justify-content:space-between;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem}
+  .sub-plan-summary-name{font-size:.88rem;font-weight:700;color:var(--dark)}
+  .sub-plan-summary-price{font-size:1.1rem;font-weight:900;color:var(--primary)}
+
+  /* Upload */
+  .sub-upload-area{border:2px dashed #CBD5E1;border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;position:relative;background:#F8FAFC}
+  .sub-upload-area:hover,.sub-upload-area.drag-over{border-color:var(--primary);background:#EFF6FF}
+  .sub-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .sub-upload-preview{width:100%;max-height:180px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-top:.85rem}
+
+  /* Payment history */
+  .sub-proof-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);gap:1rem;flex-wrap:wrap}
+  .sub-proof-item:last-child{border:none}
+  .sub-proof-badge{padding:.18rem .6rem;border-radius:100px;font-size:.71rem;font-weight:700;text-transform:uppercase}
+  .sub-proof-pending{background:#FFFBEB;color:#92400E}
+  .sub-proof-approved{background:#ECFDF5;color:#065F46}
+  .sub-proof-rejected{background:#FFF1F2;color:#991B1B}
+
+  /* Activity log */
+  .sub-log-item{display:flex;align-items:flex-start;gap:.85rem;padding:.65rem 0;border-bottom:1px solid var(--border)}
+  .sub-log-item:last-child{border:none}
+  .sub-log-dot{width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:.35rem}
+
+  /* Forms */
+  .sub-form-group{margin-bottom:1.1rem}
+  .sub-form-label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+  .sub-form-control{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:.65rem 1rem;font-size:.9rem;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s;color:var(--dark);font-family:'Inter',sans-serif}
+  .sub-form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+  /* Buttons */
+  .sub-btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.25rem;border-radius:9px;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;text-decoration:none}
+  .sub-btn:disabled{opacity:.55;cursor:not-allowed}
+  .sub-btn-primary{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+  .sub-btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#1D4ED8,#1E40AF);transform:translateY(-1px)}
+  .sub-btn-ghost{background:#EEF2FF;color:var(--primary);border:1px solid #C7D2FE}
+  .sub-btn-ghost:hover:not(:disabled){background:#E0E7FF}
+  .sub-btn-full{width:100%}
+  .sub-btn-lg{padding:.75rem 1.5rem;font-size:.95rem}
+  .sub-btn-sm{padding:.4rem .85rem;font-size:.8rem}
+
+  /* Empty state */
+  .sub-empty{text-align:center;padding:2rem 1rem;color:var(--muted)}
+  .sub-empty-icon{font-size:2rem;margin-bottom:.5rem}
+  .sub-empty p{font-size:.86rem}
+
+  /* Plan required banner */
+  .sub-plan-required{display:flex;align-items:flex-start;gap:.75rem;background:#FFF1F2;border:1.5px solid #FECACA;border-radius:12px;padding:.9rem 1.1rem;margin-bottom:.9rem;font-size:.87rem;color:#991B1B}
+
+  /* Spinner */
+  .sub-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.4rem}
+
+  /* Plans error outline */
+  .sub-plans-error{outline:2px solid var(--danger);outline-offset:6px;border-radius:14px}
+
+  /* Guest CTA box */
+  .sub-guest-cta{background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 60%,#0F2D4A 100%);border-radius:20px;padding:2.5rem;text-align:center;margin-top:2.5rem;position:relative;overflow:hidden}
+  .sub-guest-cta::before{content:'';position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(37,99,235,.2) 0%,transparent 70%);top:-80px;right:-80px;pointer-events:none}
+
+  /* ── HOW IT WORKS ── */
+  .howitworks-section{background:var(--white);padding:80px 5%}
+  .steps-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem;margin-top:3.5rem;position:relative}
+  .step-card{background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem 2rem;text-align:center;box-shadow:var(--shadow);position:relative;transition:transform .25s,box-shadow .25s,border-color .25s}
+  .step-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--primary)}
+  .step-num{width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+  .step-card h3{font-size:1.05rem;font-weight:700;color:var(--dark);margin-bottom:.6rem}
+  .step-card p{font-size:.9rem;color:var(--muted);line-height:1.7}
+
+  /* ── PRICING ── */
+  .pricing-section{background:var(--light);padding:80px 5%}
+  .pricing-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-top:3rem}
+  .pc-card{background:var(--dark);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:1.4rem 1.1rem;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s}
+  .pc-card:hover{transform:translateY(-5px);border-color:rgba(37,99,235,.5);box-shadow:0 20px 50px rgba(0,0,0,.2)}
+  .pc-card.pc-featured{border-color:rgba(37,99,235,.5);background:var(--dark2)}
+  .pc-card::before{content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;background:radial-gradient(circle,rgba(37,99,235,.2),transparent 70%);border-radius:50%;pointer-events:none}
+  .pc-badge{display:inline-flex;align-items:center;gap:.35rem;background:linear-gradient(135deg,#10B981,#059669);color:#fff;font-size:.67rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.25rem .65rem;border-radius:100px;margin-bottom:.85rem;width:fit-content}
+  .pc-badge-empty{visibility:hidden;margin-bottom:.85rem;height:1.3rem}
+  .pc-name{font-size:.92rem;font-weight:800;color:#fff;margin-bottom:.12rem}
+  .pc-desc{font-size:.74rem;color:rgba(255,255,255,.45);margin-bottom:.85rem}
+  .pc-amount{display:flex;align-items:baseline;gap:.2rem;margin-bottom:.1rem}
+  .pc-currency{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.6);align-self:flex-start;margin-top:.35rem}
+  .pc-price{font-size:2.2rem;font-weight:900;color:#fff;line-height:1;letter-spacing:-1.5px}
+  .pc-period{font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:.65rem}
+  .pc-save{display:inline-flex;align-items:center;gap:.3rem;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#6EE7B7;padding:.2rem .55rem;border-radius:100px;font-size:.7rem;font-weight:700;margin-bottom:.4rem;width:fit-content}
+  .pc-trial{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#6EE7B7;padding:.4rem .75rem;border-radius:8px;font-size:.74rem;font-weight:600;text-align:center;margin:.75rem 0}
+  .pc-features{list-style:none;display:grid;grid-template-columns:1fr;gap:.28rem;margin:.75rem 0;flex:1}
+  .pc-features li{font-size:.72rem;color:rgba(255,255,255,.7);display:flex;align-items:flex-start;gap:.3rem;line-height:1.4}
+  .pc-features li::before{content:'✓';color:#10B981;font-size:.65rem;font-weight:900;flex-shrink:0;margin-top:.15rem}
+  .pc-cta{display:block;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;text-align:center;padding:.65rem .85rem;border-radius:9px;font-weight:700;font-size:.82rem;text-decoration:none;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .2s;margin-top:auto;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+  .pc-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.5)}
+  @media(max-width:1200px){.pricing-wrap{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:800px){.pricing-wrap{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){.pricing-section{padding:60px 5%}}
+  @media(max-width:480px){.pricing-wrap{grid-template-columns:1fr}}
+  @media(max-width:420px){.pc-card{padding:1.25rem 1rem}.pc-price{font-size:2rem}}
+
+  /* ── PAYMENT ── */
+  .payment-section{background:var(--light);padding:80px 5%}
+  .payment-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
+  @media(max-width:768px){.payment-wrap{grid-template-columns:1fr}}
+  @media(max-width:480px){.payment-section{padding:48px 1.25rem}}
+  .payment-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem}
+  .payment-card h3{font-size:1.05rem;font-weight:700;color:var(--dark);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  .payment-card li{font-size:.9rem;color:var(--muted);line-height:1.8}
+  .payment-card ol{padding-left:1.2rem}
+  .bank-details{background:var(--light);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-size:.88rem;color:var(--dark3);white-space:pre-line;line-height:2;font-family:'Courier New',monospace}
+  .contact-row{display:flex;align-items:center;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+  .contact-row:last-child{border:none}
+  .contact-icon{width:36px;height:36px;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+  .contact-row a{color:var(--primary);text-decoration:none;font-weight:500;font-size:.9rem}
+
+  /* ── SUBSCRIPTION MODAL ── */
+  .smodal-backdrop{
+    position:fixed;inset:0;z-index:950;
+    background:rgba(8,14,30,.78);backdrop-filter:blur(10px);
+    display:flex;align-items:center;justify-content:center;padding:1rem;
+    opacity:0;pointer-events:none;transition:opacity .28s ease;
+  }
+  .smodal-backdrop.active{opacity:1;pointer-events:all}
+  .smodal-card{
+    background:#F0F4FF;border-radius:22px;
+    width:100%;max-width:1020px;height:92vh;max-height:880px;
+    display:flex;flex-direction:column;
+    box-shadow:0 40px 120px rgba(0,0,0,.38),0 0 0 1px rgba(255,255,255,.06);
+    transform:translateY(36px) scale(.96);
+    transition:transform .32s cubic-bezier(.34,1.15,.64,1);overflow:hidden;
+  }
+  .smodal-backdrop.active .smodal-card{transform:translateY(0) scale(1)}
+  .smodal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.9rem 1.3rem;
+    background:linear-gradient(130deg,#0F172A 0%,#1E3A5F 60%,#1E40AF 100%);
+    flex-shrink:0;gap:1rem;position:relative;overflow:hidden;
+  }
+  .smodal-header::after{
+    content:'';position:absolute;top:-60px;right:-60px;
+    width:200px;height:200px;border-radius:50%;
+    background:rgba(255,255,255,.04);pointer-events:none;
+  }
+  .smodal-header-left{display:flex;align-items:center;gap:.75rem;position:relative;z-index:1}
+  .smodal-header-logo{
+    width:36px;height:36px;border-radius:10px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+  }
+  .smodal-header-title{font-size:1rem;font-weight:800;color:#fff;letter-spacing:-.3px}
+  .smodal-header-sub{font-size:.73rem;color:rgba(255,255,255,.5);margin-top:.15rem}
+  .smodal-close{
+    width:34px;height:34px;border-radius:50%;position:relative;z-index:1;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    color:rgba(255,255,255,.8);font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .2s,color .2s;flex-shrink:0;
+  }
+  .smodal-close:hover{background:rgba(255,255,255,.22);color:#fff}
+  .smodal-body{
+    flex:1;overflow-y:auto;padding:2rem;
+    scrollbar-width:thin;scrollbar-color:#CBD5E1 transparent;
+  }
+  .smodal-body::-webkit-scrollbar{width:6px}
+  .smodal-body::-webkit-scrollbar-track{background:transparent}
+  .smodal-body::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+  @media(max-width:640px){
+    .smodal-card{height:96vh;border-radius:16px}
+    .smodal-body{padding:1.25rem}
+  }
 
   /* ── FOOTER ── */
   .site-footer{background:var(--dark);color:rgba(255,255,255,.65);padding:3rem 5% 2rem}
@@ -201,13 +727,155 @@
   .footer-legal{display:flex;gap:1.5rem}
   .footer-legal a{color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none}
   .footer-legal a:hover{color:#fff}
+
+  /* ══════════════════════════════════════
+     GLOBAL RESPONSIVE — healthcare
+  ══════════════════════════════════════ */
+  @media(max-width:1024px){
+    .sub-inner{max-width:100%}
+  }
+  @media(max-width:768px){
+    section{padding:60px 5%}
+    .hero{padding:70px 5% 110px}
+    .hero-carousel-strip{height:160px;margin-top:2rem}
+    .hero-breadcrumb{justify-content:center}
+    .hero-stats{gap:1.5rem}
+    .hero-stat-num{font-size:1.7rem}
+    .hero h1{letter-spacing:-.5px}
+    .hero-buttons{gap:.65rem}
+    .btn-hero-primary,.btn-hero-ghost{padding:.75rem 1.5rem;font-size:.88rem}
+    .highlights-inner{gap:1rem 1.5rem}
+    .highlight-item{font-size:.83rem}
+    .howitworks-section{padding:60px 5%}
+    .pricing-section{padding:60px 5%}
+    .cta-section{padding:60px 5%}
+    .faq-section{padding:60px 5%}
+    .site-footer{padding:2.5rem 5% 1.5rem}
+    .footer-bottom{flex-direction:column;align-items:flex-start;gap:.5rem}
+    .smodal-header-sub{display:none}
+  }
+  @media(max-width:480px){
+    section{padding:48px 1.25rem}
+    .hero{padding:60px 1.25rem 100px}
+    .hero-carousel-strip{height:130px;margin-top:1.5rem}
+    .hero-stats{gap:1.25rem}
+    .hero-stat-num{font-size:1.5rem}
+    .hero-buttons{flex-direction:column;align-items:stretch}
+    .btn-hero-primary,.btn-hero-ghost{width:100%;text-align:center;justify-content:center}
+    .btn-hero-portal{width:100%;justify-content:center}
+    .highlights-inner{padding:1.25rem}
+    .highlight-item{font-size:.78rem}
+    .section-title{letter-spacing:-.5px}
+    .cta-buttons{flex-direction:column;align-items:center}
+    .btn-cta-primary,.btn-cta-ghost{width:100%;text-align:center}
+    .footer-legal{flex-direction:column;gap:.5rem}
+    .sub-box{padding:1.25rem}
+    .sub-steps{gap:.5rem}
+    .sub-bank-box{font-size:.78rem;padding:.7rem .85rem}
+    .smodal-body{padding:1rem}
+    .sc-card{padding:1.5rem;gap:1rem}
+    .sc-num{font-size:2.8rem}
+    .sub-cards-row{grid-template-columns:1fr}
+    .sub-plans-grid{grid-template-columns:1fr 1fr}
+    .howitworks-section{padding:48px 1.25rem}
+    .pricing-section{padding:48px 1.25rem}
+    .cta-section{padding:48px 1.25rem}
+    .faq-section{padding:48px 1.25rem}
+    .site-footer{padding:2rem 1.25rem 1.25rem}
+  }
+
+  /* ── Registration Modal ── */
+  .hc-reg-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .25s}
+  .hc-reg-backdrop.active{opacity:1;pointer-events:all}
+  .hc-reg-card{width:100%;max-width:680px;max-height:90vh;overflow-y:auto;border-radius:22px;background:#fff;box-shadow:0 32px 80px rgba(0,0,0,.45);position:relative;display:flex;flex-direction:column}
+  .hc-reg-close{position:absolute;top:1rem;right:1rem;z-index:10;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .hc-reg-close:hover{background:rgba(255,255,255,.25)}
+  .reg-portal-head{background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 55%,#2563EB 100%);border-radius:20px 20px 0 0;padding:1.75rem 2rem 1.5rem;text-align:center;position:relative;overflow:hidden;flex-shrink:0}
+  .reg-portal-head::after{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none}
+  .reg-portal-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.18);border:1px solid rgba(16,185,129,.4);color:#6EE7B7;padding:.28rem .85rem;border-radius:100px;font-size:.73rem;font-weight:600;margin-bottom:.85rem}
+  .reg-portal-badge-dot{width:6px;height:6px;border-radius:50%;background:#10B981;flex-shrink:0}
+  .reg-portal-logo{font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:.45rem}
+  .reg-portal-title{font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 .3rem;letter-spacing:-.4px}
+  .reg-portal-sub{font-size:.84rem;color:rgba(255,255,255,.6);margin:0}
+  .reg-portal-body{padding:1.5rem 2rem 2rem;overflow-y:auto}
+  .reg-portal-back{text-align:center;padding:.25rem 0 .75rem;font-size:.82rem;color:#64748B}
+  .reg-portal-back a{color:#2563EB;font-weight:600;cursor:pointer;text-decoration:none}
+  .reg-label{font-size:.72rem;font-weight:700;color:#475569;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:.25rem}
+  .reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.2rem}
+  .req{color:#EF4444}
+  .reg-field{display:flex;flex-direction:column;gap:.35rem}
+  .reg-field.full{grid-column:1/-1}
+  .reg-iw{position:relative}
+  .reg-iw input,.reg-iw textarea{width:100%;padding:.72rem 1rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#0F172A;font-family:'Inter',sans-serif;background:#F8FAFC;transition:border-color .2s,box-shadow .2s,background .2s;outline:none;box-sizing:border-box;line-height:1.5}
+  .reg-iw input:focus,.reg-iw textarea:focus{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .reg-iw input.has-badge{padding-right:7rem}
+  .reg-iw input.f-err{border-color:#EF4444!important;background:#FFF5F5;box-shadow:0 0 0 3px rgba(239,68,68,.07)!important}
+  .reg-iw input.f-ok{border-color:#10B981!important;background:#F0FDF4;box-shadow:0 0 0 3px rgba(16,185,129,.07)!important}
+  .reg-iw textarea{resize:vertical;min-height:74px}
+  .reg-iw textarea.f-err{border-color:#EF4444!important;background:#FFF5F5}
+  .reg-pw-wrap input{padding-right:2.8rem}
+  .reg-pw-btn{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#94A3B8;display:flex;transition:color .2s}
+  .reg-pw-btn:hover{color:#2563EB}
+  .reg-pw-btn svg{width:18px;height:18px}
+  .reg-avail{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;pointer-events:none;white-space:nowrap}
+  .reg-avail.spin{color:#94A3B8}.reg-avail.ok{color:#10B981}.reg-avail.err{color:#EF4444}
+  .reg-hint{font-size:.76rem;min-height:.95rem;line-height:1.3}
+  .reg-hint.ok{color:#10B981}.reg-hint.err{color:#EF4444}.reg-hint.muted{color:#94A3B8}
+  .reg-spinner{width:18px;height:18px;border-radius:50%;border:2px solid #e2e8f0;border-top-color:#2563eb;animation:spin .7s linear infinite;display:inline-block}
+  .pw-mode-picker{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+  .pw-mode-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 10px 12px;border:2px solid #E2E8F0;border-radius:13px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s;background:#F8FAFC;text-align:center;user-select:none}
+  .pw-mode-card:hover{border-color:#93C5FD;background:#F0F9FF}
+  .pw-mode-card input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+  .pw-mode-card.active{border-color:#2563EB;background:#EFF6FF;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .pw-mode-card-icon{font-size:24px;line-height:1}
+  .pw-mode-card-title{font-weight:700;font-size:13.5px;color:#1E293B}
+  .pw-mode-card-sub{font-size:11px;color:#64748B;line-height:1.3}
+  .pw-mode-card-check{position:absolute;top:6px;right:6px;width:17px;height:17px;border-radius:50%;background:#2563EB;color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:opacity .18s,transform .18s}
+  .pw-mode-card.active .pw-mode-card-check{opacity:1;transform:scale(1)}
+  .reg-err-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:.75rem 1rem;font-size:.84rem;color:#DC2626;display:none;margin-top:.25rem;grid-column:1/-1}
+  .reg-search-wrap{position:relative}
+  .reg-search-input{width:100%;padding:.72rem 2.5rem .72rem 1rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#0F172A;font-family:'Inter',sans-serif;background:#F8FAFC;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s,background .2s;cursor:pointer}
+  .reg-search-input:focus{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .reg-search-input.f-err{border-color:#EF4444!important;background:#FFF5F5}
+  .reg-search-input:disabled{opacity:.55;cursor:not-allowed}
+  .reg-search-arrow{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8}
+  .reg-search-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:9999;background:#fff;border:1.5px solid #CBD5E1;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.14);max-height:220px;overflow-y:auto}
+  .reg-search-dropdown.hidden{display:none}
+  .reg-dropdown-item{padding:.6rem 1rem;cursor:pointer;font-size:.88rem;color:#1E293B;transition:background .1s;border-bottom:1px solid #F1F5F9}
+  .reg-dropdown-item:last-child{border-bottom:none}
+  .reg-dropdown-item:hover,.reg-dropdown-item.highlighted{background:#EFF6FF;color:#2563EB}
+  .reg-dropdown-empty{padding:.75rem 1rem;font-size:.84rem;color:#94A3B8;text-align:center}
+  .reg-otp-btn{flex-shrink:0;width:auto;min-width:52px;padding:.35rem .5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;font-size:.6rem;font-weight:700;letter-spacing:.03em;line-height:1;background:linear-gradient(135deg,#2563EB,#1d4ed8);color:#fff;border:none;cursor:pointer;transition:all .2s}
+  .reg-otp-btn:hover:not(:disabled){background:#1d4ed8}.reg-otp-btn:disabled{opacity:.55;cursor:not-allowed}
+  .reg-verify-btn{flex-shrink:0;padding:.55rem 1rem;font-size:.8rem;font-weight:600;background:#10B981;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:background .15s}
+  .reg-verify-btn:hover:not(:disabled){background:#059669}.reg-verify-btn:disabled{opacity:.55;cursor:not-allowed}
+  .hc-reg-submit{width:100%;padding:.85rem;border:none;border-radius:10px;background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s;margin-top:.25rem}
+  .hc-reg-submit:hover:not(:disabled){background:linear-gradient(135deg,#1D4ED8,#1E40AF);transform:translateY(-1px)}
+  .hc-reg-submit:disabled{opacity:.6;cursor:not-allowed}
+  .hc-prov-card{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border:1px solid #BFDBFE;border-radius:16px;padding:1.75rem;text-align:center}
+  .hc-prov-icon{font-size:2.5rem;margin-bottom:.75rem}
+  .hc-prov-title{font-size:1.05rem;font-weight:700;color:#1E3A5F;margin-bottom:.3rem}
+  .hc-prov-sub{font-size:.85rem;color:#64748B;margin-bottom:1.25rem}
+  .hc-prov-steps{display:flex;flex-direction:column;gap:.5rem;text-align:left;margin-bottom:1.25rem;max-width:280px;margin-left:auto;margin-right:auto}
+  .hc-prov-step{display:flex;align-items:center;gap:.65rem;font-size:.83rem}
+  .hc-prov-dot{width:20px;height:20px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0;transition:.3s}
+  .hc-prov-dot.done{background:#10B981;color:#fff}
+  .hc-prov-dot.active{background:#2563EB;color:#fff;animation:blink 1s infinite}
+  .hc-prov-dot.failed{background:#EF4444;color:#fff}
+  .hc-prov-text{color:#334155}
+  .hc-prov-text.active{color:#2563EB;font-weight:600}
+  .hc-prov-text.done{color:#10B981}
+  .hc-prov-last{font-size:.76rem;color:#64748B;font-style:italic;margin-top:.5rem;min-height:1rem}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  @media(max-width:560px){.hc-reg-card{max-height:95vh}.reg-grid{grid-template-columns:1fr}.reg-portal-body{padding:1.25rem 1.25rem 1.75rem}}
+
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav class="site-nav">
-  <a href="/home" class="nav-logo">{{ company_name }}</a>
+  <a href="/home" class="nav-logo">{% if company_logo %}<img src="{{ company_logo }}" alt="{{ company_name }}" style="height:32px;width:auto;object-fit:contain;vertical-align:middle">{% else %}{{ company_name }}{% endif %}</a>
   <ul class="nav-links" id="navLinks">
     <li><a href="/home">Home</a></li>
     <li><a href="/about">About</a></li>
@@ -215,7 +883,14 @@
     <li><a href="/healthcare" class="active">Healthcare</a></li>
   </ul>
   <div class="nav-right">
-    <a href="/subscription-portal" class="nav-signin">Sign In</a>
+    <!-- guest state -->
+    <button class="nav-signin" id="navSignInBtn" style="background:none;border:none;font-family:'Inter',sans-serif;">Sign In</button>
+    <!-- logged-in state (hidden until session confirmed) -->
+    <div class="nav-user-info" id="navUserInfo" style="display:none;align-items:center;gap:.6rem;">
+      <div class="nav-user-avatar" id="navAvatar"></div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <button class="nav-signout-btn" id="navSignOutBtn">Sign Out</button>
+    </div>
     <button class="nav-hamburger" id="navToggle" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -235,43 +910,88 @@
 
   <div class="hero-badge">
     <span class="hero-badge-dot"></span>
-    Frappe · Multi-Clinic · Multi-Lingual
+    Built for Modern Clinics · Multi-Tenant · Real-Time
   </div>
 
   <h1>
     {{ app_name }}<br>
-    <span class="grad">Complete Clinic Platform</span>
+    <span class="grad">Hospital &amp; Clinic Management Software</span>
   </h1>
 
   <p>
-    From patient check-in to final invoice — everything a modern clinic needs in one platform.
-    12 purpose-built modules covering the complete clinical and financial workflow.
+    From first appointment to final payment — run your entire clinic from one platform.
+    12 purpose-built modules for clinical care, pharmacy, lab, billing, and beyond.
   </p>
 
   <div class="hero-buttons">
-    <a href="/subscription-portal" class="btn-hero-primary">Start {{ trial_days }}-Day Free Trial</a>
-    <a href="#features" class="btn-hero-ghost">Explore Features ↓</a>
+    {% if allow_application_creation %}<button onclick="openPortalRegister()" class="btn-hero-primary" style="border:none;cursor:pointer;font-family:'Inter',sans-serif">Start Free {{ trial_days }}-Day Trial</button>{% endif %}
+    <a href="#features" class="btn-hero-ghost">See All Features ↓</a>
+    <button class="btn-hero-portal" id="bannerPortalBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span id="portalBtnLabel" style="color:rgba(255,255,255,.85);font-weight:600;">My Subscription Portal</span>
+      <span id="portalBtnSep" style="display:none;color:rgba(255,255,255,.35);font-weight:300;margin:0 .15rem;">|</span>
+      <span id="portalBtnUser" style="display:none;color:#6EE7B7;font-weight:800;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
   </div>
+
+  <!-- Carousel strip -->
+  {% if carousel_items %}
+  <div class="hero-carousel-strip">
+    <div class="pw-carousel" id="pwCarousel">
+      {% for slide in carousel_items %}
+      <div class="pw-slide{% if loop.first %} active{% endif %}">
+        <div class="pw-slide-caption">
+          {% if slide.image %}<img class="pw-slide-icon" src="{{ slide.image }}" alt="{{ slide.title }}">{% endif %}
+          <div class="pw-slide-text">
+            <h3>{{ slide.title }}</h3>
+            {% if slide.subtitle %}<p>{{ slide.subtitle }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="pw-carousel-arrow prev" id="pwPrev" aria-label="Previous slide">&#8592;</button>
+    <button class="pw-carousel-arrow next" id="pwNext" aria-label="Next slide">&#8594;</button>
+    <div class="pw-carousel-dots" id="pwDots">
+      {% for slide in carousel_items %}
+      <div class="pw-carousel-dot{% if loop.first %} active{% endif %}" data-index="{{ loop.index0 }}"></div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Stats bar -->
+  <div class="hero-stats-bar">
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">{{ trial_days }}</div><div class="hero-stat-lbl">Day Free Trial</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">&#8734;</div><div class="hero-stat-lbl">Patients &amp; Records</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-lbl">Languages Supported</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">24/7</div><div class="hero-stat-lbl">Access Anywhere</div></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- HIGHLIGHTS BAR -->
 <div class="highlights">
   <div class="highlights-inner">
-    <div class="highlight-item"><span class="highlight-icon">🏥</span> Multi-Clinic Tenancy</div>
+    <div class="highlight-item"><span class="highlight-icon">🏥</span> Multi-Clinic &amp; Multi-Branch</div>
     <div class="highlight-item"><span class="highlight-icon">🌐</span> English · Urdu · Arabic</div>
-    <div class="highlight-item"><span class="highlight-icon">⚡</span> Real-Time via Socket.IO</div>
-    <div class="highlight-item"><span class="highlight-icon">💰</span> Financial Accounting</div>
-    <div class="highlight-item"><span class="highlight-icon">💻</span> Telemedicine Built-In</div>
-    <div class="highlight-item"><span class="highlight-icon">🛡️</span> Role-Based Access</div>
+    <div class="highlight-item"><span class="highlight-icon">⚡</span> Real-Time Live Updates</div>
+    <div class="highlight-item"><span class="highlight-icon">💰</span> Built-in Financial Accounting</div>
+    <div class="highlight-item"><span class="highlight-icon">💻</span> Telemedicine &amp; Video Consults</div>
+    <div class="highlight-item"><span class="highlight-icon">🛡️</span> Granular Role-Based Access</div>
+    <div class="highlight-item"><span class="highlight-icon">☁️</span> Cloud-Hosted on Frappe</div>
   </div>
 </div>
 
 <!-- FEATURES -->
 <section class="features-section" id="features">
   <div class="text-center">
-    <span class="section-tag">Features</span>
-    <h2 class="section-title">Everything Your Clinic Needs</h2>
-    <p class="section-sub">12 purpose-built modules covering the entire clinical and financial workflow.</p>
+    <span class="section-tag">Platform Features</span>
+    <h2 class="section-title">12 Modules. One Complete Platform.</h2>
+    <p class="section-sub">Every workflow your clinic needs — clinical care, pharmacy, lab, appointments, billing, and accounting — unified under a single roof.</p>
   </div>
 
   <div class="features-grid">
@@ -475,84 +1195,431 @@
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-orb cta-orb-1"></div>
-  <div class="cta-orb cta-orb-2"></div>
-  <h2>Ready to Transform Your Clinic?</h2>
-  <p>
-    Start your {{ trial_days }}-day free trial today — no credit card required.
-    Full access to all features, zero commitment.
-  </p>
-  <div class="cta-buttons">
-    <a href="/subscription-portal" class="btn-cta-primary">Start Free Trial</a>
-    <a href="/contact" class="btn-cta-ghost">Talk to Us</a>
+<!-- SUBSCRIPTION MODAL -->
+<div class="smodal-backdrop" id="subModal" role="dialog" aria-modal="true" aria-label="Your Subscription">
+  <div class="smodal-card">
+    <div class="smodal-header">
+      <div class="smodal-header-left">
+        <div class="smodal-header-logo">🏥</div>
+        <div>
+          <div class="smodal-header-title">Your Subscription, Simplified</div>
+          <div class="smodal-header-sub">Check status, pick a plan, and confirm payment — no calls needed.</div>
+        </div>
+      </div>
+      <button class="smodal-close" id="subModalClose" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="smodal-body">
+      <div id="subscription" class="sub-inner" style="max-width:100%">
+
+    <!-- ── GUEST VIEW (default; hidden once session confirmed) ── -->
+    <div id="hcSubGuest" style="margin-top:3rem">
+
+      {% if subscription_plans %}
+      <p style="text-align:center;font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.5rem">Simple, Transparent Pricing — No Hidden Fees</p>
+      <div class="sub-plans-grid" style="max-width:700px;margin:0 auto 0">
+        {% for plan in subscription_plans %}
+        <div class="sub-plan-card sub-plan-card-static">
+          {% if plan.badge == 'best' %}<div class="sub-plan-badge best">Best Value</div>
+          {% elif plan.badge == 'popular' %}<div class="sub-plan-badge popular">Popular</div>
+          {% else %}<div class="sub-plan-badge empty">-</div>{% endif %}
+          <div class="sub-plan-name">{{ plan.plan_label }}</div>
+          <div class="sub-plan-price">PKR {{ plan.price | int }}</div>
+          <div class="sub-plan-price-label">{% if plan.duration_months > 1 %}for {{ plan.duration_months }} months{% else %}per month{% endif %}</div>
+          {% if plan.duration_months > 1 %}
+          <div class="sub-plan-per-month">PKR {{ plan.monthly_equiv }} / mo</div>
+          {% if plan.savings_pct > 0 %}<div class="sub-plan-save">Save {{ plan.savings_pct }}%</div>{% endif %}
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="sub-guest-cta">
+        <div style="font-size:2rem;margin-bottom:.75rem;position:relative;z-index:1">🔐</div>
+        <h3 style="color:#fff;font-size:1.3rem;font-weight:800;margin-bottom:.5rem;position:relative;z-index:1">Sign In to Manage Your Plan</h3>
+        <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:1.75rem;max-width:440px;margin-left:auto;margin-right:auto;position:relative;z-index:1">Access your live subscription status, choose or renew a plan, and submit your payment proof — all in one place.</p>
+        <button class="open-login-modal" style="background:var(--primary);color:#fff;padding:.88rem 2.2rem;border-radius:10px;font-weight:700;font-size:.95rem;border:none;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(37,99,235,.45);position:relative;z-index:1;transition:all .2s" onmouseover="this.style.background='#1D4ED8'" onmouseout="this.style.background='#2563EB'">
+          Sign In &rarr; View My Subscription
+        </button>
+        <div style="margin-top:1rem;font-size:.85rem;color:rgba(255,255,255,.4);position:relative;z-index:1">
+          No account yet?
+          {% if allow_application_creation %}<a href="#" onclick="openPortalRegister();return false;" style="color:#60a5fa;font-weight:600;text-decoration:none">Start your free {{ trial_days }}-day trial — no card required →</a>{% endif %}
+        </div>
+      </div>
+    </div><!-- /hcSubGuest -->
+
+    <!-- ── DASHBOARD VIEW (shown when logged in) ── -->
+    <div id="hcSubDash" style="display:none;margin-top:3rem">
+
+      <!-- Loader -->
+      <div id="hcDashLoader" class="sub-loader">
+        <div class="sub-loader-ring"></div>
+        <div style="font-size:.9rem;color:var(--muted);font-weight:500">Loading your subscription…</div>
+      </div>
+
+      <!-- Content (hidden until loaded) -->
+      <div id="hcDashContent" style="display:none">
+
+        <!-- Alert bar -->
+        <div id="hcAlertBar"></div>
+
+        <!-- Status card -->
+        <div id="hcStatusCard" class="sc-card sc-trial" style="display:none">
+          <div class="sc-l">
+            <div class="sc-badge2"><span class="sc-badge-dot2"></span><span id="hcStatusLabel"></span></div>
+            <div class="sc-title2" id="hcStatusTitle"></div>
+            <div class="sc-sub2" id="hcStatusSub"></div>
+            <div class="sc-pills2" id="hcScPills"></div>
+          </div>
+          <div class="sc-r">
+            <div class="sc-num" id="hcCountdownNum"></div>
+            <div class="sc-num-lbl" id="hcCountdownLabel">days remaining</div>
+          </div>
+        </div>
+
+        <!-- Info cards -->
+        <div class="sub-cards-row">
+          <div class="sub-info-card">
+            <div class="sub-info-title">Subscription Details</div>
+            <div id="hcSubDetails"></div>
+          </div>
+          <div class="sub-info-card">
+            <div class="sub-info-title">Clinic Info</div>
+            <div id="hcClinicDetails"></div>
+          </div>
+        </div>
+
+        <!-- Plans & Payment -->
+        <div class="sub-box">
+          <div class="sub-box-title">💳 Choose a Plan &amp; Pay</div>
+
+          <div class="sub-steps">
+            <div class="sub-step"><div class="sub-step-num">1</div><div class="sub-step-text">Select a plan below that suits your clinic size</div></div>
+            <div class="sub-step"><div class="sub-step-num">2</div><div class="sub-step-text">Transfer the exact amount to the bank account shown</div></div>
+            <div class="sub-step"><div class="sub-step-num">3</div><div class="sub-step-text">Upload your payment screenshot as proof</div></div>
+            <div class="sub-step"><div class="sub-step-num">4</div><div class="sub-step-text">Your account is activated within a few hours</div></div>
+          </div>
+
+          <div id="hcPlanRequiredBanner" class="sub-plan-required" style="display:none">
+            <span style="font-size:1.4rem;flex-shrink:0">🚫</span>
+            <div><strong>No plan selected</strong><br><span style="font-size:.79rem;color:#B91C1C">Please choose a plan below before submitting payment.</span></div>
+          </div>
+
+          {% if subscription_plans %}
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.85rem">
+            <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Select Your Plan</span>
+            <span style="font-size:.76rem;color:var(--muted)">Bank account revealed after selection</span>
+          </div>
+          <div class="sub-plans-grid" id="hcPlansGrid">
+            {% for plan in subscription_plans %}
+            <div class="sub-plan-card" data-label="{{ plan.plan_label }}" data-months="{{ plan.duration_months }}" data-price="{{ plan.price }}" onclick="hcSelectPlan(this)">
+              <div class="sub-plan-check">✓</div>
+              {% if plan.badge == 'best' %}<div class="sub-plan-badge best">Best Value</div>
+              {% elif plan.badge == 'popular' %}<div class="sub-plan-badge popular">Popular</div>
+              {% else %}<div class="sub-plan-badge empty">-</div>{% endif %}
+              <div class="sub-plan-name">{{ plan.plan_label }}</div>
+              <div class="sub-plan-price">PKR {{ plan.price | int }}</div>
+              <div class="sub-plan-price-label">{% if plan.duration_months > 1 %}for {{ plan.duration_months }} months{% else %}per month{% endif %}</div>
+              {% if plan.duration_months > 1 %}
+              <div class="sub-plan-per-month">PKR {{ plan.monthly_equiv }} / mo</div>
+              {% if plan.savings_pct > 0 %}<div class="sub-plan-save">Save {{ plan.savings_pct }}%</div>{% endif %}
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="sub-alert sub-alert-info"><span class="sub-alert-icon">ℹ️</span>No plans configured. Contact support for pricing.</div>
+          {% endif %}
+
+          <!-- Bank details reveal -->
+          <div id="hcBankReveal" style="display:none">
+            <div class="sub-bank-reveal">
+              <div class="sub-bank-hd">
+                <span style="font-size:1.4rem;flex-shrink:0">🏦</span>
+                <div>
+                  <div style="font-size:.93rem;font-weight:700;color:var(--dark)">Transfer <span id="hcBankRevealAmt" style="color:var(--primary)">—</span></div>
+                  <div style="font-size:.77rem;color:var(--muted);margin-top:.1rem">to the account below, then upload your screenshot</div>
+                </div>
+              </div>
+              {% if bank_details %}
+              <div class="sub-bank-box">{{ bank_details }}</div>
+              <button class="sub-btn sub-btn-ghost sub-btn-sm" onclick="hcCopyBank()">📋 Copy Details</button>
+              {% endif %}
+              <div class="sub-bank-hint" style="margin-top:.75rem">Transfer done? Upload your payment screenshot below ↓</div>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <div style="margin-top:1.25rem">
+            <div id="hcPendingAlert" class="sub-alert sub-alert-info" style="display:none">
+              <span class="sub-alert-icon">⏳</span>
+              <div><strong>Payment proof received — under review.</strong> Your submission is being verified by our team. Your account will be activated within a few hours. No action needed from your side.</div>
+            </div>
+
+            <div id="hcUploadForm">
+              <input type="hidden" id="hcPlanLabel" value="">
+              <input type="hidden" id="hcPlanMonths" value="">
+              <input type="hidden" id="hcPlanPrice" value="">
+
+              <div id="hcPlanSummary" class="sub-plan-summary" style="display:none">
+                <div>
+                  <div class="sub-plan-summary-name" id="hcPlanSummaryName">—</div>
+                  <div style="font-size:.74rem;color:var(--muted);margin-top:.1rem">Selected plan</div>
+                </div>
+                <div class="sub-plan-summary-price" id="hcPlanSummaryPrice">—</div>
+              </div>
+
+              <div id="hcNoPlanHint" class="sub-alert sub-alert-info" style="font-size:.84rem">
+                <span class="sub-alert-icon">☝️</span>Select a plan above to see the bank details and unlock the upload form.
+              </div>
+
+              <div class="sub-form-group">
+                <label class="sub-form-label">Amount Transferred (PKR) <span style="color:var(--danger)">*</span></label>
+                <input type="number" class="sub-form-control" id="hcPayAmount" placeholder="Auto-filled when you select a plan">
+              </div>
+              <div class="sub-form-group">
+                <label class="sub-form-label">Payment Screenshot <span style="color:var(--danger)">*</span></label>
+                <div class="sub-upload-area" id="hcUploadArea" ondragover="hcDragOver(event)" ondragleave="hcDragLeave()" ondrop="hcDrop(event)">
+                  <input type="file" id="hcScreenshot" accept="image/*" onchange="hcPreviewImg(this)">
+                  <div id="hcUploadPlaceholder">
+                    <div style="font-size:1.75rem;margin-bottom:.4rem">📷</div>
+                    <div style="font-size:.86rem;color:var(--muted)">Click to select or drag &amp; drop your screenshot here</div>
+                    <div style="font-size:.74rem;color:#94A3B8;margin-top:.2rem">PNG, JPG, JPEG · Max 10 MB</div>
+                  </div>
+                  <img id="hcUploadPreview" class="sub-upload-preview" src="" alt="Preview" style="display:none">
+                </div>
+              </div>
+              <div class="sub-form-group">
+                <label class="sub-form-label">Transaction Reference <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+                <input type="text" class="sub-form-control" id="hcPayNotes" placeholder="e.g. EasyPaisa Ref# 12345 or bank TRN number">
+              </div>
+              <button class="sub-btn sub-btn-primary sub-btn-full sub-btn-lg" id="hcSubmitPayBtn" onclick="hcSubmitPayment()">📤 Submit Payment &amp; Activate</button>
+            </div>
+          </div>
+        </div><!-- /plans & payment -->
+
+        <!-- Payment History -->
+        <div class="sub-box">
+          <div class="sub-box-title">📜 Payment History &amp; Proof Submissions</div>
+          <div id="hcPayHistory"></div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="sub-box">
+          <div class="sub-box-title">📋 Activity Log</div>
+          <div id="hcActivityLog" style="max-height:300px;overflow-y:auto;padding-right:.25rem"></div>
+        </div>
+
+        {% if contact_email or contact_phone %}
+        <div class="sub-box">
+          <div style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:1rem">📞 Need Help?</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.85rem">
+            {% if contact_email %}
+            <div style="display:flex;align-items:center;gap:.75rem;background:var(--light);border-radius:10px;padding:.75rem">
+              <span style="font-size:1.2rem">✉️</span>
+              <div><div style="font-size:.74rem;color:var(--muted)">Email</div><div style="font-size:.88rem;font-weight:600"><a href="mailto:{{ contact_email }}" style="color:var(--primary)">{{ contact_email }}</a></div></div>
+            </div>
+            {% endif %}
+            {% if contact_phone %}
+            <div style="display:flex;align-items:center;gap:.75rem;background:var(--light);border-radius:10px;padding:.75rem">
+              <span style="font-size:1.2rem">📱</span>
+              <div><div style="font-size:.74rem;color:var(--muted)">WhatsApp / Phone</div><div style="font-size:.88rem;font-weight:600"><a href="tel:{{ contact_phone }}" style="color:var(--primary)">{{ contact_phone }}</a></div></div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div><!-- /hcDashContent -->
+    </div><!-- /hcSubDash -->
+
+    </div><!-- /sub-inner -->
+    </div><!-- /smodal-body -->
+  </div><!-- /smodal-card -->
+</div><!-- /subModal -->
+
+<!-- HOW IT WORKS -->
+<section class="howitworks-section" id="how-it-works">
+  <div class="text-center">
+    <span class="section-tag">Process</span>
+    <h2 class="section-title">Get started in 3 simple steps</h2>
+    <p class="section-sub">No complicated setup. No technical knowledge required. Be running in minutes.</p>
+  </div>
+  <div class="steps-wrap">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Create Your Clinic App</h3>
+      <p>Click the Get Started button and fill up the form to create your own clinic application yourself.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>{{ trial_days }}-Day Free Trial</h3>
+      <p>Start using the full app immediately — no payment needed for the first {{ trial_days }} days. Explore all features.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Subscribe &amp; Continue</h3>
+      <p>Happy with the app? Pay the monthly fee via bank transfer and we activate your subscription instantly.</p>
+    </div>
   </div>
 </section>
 
-<!-- FAQ -->
-<section class="faq-section">
-  <div class="faq-section-inner">
-    <div class="text-center">
-      <span class="section-tag">FAQ</span>
-      <h2 class="section-title">Common Questions</h2>
-      <p class="section-sub">Quick answers before you reach out.</p>
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="text-center">
+    <span class="section-tag">Pricing</span>
+    <h2 class="section-title">Simple, transparent pricing</h2>
+    <p class="section-sub">One flat fee. No hidden charges. No per-doctor fees. No limits.</p>
+  </div>
+  {% if subscription_plans %}
+  <div class="pricing-wrap">
+    {% for plan in subscription_plans %}
+    <div class="pc-card{% if plan.badge == 'best' %} pc-featured{% endif %}">
+      {% if plan.badge == 'best' %}<div class="pc-badge">🏆 Best Value</div>
+      {% elif plan.badge == 'popular' %}<div class="pc-badge" style="background:linear-gradient(135deg,#F59E0B,#D97706)">🔥 Popular</div>
+      {% else %}<div class="pc-badge-empty"></div>{% endif %}
+      <div class="pc-name">{{ plan.plan_label }}</div>
+      <div class="pc-desc">{% if plan.duration_months > 1 %}{{ plan.duration_months }}-month package{% else %}Monthly plan{% endif %}</div>
+      <div class="pc-amount">
+        <span class="pc-currency">PKR</span>
+        <span class="pc-price">{{ plan.price | int }}</span>
+      </div>
+      <div class="pc-period">{% if plan.duration_months > 1 %}for {{ plan.duration_months }} months{% else %}per month · per clinic{% endif %}</div>
+      {% if plan.savings_pct > 0 %}<div class="pc-save">💰 Save {{ plan.savings_pct }}% · PKR {{ plan.monthly_equiv }}/mo</div>{% endif %}
+      <div class="pc-trial">🎁 First {{ trial_days }} days FREE — no card required</div>
+      {% if plan.plan_features %}
+      <ul class="pc-features">
+        {% for feature in plan.plan_features %}<li>{{ feature }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% if allow_application_creation %}<button class="pc-cta" onclick="openPortalRegister()">Start Free {{ trial_days }}-Day Trial →</button>{% endif %}
     </div>
-
-    <div class="faq-list">
-
-      <div class="faq-item">
-        <div class="faq-q">
-          How long is the free trial and what's included?
-          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
-        </div>
-        <div class="faq-a"><div class="faq-a-inner">The trial lasts {{ trial_days }} days with full access to all CureDesk features — no credit card required. Your clinic data is preserved when you subscribe after the trial.</div></div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          Can I run CureDesk for multiple clinics or branches?
-          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
-        </div>
-        <div class="faq-a"><div class="faq-a-inner">Yes. CureDesk is built for multi-clinic tenancy. Each clinic gets its own isolated site with separate data and branding. Contact us for multi-branch pricing.</div></div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          Does CureDesk integrate with accounting systems?
-          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
-        </div>
-        <div class="faq-a"><div class="faq-a-inner">Yes — tightly. CureDesk auto-creates Sales Invoices, POS Invoices, Payment Entries, and Journal Entries. Stock levels are synced live with your inventory system.</div></div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          What languages does CureDesk support?
-          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
-        </div>
-        <div class="faq-a"><div class="faq-a-inner">The UI and printed prescriptions are available in English, Urdu, and Arabic. Dose labels on prescriptions automatically render in the selected language.</div></div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          Can I request a custom module or feature?
-          <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></div>
-        </div>
-        <div class="faq-a"><div class="faq-a-inner">Absolutely. {{ company_name }} takes on custom development work. Describe your requirements using the contact form and we'll get back to you with a scope and timeline.</div></div>
-      </div>
-
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="pricing-wrap">
+    <div class="pc-card pc-featured" style="max-width:340px;margin:0 auto">
+      <div class="pc-badge">⭐ All-Inclusive</div>
+      <div class="pc-name">Professional Clinic Plan</div>
+      <div class="pc-desc">Everything you need to run a modern clinic</div>
+      <div class="pc-trial">🎁 First {{ trial_days }} days FREE — no card required</div>
+      {% if plan_features %}
+      <ul class="pc-features">
+        {% for feature in plan_features %}<li>{{ feature }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% if allow_application_creation %}<button class="pc-cta" onclick="openPortalRegister()">Start Free {{ trial_days }}-Day Trial →</button>{% endif %}
     </div>
   </div>
+  {% endif %}
+  <p style="text-align:center;margin-top:2rem;font-size:.9rem;color:var(--muted);font-style:italic;">* Negotiations Are Applicable</p>
+</section>
+
+<!-- PAYMENT -->
+<section class="payment-section" id="payment">
+  <div class="text-center">
+    <span class="section-tag">Payment</span>
+    <h2 class="section-title">Simple bank transfer</h2>
+    <p class="section-sub">No online payment gateway. Just transfer to our bank account and we activate your subscription.</p>
+  </div>
+  <div class="payment-wrap">
+    <div class="payment-card">
+      <h3>📋 How to Pay</h3>
+      <ol>
+        <li>Transfer the monthly fee to our bank account below</li>
+        <li>Take a screenshot of your transaction</li>
+        <li>Send the screenshot + your clinic name to us via WhatsApp or email</li>
+        <li>We will activate your subscription within a few hours</li>
+      </ol>
+      {% if bank_details %}
+      <div style="margin-top:1.25rem">
+        <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Bank Account Details</div>
+        <div class="bank-details">{{ bank_details }}</div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="payment-card">
+      <h3>📞 Contact Us</h3>
+      {% if contact_email %}
+      <div class="contact-row">
+        <div class="contact-icon">✉️</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Email</div><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></div>
+      </div>
+      {% endif %}
+      {% if contact_phone %}
+      <div class="contact-row">
+        <div class="contact-icon">📱</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Phone / WhatsApp</div><a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></div>
+      </div>
+      {% endif %}
+      <div class="contact-row">
+        <div class="contact-icon">🕐</div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Response Time</div><span style="font-size:.9rem;color:var(--dark3)">Within a few hours on business days</span></div>
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:var(--primary-light);border-radius:8px">
+        <div style="font-size:.82rem;color:var(--primary);font-weight:600">💡 Tip</div>
+        <div style="font-size:.85rem;color:var(--dark3);margin-top:.25rem">Click <strong>My Subscription Portal</strong> above to check your current subscription status and submit payment proof anytime.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="text-center">
+    <span class="section-tag">FAQ</span>
+    <h2 class="section-title">Frequently asked questions</h2>
+    <p class="section-sub">Everything you need to know about {{ app_name }}. Can't find the answer? <a href="/contact" style="color:var(--primary);font-weight:600;text-decoration:none">Reach out to us.</a></p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">What happens after the free trial ends? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">After your <strong>{{ trial_days }}-day free trial</strong>, you receive a grace period with on-screen warnings before the app is locked. Transfer the monthly fee and share your screenshot — we reactivate access within a few hours.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">Can I use the app on multiple devices? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes — the app is fully web-based. Access it simultaneously from any <strong>desktop, tablet, or mobile</strong> device using your clinic's unique URL and login credentials. No installation required.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">Is my patient data safe and private? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Absolutely. Every clinic runs on its own <strong>dedicated database instance</strong> — your records are never co-mingled with other clinics. You have <strong>100% ownership</strong> and can request a full data export at any time.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">How quickly is my subscription activated? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">We typically activate within <strong>a few hours</strong> of receiving payment confirmation on business days. Send your bank transfer screenshot via <strong>WhatsApp</strong> for the fastest response.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">Can I cancel my subscription at any time? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. There are <strong>no long-term contracts</strong> and no cancellation fees. Subscriptions are month-to-month — stop paying whenever you like. Your access continues until the end of your paid period.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">Is there a per-doctor or per-user fee? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">No. The flat monthly fee covers the <strong>entire clinic</strong> — unlimited doctors, staff accounts, patients, and visits. You will never be charged extra for adding more users or growing your practice.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="faq-q">What prescription languages are supported? <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a"><div class="faq-a-inner">Prescriptions can be printed in <strong>English, Urdu, and Arabic</strong>. The language is selectable per-prescription, making it easy to serve patients from different linguistic backgrounds in one clinic.</div></div>
+    </div>
+  </div>
+
 </section>
 
 <!-- FOOTER -->
 <footer class="site-footer">
   <div class="footer-top">
     <div>
-      <div class="footer-brand">{{ company_name }}</div>
+      <div class="footer-brand">{% if company_logo %}<img src="{{ company_logo }}" alt="{{ company_name }}" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;background:rgba(255,255,255,.92);padding:4px 10px;border-radius:8px">{% else %}{{ company_name }}{% endif %}</div>
       <p class="footer-desc">
-        {{ app_name }} — healthcare software built on Frappe.
-        Multi-clinic, multi-lingual, real-time. Designed to let clinicians focus on care.
+        {{ app_name }} is a complete clinic management platform built on Frappe.
+        Multi-clinic, multi-lingual, and real-time — designed to let healthcare teams focus on patients, not paperwork.
       </p>
     </div>
     <div class="footer-col">
@@ -567,9 +1634,9 @@
     <div class="footer-col">
       <h4>Account</h4>
       <ul>
-        <li><a href="/subscription-portal">Sign In</a></li>
-        <li><a href="/subscription-portal">Register</a></li>
-        <li><a href="/subscription-portal">Subscription</a></li>
+        <li><a href="#" onclick="openPortalLogin();return false;">Sign In</a></li>
+        {% if allow_application_creation %}<li><a href="#" onclick="openPortalRegister();return false;">Register</a></li>{% endif %}
+        <li><a href="#subscription">Subscription</a></li>
       </ul>
     </div>
   </div>
@@ -582,19 +1649,1231 @@
   </div>
 </footer>
 
+<!-- SUBSCRIPTION PORTAL MODAL -->
+<div class="pmodal-backdrop" id="portalModal" role="dialog" aria-modal="true" aria-label="Subscription Portal">
+  <div class="pmodal-card">
+    <div class="pmodal-header">
+      <div class="pmodal-header-left">
+        <div class="pmodal-header-logo">🏥</div>
+        <div>
+          <div class="pmodal-header-title">
+            {{ app_name }} — Subscription Portal
+            <span class="pmodal-header-pill" id="pmodalPill" style="display:none">
+              <span class="pmodal-header-pill-dot"></span>
+              <span id="pmodalPillText">Live</span>
+            </span>
+          </div>
+          <div class="pmodal-header-sub" id="pmodalSub">Sign in or register to manage your clinic plan</div>
+        </div>
+      </div>
+      <button class="pmodal-close" id="portalModalClose" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="pmodal-iframe-wrap">
+      <div class="pmodal-loader" id="portalLoader">
+        <div class="pmodal-loader-ring"></div>
+        <span>Loading subscription portal…</span>
+      </div>
+      <iframe class="pmodal-iframe" id="portalIframe" src="about:blank" title="Subscription Portal"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-backdrop" id="loginModal" role="dialog" aria-modal="true" aria-label="Sign In">
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <div class="modal-header-orb modal-header-orb-1"></div>
+      <div class="modal-header-orb modal-header-orb-2"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">&#x2715;</button>
+      <div class="modal-logo">🏥</div>
+      <div class="modal-title">Sign In to Your Clinic</div>
+      <div class="modal-subtitle">Access your {{ app_name }} subscription account</div>
+    </div>
+
+    <div class="modal-body">
+      <form id="loginForm" novalidate>
+
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <div class="form-input-wrap">
+            <span class="form-input-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <input
+              type="email" id="loginEmail" name="email"
+              class="form-input" placeholder="you@clinic.com"
+              autocomplete="email" required
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="form-input-wrap">
+            <span class="form-input-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input
+              type="password" id="loginPassword" name="password"
+              class="form-input" placeholder="••••••••"
+              autocomplete="current-password" required style="padding-right:2.6rem"
+            >
+            <button type="button" class="form-input-eye" id="togglePwd" aria-label="Show password">
+              <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-checkbox-wrap">
+            <input type="checkbox" class="form-checkbox" id="rememberMe">
+            <span class="form-checkbox-label">Remember me</span>
+          </label>
+          <a href="#" class="form-forgot">Forgot password?</a>
+        </div>
+
+        <div class="form-error-msg" id="loginError"></div>
+
+        <button type="submit" class="btn-modal-submit" id="loginSubmit">Sign In</button>
+
+        <div class="modal-divider">or</div>
+        {% if allow_application_creation %}
+        <div class="modal-footer-note">
+          Don't have an account?
+          <a href="#" onclick="closeModal();openPortalRegister();return false;">Start Free Trial →</a>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ══════════════════════════════════════
+   NAV TOGGLE
+══════════════════════════════════════ */
 document.getElementById('navToggle').addEventListener('click', function(){
   document.getElementById('navLinks').classList.toggle('open');
 });
 
-document.querySelectorAll('.faq-q').forEach(function(q){
-  q.addEventListener('click', function(){
-    var item = this.closest('.faq-item');
-    var isOpen = item.classList.contains('open');
+/* ══════════════════════════════════════
+   FAQ ACCORDION
+══════════════════════════════════════ */
+document.querySelectorAll('.faq-item').forEach(function(item){
+  item.addEventListener('click', function(){
+    var isOpen = this.classList.contains('open');
     document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('open'); });
-    if(!isOpen) item.classList.add('open');
+    if(!isOpen) this.classList.add('open');
   });
 });
+
+/* ══════════════════════════════════════
+   HERO CAROUSEL
+══════════════════════════════════════ */
+(function(){
+  var slides = document.querySelectorAll('.pw-slide');
+  var dots   = document.querySelectorAll('.pw-carousel-dot');
+  var prev   = document.getElementById('pwPrev');
+  var next   = document.getElementById('pwNext');
+  if(!slides.length) return;
+
+  var delay = {{ carousel_delay }};
+  var current = 0;
+  var timer;
+
+  function goTo(idx){
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  function startAuto(){
+    clearInterval(timer);
+    timer = setInterval(function(){ goTo(current + 1); }, delay);
+  }
+
+  if(prev) prev.addEventListener('click', function(){ goTo(current - 1); startAuto(); });
+  if(next) next.addEventListener('click', function(){ goTo(current + 1); startAuto(); });
+  dots.forEach(function(dot){
+    dot.addEventListener('click', function(){ goTo(+dot.dataset.index); startAuto(); });
+  });
+
+  startAuto();
+})();
+
+/* ══════════════════════════════════════
+   PORTAL MODAL
+══════════════════════════════════════ */
+var pBackdrop = document.getElementById('portalModal');
+var pIframe   = document.getElementById('portalIframe');
+var pLoader   = document.getElementById('portalLoader');
+var _pCurrentTab = '';
+
+function _pModalMeta(tab){
+  var sub  = document.getElementById('pmodalSub');
+  var pill = document.getElementById('pmodalPill');
+  var pt   = document.getElementById('pmodalPillText');
+  if(tab === 'register'){
+    sub.textContent = 'Create your free account — no credit card required';
+    pill.style.display = 'none';
+  } else if(isLoggedIn){
+    sub.textContent = 'Manage your plan, billing & clinic account';
+    if(pt) pt.textContent = 'Logged In';
+    pill.style.display = 'inline-flex';
+  } else {
+    sub.textContent = 'Sign in to manage your clinic subscription';
+    pill.style.display = 'none';
+  }
+}
+
+function openPortalModal(tab){
+  tab = tab || '';
+  pBackdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  _pModalMeta(tab);
+
+  var url = '/subscription-portal' + (tab ? '?tab=' + tab : '');
+  /* reload iframe if tab changed or not yet loaded */
+  if(!pIframe.dataset.loaded || _pCurrentTab !== tab){
+    _pCurrentTab = tab;
+    pLoader.style.display = 'flex';
+    pIframe.removeAttribute('data-loaded');
+    pIframe.src = url;
+    pIframe.onload = function(){
+      pLoader.style.display = 'none';
+      pIframe.dataset.loaded = '1';
+    };
+  }
+}
+
+function closePortalModal(){
+  pBackdrop.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/* Convenience wrappers */
+function openPortalLogin(){    openPortalModal('login'); }
+
+document.getElementById('portalModalClose').addEventListener('click', closePortalModal);
+pBackdrop.addEventListener('click', function(e){ if(e.target === pBackdrop) closePortalModal(); });
+
+/* ══════════════════════════════════════
+   USER STATE
+══════════════════════════════════════ */
+var isLoggedIn = false;
+
+function initials(name){
+  if(!name) return '?';
+  var parts = name.trim().split(/\s+/);
+  return (parts.length > 1 ? parts[0][0] + parts[parts.length-1][0] : name[0]).toUpperCase();
+}
+
+function setLoggedInUI(fullName, email){
+  isLoggedIn = true;
+  var name = fullName || email;
+  var ini  = initials(name);
+
+  /* nav: hide Sign In, show user info */
+  document.getElementById('navSignInBtn').style.display = 'none';
+  document.getElementById('navAvatar').textContent      = ini;
+  document.getElementById('navUserName').textContent    = name;
+  document.getElementById('navUserInfo').style.display  = 'flex';
+
+  /* portal button: show user name + label */
+  var portalUser = document.getElementById('portalBtnUser');
+  portalUser.textContent = name;
+  portalUser.style.display = 'inline';
+  document.getElementById('portalBtnSep').style.display = 'inline';
+
+  /* subscription section: show dashboard */
+  hcShowDash();
+}
+
+function setGuestUI(){
+  isLoggedIn = false;
+  document.getElementById('navUserInfo').style.display  = 'none';
+  document.getElementById('navSignInBtn').style.display = '';
+  document.getElementById('portalBtnUser').style.display = 'none';
+  document.getElementById('portalBtnSep').style.display  = 'none';
+
+  /* subscription section: show guest pricing */
+  hcShowGuest();
+}
+
+/* ══════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════ */
+function doLogout(){
+  fetch('/api/method/logout', {method:'GET'}).finally(function(){ setGuestUI(); });
+}
+document.getElementById('navSignOutBtn').addEventListener('click', doLogout);
+
+/* ══════════════════════════════════════
+   NAV SIGN IN BUTTON
+══════════════════════════════════════ */
+document.getElementById('navSignInBtn').innerHTML =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Sign In';
+document.getElementById('navSignInBtn').style.cssText =
+  'background:none;border:none;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:.4rem;';
+document.getElementById('navSignInBtn').addEventListener('click', function(){ openModal(); });
+
+document.getElementById('navSignOutBtn').innerHTML =
+  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out';
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION MODAL
+══════════════════════════════════════ */
+var sBackdrop = document.getElementById('subModal');
+
+function openSubModal(){
+  sBackdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeSubModal(){
+  sBackdrop.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('subModalClose').addEventListener('click', closeSubModal);
+sBackdrop.addEventListener('click', function(e){ if(e.target === sBackdrop) closeSubModal(); });
+
+/* ══════════════════════════════════════
+   BANNER PORTAL BUTTON
+══════════════════════════════════════ */
+document.getElementById('bannerPortalBtn').addEventListener('click', function(){
+  openSubModal();
+});
+
+/* ══════════════════════════════════════
+   LOGIN MODAL
+══════════════════════════════════════ */
+var backdrop = document.getElementById('loginModal');
+
+function openModal(){
+  backdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ document.getElementById('loginEmail').focus(); }, 300);
+}
+function closeModal(){
+  backdrop.classList.remove('active');
+  document.body.style.overflow = '';
+  document.getElementById('loginForm').reset();
+  document.getElementById('loginError').classList.remove('visible');
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginSubmit').disabled = false;
+  document.getElementById('loginSubmit').innerHTML = 'Sign In';
+  setEye(false);
+}
+
+document.querySelectorAll('.open-login-modal').forEach(function(el){
+  el.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
+});
+document.getElementById('modalClose').addEventListener('click', closeModal);
+backdrop.addEventListener('click', function(e){ if(e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    if(backdrop.classList.contains('active')) closeModal();
+    else if(sBackdrop.classList.contains('active')) closeSubModal();
+    else closePortalModal();
+  }
+});
+
+/* password eye toggle */
+var pwdInput  = document.getElementById('loginPassword');
+var eyeBtn    = document.getElementById('togglePwd');
+var eyeIcon   = document.getElementById('eyeIcon');
+var eyeVisible = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>';
+
+function setEye(show){
+  pwdInput.type = show ? 'text' : 'password';
+  eyeIcon.innerHTML = show
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M10.73 10.73A2 2 0 0 0 10 12a2 2 0 0 0 2 2 2 2 0 0 0 1.27-.46"/>'
+    : eyeVisible;
+}
+eyeBtn.addEventListener('click', function(){ setEye(pwdInput.type === 'password'); });
+
+/* form submit → on success show user + open portal */
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var email = document.getElementById('loginEmail').value.trim();
+  var pwd   = document.getElementById('loginPassword').value;
+  var errEl = document.getElementById('loginError');
+  var btn   = document.getElementById('loginSubmit');
+
+  errEl.classList.remove('visible');
+  if(!email || !pwd){
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span> Signing in…';
+
+  fetch('/api/method/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': 'fetch'},
+    body: JSON.stringify({usr: email, pwd: pwd})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var ok = data.message === 'Logged In' || data.home_page || data.full_name;
+    if(ok){
+      closeModal();
+      setLoggedInUI(data.full_name || '', email);
+      openPortalModal('');  /* open dashboard tab for logged-in user */
+    } else {
+      errEl.textContent = data.message || data.exc_type || 'Invalid email or password.';
+      errEl.classList.add('visible');
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+    }
+  })
+  .catch(function(){
+    errEl.textContent = 'Network error. Please try again.';
+    errEl.classList.add('visible');
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+  });
+});
+
+/* ══════════════════════════════════════
+   ON LOAD — restore session
+══════════════════════════════════════ */
+(function checkSession(){
+  fetch('/api/method/frappe.auth.get_logged_user')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var usr = data.message || '';
+      if(!usr || usr === 'Guest'){ hcShowGuest(); return; }
+      return fetch('/api/resource/User/' + encodeURIComponent(usr) + '?fields=["full_name","email"]')
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var u = d.data || {};
+          setLoggedInUI(u.full_name || usr, u.email || usr);
+        });
+    })
+    .catch(function(){ hcShowGuest(); });
+})();
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — STATE
+══════════════════════════════════════ */
+var hcCurrentSub = null, hcCurrentEmail = '';
+
+function hcShowGuest(){
+  document.getElementById('hcSubGuest').style.display = '';
+  document.getElementById('hcSubDash').style.display  = 'none';
+}
+function hcShowDash(){
+  document.getElementById('hcSubGuest').style.display = 'none';
+  document.getElementById('hcSubDash').style.display  = '';
+  hcLoadDashboard();
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — API
+══════════════════════════════════════ */
+function hcGetCsrf(){
+  if(window.frappe && frappe.csrf_token) return frappe.csrf_token;
+  var m = document.querySelector('meta[name="csrf-token"]');
+  return m ? (m.getAttribute('content') || '') : '';
+}
+
+async function hcApi(method, args){
+  args = args || {};
+  var resp = await fetch('/api/method/' + method, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': hcGetCsrf()},
+    body: JSON.stringify(args),
+  });
+  var data = await resp.json();
+  if(data.exc || (!data.message && data._server_messages)){
+    var raw = data._server_messages || data.exc || '{}';
+    var msg = raw;
+    try{ var arr = JSON.parse(raw); msg = arr.map(function(m){ try{return JSON.parse(m).message}catch(_){return m} }).join(' '); }catch(_){}
+    throw new Error(msg.substring(0, 300));
+  }
+  return data.message !== undefined ? data.message : data;
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — HELPERS
+══════════════════════════════════════ */
+function hcEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function hcFmtNum(n){ return Number(n||0).toLocaleString(); }
+function hcFmtDate(dt){ if(!dt) return '—'; return String(dt).substring(0,16).replace('T',' '); }
+function hcStatusClass(s){ return {Trial:'trial',Active:'active','Grace Period':'grace',Expired:'expired',Cancelled:'cancelled'}[s]||'expired'; }
+function hcStatusTitle(s){ return {Trial:'Free Trial Active',Active:'Subscription Active','Grace Period':'Grace Period Active',Expired:'Subscription Expired',Cancelled:'Cancelled'}[s]||s; }
+function hcStatusSub(sub,days){
+  if(sub.status==='Trial'&&sub.trial_end)         return 'CureDesk trial valid until '+sub.trial_end;
+  if(sub.status==='Active'&&sub.subscription_end) return 'CureDesk subscription valid until '+sub.subscription_end;
+  if(sub.status==='Grace Period'&&sub.grace_end)  return 'Clinic access blocked after '+sub.grace_end;
+  if(sub.status==='Expired') return 'Please renew your CureDesk subscription';
+  return '';
+}
+function hcBuildAlert(sub, days){
+  if(sub.is_suspended) return '<div class="sub-alert sub-alert-danger"><span class="sub-alert-icon">⛔</span><div><strong>Site Suspended.</strong> Contact support immediately.</div></div>';
+  if(sub.status==='Grace Period') return '<div class="sub-alert sub-alert-warning"><span class="sub-alert-icon">⚠️</span><div><strong>Grace Period Active.</strong> Subscription expired. <strong>'+days+' day(s)</strong> left before access is blocked. Renew now.</div></div>';
+  if(sub.status==='Expired') return '<div class="sub-alert sub-alert-danger"><span class="sub-alert-icon">🔴</span><div><strong>Subscription Expired.</strong> Submit payment proof to renew.</div></div>';
+  if(sub.status==='Trial'&&days<=2) return '<div class="sub-alert sub-alert-warning"><span class="sub-alert-icon">⏳</span><div><strong>Trial Ending Soon!</strong> Only '+days+' day(s) left. Renew now.</div></div>';
+  if(sub.status==='Trial') return '<div class="sub-alert sub-alert-info"><span class="sub-alert-icon">🎁</span><div><strong>Free Trial Active</strong> — '+days+' day(s) remaining.</div></div>';
+  if(sub.status==='Active'&&days<=7) return '<div class="sub-alert sub-alert-warning"><span class="sub-alert-icon">📅</span><div><strong>Renewal Coming Up.</strong> Expires in '+days+' day(s).</div></div>';
+  return '';
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — LOAD DASHBOARD
+══════════════════════════════════════ */
+var _hcLoaded = false;
+async function hcLoadDashboard(){
+  if(_hcLoaded) return;
+  var loader  = document.getElementById('hcDashLoader');
+  var content = document.getElementById('hcDashContent');
+
+  var spinHtml = '<div style="display:flex;justify-content:center;padding:2rem"><div style="width:22px;height:22px;border:2.5px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin .75s linear infinite"></div></div>';
+  var errHtml  = '<div class="sub-empty"><div class="sub-empty-icon">⚠️</div><p>Could not load. Please refresh.</p></div>';
+
+  try {
+    var d = await hcApi('pw_subscription.api.get_my_subscription');
+    hcCurrentSub   = d.subscription;
+    hcCurrentEmail = d.email;
+    _hcLoaded = true;
+
+    loader.style.display  = 'none';
+    content.style.display = '';
+
+    document.getElementById('hcSubDetails').innerHTML    = spinHtml;
+    document.getElementById('hcClinicDetails').innerHTML = spinHtml;
+    document.getElementById('hcPayHistory').innerHTML    = spinHtml;
+    document.getElementById('hcActivityLog').innerHTML   = spinHtml;
+
+    hcRenderDash(d.subscription, d.days_remaining);
+    hcLoadHistory();
+  } catch(e) {
+    loader.style.display  = 'none';
+    content.style.display = '';
+    document.getElementById('hcSubDetails').innerHTML    = errHtml;
+    document.getElementById('hcClinicDetails').innerHTML = errHtml;
+    document.getElementById('hcPayHistory').innerHTML    = errHtml;
+    document.getElementById('hcActivityLog').innerHTML   = errHtml;
+    document.getElementById('hcAlertBar').innerHTML =
+      '<div class="sub-alert sub-alert-danger"><span class="sub-alert-icon">⚠️</span><div>'+hcEsc(e.message||'Error loading subscription')+'</div></div>';
+  }
+}
+
+function hcRenderDash(sub, days){
+  var cls  = hcStatusClass(sub.status);
+  var card = document.getElementById('hcStatusCard');
+  card.className    = 'sc-card sc-' + cls;
+  card.style.display = '';
+
+  document.getElementById('hcStatusLabel').textContent    = sub.status;
+  document.getElementById('hcStatusTitle').textContent    = hcStatusTitle(sub.status);
+  document.getElementById('hcStatusSub').textContent      = hcStatusSub(sub, days);
+  document.getElementById('hcCountdownNum').textContent   = days;
+  document.getElementById('hcCountdownLabel').textContent =
+    sub.status === 'Grace Period' ? 'days until block' :
+    sub.status === 'Expired'      ? '—'                : 'days remaining';
+
+  var pills = [];
+  if(sub.site_name)    pills.push('🌐 ' + hcEsc(sub.site_name));
+  if(sub.is_suspended) pills.push('⛔ Suspended');
+  document.getElementById('hcScPills').innerHTML = pills.map(function(p){ return '<span class="sc-pill2">'+p+'</span>'; }).join('');
+
+  document.getElementById('hcAlertBar').innerHTML = hcBuildAlert(sub, days);
+
+  var subRows = [
+    ['Status', '<span class="sub-status-pill sub-badge-'+cls+'">'+hcEsc(sub.status)+'</span>'],
+    sub.trial_start         ? ['Trial Started', sub.trial_start]         : null,
+    sub.trial_end           ? ['Trial Ends',    sub.trial_end]           : null,
+    sub.subscription_start  ? ['Active From',   sub.subscription_start]  : null,
+    sub.subscription_end    ? ['Expires On',    sub.subscription_end]    : null,
+    sub.grace_end           ? ['Grace Ends',    sub.grace_end]           : null,
+  ].filter(Boolean);
+  document.getElementById('hcSubDetails').innerHTML = subRows.map(function(r){
+    return '<div class="sub-info-row"><span class="sub-info-label">'+hcEsc(r[0])+'</span><span class="sub-info-value">'+r[1]+'</span></div>';
+  }).join('');
+
+  var clinicRows = [
+    ['Clinic Name',   hcEsc(sub.clinic_name||'—')],
+    ['Doctor / Admin',hcEsc(sub.physician_name||'—')],
+    ['Email',         hcEsc(hcCurrentEmail)],
+    ['Site URL', sub.site_name
+      ? '<a href="https://'+hcEsc(sub.site_name)+'" target="_blank" style="color:var(--primary)">'+hcEsc(sub.site_name)+'</a>'
+      : '—'],
+  ];
+  document.getElementById('hcClinicDetails').innerHTML = clinicRows.map(function(r){
+    return '<div class="sub-info-row"><span class="sub-info-label">'+r[0]+'</span><span class="sub-info-value">'+r[1]+'</span></div>';
+  }).join('');
+
+  hcCheckPending();
+}
+
+async function hcLoadHistory(){
+  var hEl = document.getElementById('hcPayHistory');
+  var lEl = document.getElementById('hcActivityLog');
+
+  try {
+    var d = await hcApi('pw_subscription.api.get_payment_history_by_email', {email: hcCurrentEmail});
+    if((d.proofs||[]).some(function(p){ return p.status === 'Pending'; })){
+      document.getElementById('hcPendingAlert').style.display = '';
+      document.getElementById('hcUploadForm').style.display   = 'none';
+    }
+    if(!d.proofs || !d.proofs.length){
+      hEl.innerHTML = '<div class="sub-empty"><div class="sub-empty-icon">💳</div><p>No payment history yet.</p></div>';
+    } else {
+      hEl.innerHTML = d.proofs.map(function(p){
+        return '<div class="sub-proof-item"><div><div style="font-weight:600;font-size:.88rem;color:var(--dark)">'+hcEsc(p.selected_plan||(p.duration_months+' month plan'))+'</div><div style="font-size:.77rem;color:var(--muted);margin-top:.15rem">Submitted: '+hcFmtDate(p.submitted_on)+'</div>'+(p.admin_notes?'<div style="font-size:.77rem;color:var(--muted);margin-top:.15rem;font-style:italic">'+hcEsc(p.admin_notes)+'</div>':'')+'</div><div style="text-align:right;flex-shrink:0"><div class="sub-proof-badge sub-proof-'+p.status.toLowerCase()+'">'+hcEsc(p.status)+'</div><div style="font-size:.82rem;font-weight:700;color:var(--success);margin-top:.3rem">PKR '+hcFmtNum(p.amount_paid)+'</div></div></div>';
+      }).join('');
+    }
+  } catch(_){
+    hEl.innerHTML = '<div class="sub-empty"><div class="sub-empty-icon">⚠️</div><p>Could not load payment history.</p></div>';
+  }
+
+  try {
+    var l = await hcApi('pw_subscription.api.get_subscription_logs_by_email', {email: hcCurrentEmail});
+    if(!l.logs || !l.logs.length){
+      lEl.innerHTML = '<div class="sub-empty"><div class="sub-empty-icon">📋</div><p>No activity recorded yet.</p></div>';
+    } else {
+      lEl.innerHTML = l.logs.map(function(lg){
+        return '<div class="sub-log-item"><div class="sub-log-dot"></div><div><div style="font-size:.86rem;font-weight:600;color:var(--dark)">'+hcEsc(lg.action)+'</div><div style="font-size:.76rem;color:var(--muted);margin-top:.1rem">'+hcFmtDate(lg.action_date)+'</div>'+(lg.notes?'<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">'+hcEsc(lg.notes)+'</div>':'')+'</div></div>';
+      }).join('');
+    }
+  } catch(_){
+    lEl.innerHTML = '<div class="sub-empty"><div class="sub-empty-icon">⚠️</div><p>Could not load activity log.</p></div>';
+  }
+}
+
+async function hcCheckPending(){
+  try {
+    var d = await hcApi('pw_subscription.api.get_payment_history_by_email', {email: hcCurrentEmail});
+    if((d.proofs||[]).some(function(p){ return p.status === 'Pending'; })){
+      document.getElementById('hcPendingAlert').style.display = '';
+      document.getElementById('hcUploadForm').style.display   = 'none';
+    }
+  } catch(_){}
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — PLAN SELECT
+══════════════════════════════════════ */
+function hcSelectPlan(card){
+  document.querySelectorAll('#hcPlansGrid .sub-plan-card').forEach(function(c){ c.classList.remove('selected'); });
+  card.classList.add('selected');
+  var label  = card.dataset.label;
+  var months = card.dataset.months;
+  var price  = card.dataset.price;
+
+  document.getElementById('hcPlanLabel').value  = label;
+  document.getElementById('hcPlanMonths').value = months;
+  document.getElementById('hcPlanPrice').value  = price;
+  document.getElementById('hcPayAmount').value  = price;
+
+  document.getElementById('hcBankReveal').style.display     = '';
+  document.getElementById('hcBankRevealAmt').textContent    = 'PKR ' + hcFmtNum(price);
+  document.getElementById('hcPlanSummary').style.display    = '';
+  document.getElementById('hcPlanSummaryName').textContent  = label;
+  document.getElementById('hcPlanSummaryPrice').textContent = 'PKR ' + hcFmtNum(price);
+  document.getElementById('hcNoPlanHint').style.display          = 'none';
+  document.getElementById('hcPlanRequiredBanner').style.display  = 'none';
+  var grid = document.getElementById('hcPlansGrid');
+  if(grid) grid.classList.remove('sub-plans-error');
+  document.getElementById('hcBankReveal').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function hcCopyBank(){
+  var box = document.querySelector('.sub-bank-box');
+  if(!box) return;
+  navigator.clipboard.writeText(box.textContent.trim())
+    .then(function(){ hcToast('Bank details copied!', 'success'); })
+    .catch(function(){ hcToast('Please copy manually.', 'error'); });
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — UPLOAD
+══════════════════════════════════════ */
+function hcDragOver(e){ e.preventDefault(); document.getElementById('hcUploadArea').classList.add('drag-over'); }
+function hcDragLeave(){ document.getElementById('hcUploadArea').classList.remove('drag-over'); }
+function hcDrop(e){
+  e.preventDefault(); hcDragLeave();
+  var f = e.dataTransfer.files[0];
+  if(f){ document.getElementById('hcScreenshot').files = e.dataTransfer.files; hcPreviewImg({files:[f]}); }
+}
+function hcPreviewImg(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var prev = document.getElementById('hcUploadPreview');
+    prev.src = ev.target.result;
+    prev.style.display = '';
+    document.getElementById('hcUploadPlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(f);
+}
+async function hcUploadFile(file){
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('is_private', '0');
+  fd.append('folder', 'Home/Attachments');
+  var resp = await fetch('/api/method/upload_file', {
+    method: 'POST',
+    headers: {'X-Frappe-CSRF-Token': hcGetCsrf()},
+    body: fd,
+  });
+  var data = await resp.json();
+  if(data.message && data.message.file_url) return data.message.file_url;
+  throw new Error('File upload failed.');
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — SUBMIT PAYMENT
+══════════════════════════════════════ */
+async function hcSubmitPayment(){
+  var planLabel = document.getElementById('hcPlanLabel').value;
+  if(!planLabel){
+    document.getElementById('hcPlanRequiredBanner').style.display = '';
+    var grid = document.getElementById('hcPlansGrid');
+    if(grid){ grid.classList.add('sub-plans-error'); grid.scrollIntoView({behavior:'smooth',block:'center'}); }
+    hcToast('⬆️ Please select a subscription plan first', 'error');
+    return;
+  }
+  var amount    = document.getElementById('hcPayAmount').value;
+  var fileInput = document.getElementById('hcScreenshot');
+  if(!amount || parseFloat(amount) <= 0){ hcToast('Please enter the amount transferred.', 'error'); return; }
+  if(!fileInput.files || !fileInput.files[0]){ hcToast('Please upload your payment screenshot.', 'error'); return; }
+
+  var btn = document.getElementById('hcSubmitPayBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sub-spinner"></span>Uploading…';
+  try {
+    var fileUrl = await hcUploadFile(fileInput.files[0]);
+    btn.innerHTML = '<span class="sub-spinner"></span>Submitting…';
+    await hcApi('pw_subscription.api.submit_payment_proof', {
+      email:             hcCurrentEmail,
+      subscription_name: hcCurrentSub.name,
+      plan_label:        planLabel,
+      duration_months:   document.getElementById('hcPlanMonths').value,
+      amount_paid:       amount,
+      screenshot:        fileUrl,
+      notes:             document.getElementById('hcPayNotes').value,
+    });
+    hcToast("Payment proof submitted! We'll review within a few hours.", 'success');
+    document.getElementById('hcUploadForm').style.display   = 'none';
+    document.getElementById('hcPendingAlert').style.display = '';
+    hcLoadHistory();
+  } catch(e){
+    hcToast(e.message || 'Submission failed. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 Submit Payment Proof';
+  }
+}
+
+/* ══════════════════════════════════════
+   SUBSCRIPTION SECTION — TOAST
+══════════════════════════════════════ */
+function hcToast(msg, type){
+  type = type || 'info';
+  var colors = {success:'#10B981', error:'#EF4444', info:'#2563EB'};
+  var wrap = document.getElementById('hcToastWrap');
+  var el   = document.createElement('div');
+  el.style.cssText = 'background:#1E293B;border-left:3px solid '+(colors[type]||'#334155')+';border-radius:10px;padding:.75rem 1.1rem;font-size:.85rem;min-width:260px;max-width:360px;display:flex;align-items:flex-start;gap:.6rem;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:auto;color:#E2E8F0;animation:fadeUp .2s ease';
+  el.innerHTML = '<span style="flex:1">'+hcEsc(msg)+'</span><span style="cursor:pointer;opacity:.5;font-size:1rem;flex-shrink:0" onclick="this.parentElement.remove()">×</span>';
+  wrap.appendChild(el);
+  setTimeout(function(){ if(el.parentElement) el.remove(); }, 6000);
+}
 </script>
+
+<!-- TOAST CONTAINER -->
+<div id="hcToastWrap" style="position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none"></div>
+
+{% if allow_application_creation %}
+<!-- REGISTRATION MODAL -->
+<div class="hc-reg-backdrop" id="regFormModal" role="dialog" aria-modal="true" aria-label="Start Free Trial">
+  <div class="hc-reg-card">
+    <button class="hc-reg-close" id="regFormClose" aria-label="Close">&#x2715;</button>
+
+    <!-- Header -->
+    <div class="reg-portal-head" id="regFormHead">
+      <div class="reg-portal-badge"><span class="reg-portal-badge-dot"></span>Free for {{ trial_days }} days &mdash; no payment required</div>
+      <div class="reg-portal-logo">{{ app_name }}</div>
+      <h2 class="reg-portal-title">Start Your Free Trial</h2>
+      <p class="reg-portal-sub">Set up your clinic in under 2 minutes.</p>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="reg-portal-body" id="regFormBody">
+      <form id="hcRegForm" novalidate autocomplete="off">
+        <div class="reg-grid">
+
+          <div class="reg-field full">
+            <label class="reg-label" for="hcRegClinicName">Clinic / Practice Name <span class="req">*</span></label>
+            <div class="reg-iw">
+              <input type="text" id="hcRegClinicName" class="has-badge" placeholder="e.g. City Medical Centre" autocomplete="off">
+              <div class="reg-avail" id="hcRegAvail"></div>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegPhysician">Doctor / Admin Name <span class="req">*</span></label>
+            <div class="reg-iw"><input type="text" id="hcRegPhysician" placeholder="e.g. Dr. Ahmed Khan"></div>
+            <div class="reg-hint" id="hcRegPhysicianHint"></div>
+          </div>
+
+          <div class="reg-field full">
+            <label class="reg-label">Account Type <span class="req">*</span></label>
+            <div class="pw-mode-picker">
+              <label class="pw-mode-card active" id="hcModeClinicCard">
+                <input type="radio" name="hcClinicMode" id="hcModeClinic" value="Clinic" checked>
+                <div class="pw-mode-card-icon">🏥</div>
+                <div class="pw-mode-card-title">Clinic</div>
+                <div class="pw-mode-card-sub">Single clinic</div>
+                <div class="pw-mode-card-check">✓</div>
+              </label>
+              <label class="pw-mode-card" id="hcModeHospitalCard">
+                <input type="radio" name="hcClinicMode" id="hcModeHospital" value="Hospital">
+                <div class="pw-mode-card-icon">🏨</div>
+                <div class="pw-mode-card-title">Hospital</div>
+                <div class="pw-mode-card-sub">Multiple clinics<br>&amp; branches</div>
+                <div class="pw-mode-card-check">✓</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegContact">Contact / WhatsApp <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="tel" id="hcRegContact" placeholder="+92 300 1234567" style="flex:1">
+              {% if phone_otp_enabled %}
+              <button type="button" id="hcRegSendOtp" class="reg-otp-btn" title="Send verification code"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify</button>
+              {% endif %}
+            </div>
+            <div class="reg-hint" id="hcRegContactHint"></div>
+          </div>
+
+          {% if phone_otp_enabled %}
+          <div class="reg-field full" id="hcRegOtpRow" style="display:none">
+            <label class="reg-label" for="hcRegOtp">Verification Code <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="text" id="hcRegOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+              <button type="button" id="hcRegVerifyOtp" class="reg-verify-btn">Verify</button>
+            </div>
+            <div class="reg-hint" id="hcRegOtpHint"></div>
+          </div>
+          {% endif %}
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegEmail">Email Address <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="email" id="hcRegEmail" placeholder="doctor@clinic.com" style="flex:1">
+              {% if email_otp_enabled %}
+              <button type="button" id="hcRegSendEmailOtp" class="reg-otp-btn" title="Send verification code to email"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify</button>
+              {% endif %}
+            </div>
+            <div class="reg-hint" id="hcRegEmailHint"></div>
+          </div>
+
+          {% if email_otp_enabled %}
+          <div class="reg-field full" id="hcRegEmailOtpRow" style="display:none">
+            <label class="reg-label" for="hcRegEmailOtp">Email Verification Code <span class="req">*</span></label>
+            <div class="reg-iw" style="display:flex;gap:.5rem">
+              <input type="text" id="hcRegEmailOtp" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="flex:1;letter-spacing:.2em">
+              <button type="button" id="hcRegVerifyEmailOtp" class="reg-verify-btn">Verify</button>
+            </div>
+            <div class="reg-hint" id="hcRegEmailOtpHint"></div>
+          </div>
+          {% endif %}
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegPassword">Password <span class="req">*</span></label>
+            <div class="reg-iw reg-pw-wrap">
+              <input type="password" id="hcRegPassword" placeholder="Min. 8 characters">
+              <button type="button" class="reg-pw-btn" id="hcRegPwBtn" aria-label="Toggle visibility">
+                <svg id="hcRegEyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg id="hcRegEyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <div class="reg-hint" id="hcRegPasswordHint"></div>
+          </div>
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegCountryInput">Country</label>
+            <div class="reg-iw reg-search-wrap">
+              <input type="text" id="hcRegCountryInput" class="reg-search-input" placeholder="Search country..." autocomplete="off">
+              <input type="hidden" id="hcRegCountry">
+              <span class="reg-search-arrow">&#9662;</span>
+              <div class="reg-search-dropdown hidden" id="hcRegCountryDropdown"></div>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label class="reg-label" for="hcRegCityInput">City</label>
+            <div class="reg-iw reg-search-wrap">
+              <input type="text" id="hcRegCityInput" class="reg-search-input" placeholder="Select country first..." autocomplete="off" disabled>
+              <input type="hidden" id="hcRegCity">
+              <span class="reg-search-arrow">&#9662;</span>
+              <div class="reg-search-dropdown hidden" id="hcRegCityDropdown"></div>
+            </div>
+          </div>
+
+          <div class="reg-field full">
+            <label class="reg-label" for="hcRegAddress">Clinic Address <span class="req">*</span></label>
+            <div class="reg-iw"><textarea id="hcRegAddress" placeholder="Street, City, Province"></textarea></div>
+            <div class="reg-hint" id="hcRegAddressHint"></div>
+          </div>
+
+          <div class="reg-err-box" id="hcRegErrBox"></div>
+
+          <div class="reg-field full">
+            <button type="submit" class="hc-reg-submit" id="hcRegSubmitBtn">Complete Registration &rarr;</button>
+            <div style="text-align:center;font-size:.74rem;color:#94A3B8;margin-top:.4rem">By registering you agree to our terms of service.</div>
+          </div>
+
+        </div>
+      </form>
+    </div><!-- /reg-portal-body -->
+
+    <!-- Provisioning Panel -->
+    <div id="hcProvPanel" style="display:none;padding:1.5rem 2rem 2rem">
+      <div class="hc-prov-card">
+        <div class="hc-prov-icon" id="hcProvIcon">⚙️</div>
+        <div class="hc-prov-title" id="hcProvTitle">Setting up your account…</div>
+        <div class="hc-prov-sub" id="hcProvSub">This takes 2–5 minutes. You can close this tab and come back.</div>
+        <div class="hc-prov-steps" id="hcProvSteps">
+          <div class="hc-prov-step"><div class="hc-prov-dot" id="hcPs0">1</div><span class="hc-prov-text" id="hcPt0">Preparing clinic template</span></div>
+          <div class="hc-prov-step"><div class="hc-prov-dot" id="hcPs1">2</div><span class="hc-prov-text" id="hcPt1">Creating your clinic site</span></div>
+          <div class="hc-prov-step"><div class="hc-prov-dot" id="hcPs2">3</div><span class="hc-prov-text" id="hcPt2">Importing clinic data</span></div>
+          <div class="hc-prov-step"><div class="hc-prov-dot" id="hcPs3">4</div><span class="hc-prov-text" id="hcPt3">Configuring clinic settings</span></div>
+          <div class="hc-prov-step"><div class="hc-prov-dot" id="hcPs4">5</div><span class="hc-prov-text" id="hcPt4">Sending welcome email</span></div>
+        </div>
+        <div class="hc-prov-last" id="hcProvLastLine"></div>
+      </div>
+    </div>
+
+  </div><!-- /hc-reg-card -->
+</div><!-- /regFormModal -->
+
+<script>
+(function(){
+  var HC_EMAIL_OTP = {{ 'true' if email_otp_enabled else 'false' }};
+  var HC_PHONE_OTP = {{ 'true' if phone_otp_enabled else 'false' }};
+  var hcClinicOk = false, hcEmailBlocked = false;
+  var hcEmailVerified = false, hcPhoneVerified = false;
+  var hcCheckTimer = null, hcEmailTimer = null;
+  var hcAllCountries = [], hcAllCities = [], hcCountriesLoaded = false;
+  var hcReqName = null, hcProvPollTimer = null;
+
+  var regModal    = document.getElementById('regFormModal');
+  var regFormBody = document.getElementById('regFormBody');
+  var regProvPanel = document.getElementById('hcProvPanel');
+
+  function openRegModal() {
+    regModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    hcLoadCountries();
+    setTimeout(function(){ var el = document.getElementById('hcRegClinicName'); if(el) el.focus(); }, 200);
+  }
+  function closeRegModal() {
+    regModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  window.openPortalRegister = openRegModal;
+
+  document.getElementById('regFormClose').addEventListener('click', closeRegModal);
+  regModal.addEventListener('click', function(e){ if(e.target === regModal) closeRegModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && regModal.classList.contains('active')) closeRegModal(); });
+
+  function hcApi(method, args, post){
+    var csrf = (window.frappe && frappe.csrf_token) ? frappe.csrf_token : (document.querySelector('meta[name="csrf-token"]')||{}).content || '';
+    var url = '/api/method/' + method;
+    var opts = post
+      ? {method:'POST', headers:{'Content-Type':'application/json','X-Frappe-CSRF-Token':csrf}, body:JSON.stringify(args)}
+      : {method:'GET'};
+    if(!post && args) url += '?' + Object.keys(args).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(args[k]); }).join('&');
+    return fetch(url, opts).then(function(r){ return r.json(); }).then(function(d){
+      if(d.exc_type || d.exception){ throw new Error(d.message || d.exc_type || 'Server error'); }
+      return d.message !== undefined ? d.message : d;
+    });
+  }
+
+  function hcSetHint(id, msg, isErr){
+    var h = document.getElementById(id); if(!h) return;
+    h.textContent = msg; h.className = 'reg-hint ' + (isErr ? 'err' : (msg ? 'ok' : ''));
+  }
+  function hcMarkField(input, hintId, msg, isErr){
+    input.classList.toggle('f-err', isErr);
+    var h = document.getElementById(hintId);
+    if(h){ h.className='reg-hint '+(isErr?'err':''); h.textContent=msg||''; }
+    return !isErr;
+  }
+
+  function hcCheckClinicName(){
+    var clinic = document.getElementById('hcRegClinicName'); if(!clinic) return;
+    var val = clinic.value.trim(); hcClinicOk = false;
+    var avail = document.getElementById('hcRegAvail');
+    if(!val){ if(avail){avail.className='reg-avail';avail.innerHTML='';} clinic.classList.remove('f-ok','f-err'); return; }
+    if(avail){ avail.className='reg-avail spin'; avail.innerHTML='<div class="reg-spinner" style="width:12px;height:12px;border-width:2px"></div> Checking…'; }
+    fetch('/api/method/pw_subscription.api.check_clinic_name?clinic_name='+encodeURIComponent(val))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var d = data.message;
+        if(d && d.available){ hcClinicOk=true; if(avail){avail.className='reg-avail ok';avail.innerHTML='✓ Available';} clinic.classList.remove('f-err');clinic.classList.add('f-ok'); }
+        else{ hcClinicOk=false; if(avail){avail.className='reg-avail err';avail.innerHTML='✗ Taken';} clinic.classList.remove('f-ok');clinic.classList.add('f-err'); }
+      }).catch(function(){ if(avail){avail.className='reg-avail';avail.innerHTML='';} hcClinicOk=false; });
+  }
+
+  function hcCheckEmail(){
+    var email = document.getElementById('hcRegEmail'); if(!email) return;
+    var val = email.value.trim(); hcEmailBlocked = false;
+    if(!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+    fetch('/api/method/pw_subscription.api.check_email?email='+encodeURIComponent(val))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.message && data.message.available){ hcEmailBlocked=false; hcSetHint('hcRegEmailHint','',false); }
+        else{ hcEmailBlocked=true; hcSetHint('hcRegEmailHint','This email is already registered.',true); }
+      }).catch(function(){ hcEmailBlocked=false; });
+  }
+
+  function hcValidateAll(){
+    var clinic    = document.getElementById('hcRegClinicName');
+    var physician = document.getElementById('hcRegPhysician');
+    var email     = document.getElementById('hcRegEmail');
+    var password  = document.getElementById('hcRegPassword');
+    var contact   = document.getElementById('hcRegContact');
+    var address   = document.getElementById('hcRegAddress');
+    var ok = true;
+    if(!clinic.value.trim() || !hcClinicOk){ clinic.classList.add('f-err'); ok=false; }
+    if(!hcMarkField(physician,'hcRegPhysicianHint','Doctor / Admin name is required.',!physician.value.trim())) ok=false;
+    if(!email.value.trim()){ hcMarkField(email,'hcRegEmailHint','Email is required.',true); ok=false; }
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())){ hcMarkField(email,'hcRegEmailHint','Enter a valid email address.',true); ok=false; }
+    else if(hcEmailBlocked){ email.classList.add('f-err'); ok=false; }
+    if(password.value.length < 8){ hcMarkField(password,'hcRegPasswordHint','Password must be at least 8 characters.',true); ok=false; }
+    var phoneDigits = contact.value.trim().replace(/[\s\-().]/g,'');
+    if(!contact.value.trim()){ hcMarkField(contact,'hcRegContactHint','Contact number is required.',true); ok=false; }
+    else if(!/^\+?[0-9]{7,15}$/.test(phoneDigits)){ hcMarkField(contact,'hcRegContactHint','Enter a valid phone number.',true); ok=false; }
+    if(HC_EMAIL_OTP || HC_PHONE_OTP){
+      var satisfied = (HC_EMAIL_OTP && hcEmailVerified)||(HC_PHONE_OTP && hcPhoneVerified);
+      if(!satisfied){
+        if(HC_EMAIL_OTP) hcMarkField(email,'hcRegEmailHint','Please verify your email address.',true);
+        else hcMarkField(contact,'hcRegContactHint','Please verify your phone number.',true);
+        ok=false;
+      }
+    }
+    if(!hcMarkField(address,'hcRegAddressHint','Address is required.',!address.value.trim())) ok=false;
+    return ok;
+  }
+
+  function hcBuildDropdown(inputEl, dropdownEl, hiddenEl, items, labelKey, onSelect){
+    function render(filter){
+      var lc = (filter||'').toLowerCase();
+      var filtered = lc ? items.filter(function(i){ return (labelKey?i[labelKey]:i).toLowerCase().indexOf(lc)!==-1; }) : items;
+      if(!filtered.length){ dropdownEl.innerHTML='<div class="reg-dropdown-empty">No results</div>'; }
+      else{
+        dropdownEl.innerHTML = filtered.slice(0,80).map(function(item){
+          return '<div class="reg-dropdown-item">'+(labelKey?item[labelKey]:item)+'</div>';
+        }).join('');
+        dropdownEl.querySelectorAll('.reg-dropdown-item').forEach(function(el, i){
+          var label = labelKey ? filtered[i][labelKey] : filtered[i];
+          el.addEventListener('mousedown', function(e){
+            e.preventDefault(); inputEl.value=label; hiddenEl.value=label;
+            inputEl.classList.remove('f-err'); dropdownEl.classList.add('hidden');
+            if(onSelect) onSelect(label);
+          });
+        });
+      }
+      dropdownEl.classList.remove('hidden');
+    }
+    inputEl.addEventListener('input', function(){ hiddenEl.value=''; render(inputEl.value); });
+    inputEl.addEventListener('focus', function(){ render(inputEl.value); });
+    inputEl.addEventListener('blur', function(){
+      setTimeout(function(){ dropdownEl.classList.add('hidden'); }, 180);
+      var val = inputEl.value.trim();
+      if(val && hiddenEl.value !== val){
+        var match = items.find(function(i){ return (labelKey?i[labelKey]:i).toLowerCase()===val.toLowerCase(); });
+        if(match){ var lbl=labelKey?match[labelKey]:match; inputEl.value=lbl; hiddenEl.value=lbl; if(onSelect) onSelect(lbl); }
+        else{ inputEl.value=''; hiddenEl.value=''; }
+      }
+    });
+  }
+
+  function hcOnCountrySelect(country){
+    var cityInp  = document.getElementById('hcRegCityInput');
+    var cityDrop = document.getElementById('hcRegCityDropdown');
+    var cityHid  = document.getElementById('hcRegCity');
+    cityInp.value=''; cityHid.value=''; cityDrop.classList.add('hidden');
+    cityInp.disabled=true; cityInp.placeholder='Loading cities…';
+    fetch('/api/method/pw_subscription.api.get_cities_by_country?country='+encodeURIComponent(country))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        hcAllCities = data.message||[];
+        cityInp.disabled=false;
+        cityInp.placeholder = hcAllCities.length ? 'Search city…' : 'No cities — type manually';
+        hcBuildDropdown(cityInp, cityDrop, cityHid, hcAllCities, 'city_name', null);
+      }).catch(function(){ cityInp.disabled=false; cityInp.placeholder='Search city…'; });
+  }
+
+  function hcLoadCountries(){
+    if(hcCountriesLoaded) return;
+    fetch('/api/method/pw_subscription.api.get_countries')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        hcAllCountries = data.message||[]; hcCountriesLoaded=true;
+        hcBuildDropdown(document.getElementById('hcRegCountryInput'),document.getElementById('hcRegCountryDropdown'),document.getElementById('hcRegCountry'),hcAllCountries,null,hcOnCountrySelect);
+      }).catch(function(){});
+  }
+
+  function hcShowProv(){
+    regFormBody.style.display='none'; regProvPanel.style.display='';
+    document.getElementById('regFormHead').style.display='none';
+  }
+
+  function hcUpdateProvUI(r){
+    var step = Math.max(0,(r.current_step||0)-1);
+    for(var i=0;i<5;i++){
+      var dot=document.getElementById('hcPs'+i), txt=document.getElementById('hcPt'+i);
+      dot.className='hc-prov-dot'; txt.className='hc-prov-text';
+      if(r.status==='Success'){ dot.classList.add('done');dot.textContent='✓';txt.classList.add('done'); }
+      else if(r.status==='Failed'&&i===step){ dot.classList.add('failed');dot.textContent='✗';txt.classList.add('active'); }
+      else if(i<step){ dot.classList.add('done');dot.textContent='✓';txt.classList.add('done'); }
+      else if(i===step){ dot.classList.add('active');dot.textContent=i+1;txt.classList.add('active'); }
+      else{ dot.textContent=i+1; }
+    }
+    document.getElementById('hcProvLastLine').textContent=r.last_line||'';
+    if(r.status==='Success'){
+      document.getElementById('hcProvIcon').textContent='🎉';
+      document.getElementById('hcProvTitle').textContent='Your clinic is ready!';
+      var siteLink = r.site_url ? '<a href="'+r.site_url+'" target="_blank" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.75rem;padding:.6rem 1.25rem;background:#2563EB;color:#fff;border-radius:9px;text-decoration:none;font-weight:600;font-size:.88rem">🌐 Open Application →</a>' : '';
+      document.getElementById('hcProvSub').innerHTML='<div style="font-size:.84rem;color:#64748B;margin-bottom:.5rem">Check your email for login credentials.</div>'+siteLink;
+    } else if(r.status==='Failed'){
+      document.getElementById('hcProvIcon').textContent='⚠️';
+      document.getElementById('hcProvTitle').textContent='Setup encountered an issue';
+      document.getElementById('hcProvSub').textContent=(r.error_message||'Please contact support.').substring(0,200);
+    }
+  }
+
+  function hcPollProv(reqName){
+    hcApi('pw_subscription.api.get_provisioning_status',{request_name:reqName},false)
+      .then(function(r){ hcUpdateProvUI(r); if(r.status==='Success'||r.status==='Failed') clearInterval(hcProvPollTimer); })
+      .catch(function(){});
+  }
+  function hcStartProv(reqName){
+    hcUpdateProvUI({status:'In Progress',current_step:0,last_line:''});
+    hcProvPollTimer=setInterval(function(){ hcPollProv(reqName); },4000);
+    hcPollProv(reqName);
+  }
+
+  /* Mode card toggle */
+  document.querySelectorAll('input[name="hcClinicMode"]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      document.querySelectorAll('[id^="hcMode"]').forEach(function(card){
+        if(card.tagName==='LABEL'){ var r=card.querySelector('input[name="hcClinicMode"]'); if(r) card.classList.toggle('active',r.checked); }
+      });
+    });
+  });
+
+  /* Clinic name availability */
+  var clinicInp = document.getElementById('hcRegClinicName');
+  clinicInp.addEventListener('input', function(){ clearTimeout(hcCheckTimer); hcCheckTimer=setTimeout(hcCheckClinicName,480); });
+  clinicInp.addEventListener('blur',  function(){ clearTimeout(hcCheckTimer); if(clinicInp.value.trim()) hcCheckClinicName(); });
+
+  /* Email availability */
+  var emailInp = document.getElementById('hcRegEmail');
+  emailInp.addEventListener('input', function(){ clearTimeout(hcEmailTimer); hcEmailBlocked=false; hcSetHint('hcRegEmailHint','',false); hcEmailTimer=setTimeout(hcCheckEmail,600); });
+  emailInp.addEventListener('blur',  function(){ clearTimeout(hcEmailTimer); if(emailInp.value.trim()) hcCheckEmail(); });
+
+  /* Clear errors on input */
+  ['hcRegPhysician','hcRegContact','hcRegPassword','hcRegAddress'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.addEventListener('input',function(){ el.classList.remove('f-err'); });
+  });
+
+  /* Password toggle */
+  var hcPwBtn=document.getElementById('hcRegPwBtn'), hcPwInp=document.getElementById('hcRegPassword');
+  if(hcPwBtn){ hcPwBtn.addEventListener('click',function(){
+    var show=hcPwInp.type==='password'; hcPwInp.type=show?'text':'password';
+    document.getElementById('hcRegEyeShow').style.display=show?'none':'';
+    document.getElementById('hcRegEyeHide').style.display=show?'':'none';
+  }); }
+
+  {% if phone_otp_enabled %}
+  var hcSendOtp=document.getElementById('hcRegSendOtp'), hcOtpRow=document.getElementById('hcRegOtpRow');
+  var hcOtpInp=document.getElementById('hcRegOtp'), hcVerifyOtp=document.getElementById('hcRegVerifyOtp');
+  var hcContactInp=document.getElementById('hcRegContact');
+  var HC_PHONE_SVG='<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Verify';
+  hcContactInp.addEventListener('input',function(){ if(hcPhoneVerified){ hcPhoneVerified=false; if(hcOtpRow) hcOtpRow.style.display='none'; if(hcOtpInp) hcOtpInp.disabled=false; if(hcVerifyOtp){hcVerifyOtp.disabled=false;hcVerifyOtp.textContent='Verify';} if(hcSendOtp){hcSendOtp.disabled=false;hcSendOtp.innerHTML=HC_PHONE_SVG;} } });
+  if(hcSendOtp){ hcSendOtp.addEventListener('click',function(){
+    var phone=hcContactInp.value.trim(), digits=phone.replace(/[\s\-().]/g,'');
+    if(!phone){ hcMarkField(hcContactInp,'hcRegContactHint','Contact number is required.',true); return; }
+    if(!/^\+?[0-9]{7,15}$/.test(digits)){ hcMarkField(hcContactInp,'hcRegContactHint','Enter a valid phone number.',true); return; }
+    hcSendOtp.disabled=true; hcSendOtp.innerHTML='<div class="reg-spinner" style="width:14px;height:14px;border-width:2px"></div>';
+    hcApi('pw_subscription.api.send_phone_otp',{phone:phone},true)
+      .then(function(){ if(hcOtpRow) hcOtpRow.style.display=''; if(hcOtpInp) hcOtpInp.value=''; hcPhoneVerified=false; hcSetHint('hcRegOtpHint','Code sent! Enter it below.',false); var secs=60; var t=setInterval(function(){ hcSendOtp.title='Resend in '+(--secs)+'s'; if(secs<=0){clearInterval(t);hcSendOtp.disabled=false;hcSendOtp.innerHTML=HC_PHONE_SVG;} },1000); })
+      .catch(function(err){ hcMarkField(hcContactInp,'hcRegContactHint',err.message||'Failed to send code.',true); hcSendOtp.disabled=false; hcSendOtp.innerHTML=HC_PHONE_SVG; });
+  }); }
+  if(hcVerifyOtp){ hcVerifyOtp.addEventListener('click',function(){
+    var otp=hcOtpInp.value.trim(); if(!otp){ hcSetHint('hcRegOtpHint','Enter the 6-digit code.',true); return; }
+    hcVerifyOtp.disabled=true; hcVerifyOtp.textContent='Verifying…';
+    hcApi('pw_subscription.api.verify_phone_otp',{phone:hcContactInp.value.trim(),otp:otp},true)
+      .then(function(r){ if(r&&r.valid){ hcPhoneVerified=true; hcSetHint('hcRegOtpHint','Phone verified!',false); hcOtpInp.disabled=true; hcVerifyOtp.textContent='Verified'; hcContactInp.classList.remove('f-err'); document.getElementById('hcRegContactHint').textContent=''; } else{ hcSetHint('hcRegOtpHint',(r&&r.reason)==='expired'?'Code expired. Click Verify to resend.':'Incorrect code.',true); hcVerifyOtp.disabled=false; hcVerifyOtp.textContent='Verify'; } })
+      .catch(function(){ hcSetHint('hcRegOtpHint','Verification failed.',true); hcVerifyOtp.disabled=false; hcVerifyOtp.textContent='Verify'; });
+  }); }
+  {% endif %}
+
+  {% if email_otp_enabled %}
+  var hcSendEmailOtp=document.getElementById('hcRegSendEmailOtp'), hcEmailOtpRow=document.getElementById('hcRegEmailOtpRow');
+  var hcEmailOtpInp=document.getElementById('hcRegEmailOtp'), hcVerifyEmailOtp=document.getElementById('hcRegVerifyEmailOtp');
+  var HC_EMAIL_SVG='<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Verify';
+  if(hcSendEmailOtp){ hcSendEmailOtp.addEventListener('click',function(){
+    var val=emailInp.value.trim();
+    if(!val){ hcMarkField(emailInp,'hcRegEmailHint','Email is required.',true); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){ hcMarkField(emailInp,'hcRegEmailHint','Enter a valid email address.',true); return; }
+    if(hcEmailBlocked){ hcMarkField(emailInp,'hcRegEmailHint','This email is already registered.',true); return; }
+    hcSendEmailOtp.disabled=true; hcSendEmailOtp.innerHTML='<div class="reg-spinner" style="width:14px;height:14px;border-width:2px"></div>';
+    hcApi('pw_subscription.api.send_email_otp',{email:val},true)
+      .then(function(){ if(hcEmailOtpRow) hcEmailOtpRow.style.display=''; if(hcEmailOtpInp) hcEmailOtpInp.value=''; hcEmailVerified=false; hcSetHint('hcRegEmailOtpHint','Code sent! Check your inbox.',false); var secs=60; var t=setInterval(function(){ hcSendEmailOtp.title='Resend in '+(--secs)+'s'; if(secs<=0){clearInterval(t);hcSendEmailOtp.disabled=false;hcSendEmailOtp.innerHTML=HC_EMAIL_SVG;} },1000); })
+      .catch(function(err){ hcMarkField(emailInp,'hcRegEmailHint',err.message||'Failed to send code.',true); hcSendEmailOtp.disabled=false; hcSendEmailOtp.innerHTML=HC_EMAIL_SVG; });
+  }); }
+  if(hcVerifyEmailOtp){ hcVerifyEmailOtp.addEventListener('click',function(){
+    var otp=hcEmailOtpInp.value.trim(); if(!otp){ hcSetHint('hcRegEmailOtpHint','Enter the 6-digit code.',true); return; }
+    hcVerifyEmailOtp.disabled=true; hcVerifyEmailOtp.textContent='Verifying…';
+    hcApi('pw_subscription.api.verify_email_otp',{email:emailInp.value.trim(),otp:otp},true)
+      .then(function(r){ if(r&&r.valid){ hcEmailVerified=true; hcSetHint('hcRegEmailOtpHint','Email verified!',false); hcEmailOtpInp.disabled=true; hcVerifyEmailOtp.textContent='Verified'; emailInp.classList.remove('f-err'); document.getElementById('hcRegEmailHint').textContent=''; } else{ hcSetHint('hcRegEmailOtpHint',(r&&r.reason)==='expired'?'Code expired.':'Incorrect code.',true); hcVerifyEmailOtp.disabled=false; hcVerifyEmailOtp.textContent='Verify'; } })
+      .catch(function(){ hcSetHint('hcRegEmailOtpHint','Verification failed.',true); hcVerifyEmailOtp.disabled=false; hcVerifyEmailOtp.textContent='Verify'; });
+  }); }
+  {% endif %}
+
+  /* Form submit */
+  document.getElementById('hcRegForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var errBox=document.getElementById('hcRegErrBox'); if(errBox) errBox.style.display='none';
+    if(!hcValidateAll()) return;
+    var submitBtn=document.getElementById('hcRegSubmitBtn');
+    submitBtn.disabled=true; submitBtn.innerHTML='<div class="reg-spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff"></div> Creating account…';
+    hcApi('pw_subscription.api.register_clinic',{
+      clinic_name:    document.getElementById('hcRegClinicName').value.trim(),
+      physician_name: document.getElementById('hcRegPhysician').value.trim(),
+      email:          document.getElementById('hcRegEmail').value.trim(),
+      password:       document.getElementById('hcRegPassword').value,
+      contact:        document.getElementById('hcRegContact').value.trim(),
+      country:        document.getElementById('hcRegCountry').value.trim(),
+      city:           document.getElementById('hcRegCity').value.trim(),
+      address:        document.getElementById('hcRegAddress').value.trim(),
+      clinic_mode:    (document.querySelector('input[name="hcClinicMode"]:checked')||{}).value||'Clinic',
+    },true)
+    .then(function(r){ hcReqName=r.request_name; hcShowProv(); hcStartProv(r.request_name); })
+    .catch(function(err){
+      if(errBox){ errBox.textContent=err.message||'Registration failed. Please try again.'; errBox.style.display='block'; }
+      submitBtn.disabled=false; submitBtn.innerHTML='Complete Registration &rarr;';
+    });
+  });
+
+})();
+</script>
+{% endif %}
+
 </body>
 </html>

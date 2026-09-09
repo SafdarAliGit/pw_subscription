@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "sb_general",
+  "company_logo",
   "company_name",
   "app_name",
   "tagline",
@@ -21,8 +22,6 @@
   "suspension_mode",
   "auto_suspend_on_trial_expiry",
   "auto_suspend_on_subscription_expiry",
-  "sb_plans_table",
-  "subscription_plans",
   "sb_contact",
   "contact_email",
   "contact_phone",
@@ -56,6 +55,7 @@
  ],
  "fields": [
   {"fieldname":"sb_general","fieldtype":"Section Break","label":"App Info"},
+  {"fieldname":"company_logo","fieldtype":"Attach Image","label":"Company Logo","description":"Logo shown on website pages, portals, and emails."},
   {"fieldname":"company_name","fieldtype":"Data","label":"Company Name","default":"CoreLogics","reqd":1,"description":"The parent company / brand name shown on the website and portals."},
   {"fieldname":"app_name","fieldtype":"Data","label":"App Name","default":"CoreLogics","reqd":1},
   {"fieldname":"tagline","fieldtype":"Data","label":"Website Tagline","description":"Short tagline shown in the website hero and footer (e.g. 'Business Software Built Right')"},
@@ -71,9 +71,6 @@
   {"fieldname":"suspension_mode","fieldtype":"Select","label":"Suspension Mode","options":"Soft Block\nHard Suspend","default":"Soft Block","description":"Soft Block: blocks login only. Hard Suspend: puts site in maintenance mode (offline)."},
   {"fieldname":"auto_suspend_on_trial_expiry","fieldtype":"Check","label":"Auto-Suspend When Trial Expires","default":"0","description":"Automatically suspend the site when the trial period ends and subscription is not activated."},
   {"fieldname":"auto_suspend_on_subscription_expiry","fieldtype":"Check","label":"Auto-Suspend When Subscription Expires","default":"0","description":"Automatically suspend the site when the paid subscription ends (after grace period)."},
-
-  {"fieldname":"sb_plans_table","fieldtype":"Section Break","label":"Subscription Plans"},
-  {"fieldname":"subscription_plans","fieldtype":"Table","label":"Plans","options":"PW Subscription Plan","description":"Define your subscription plan tiers. Customers will select from these when submitting payment."},
 
   {"fieldname":"sb_contact","fieldtype":"Section Break","label":"Contact & Payment"},
   {"fieldname":"contact_email","fieldtype":"Data","label":"Support Email","options":"Email"},

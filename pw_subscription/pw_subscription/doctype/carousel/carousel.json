@@ -1,16 +1,28 @@
 {
  "actions": [],
+ "autoname": "field:portal_page",
  "creation": "2026-06-12 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "portal_page",
   "sb_settings",
   "delay_time",
   "sb_slides",
   "carousel_items"
  ],
  "fields": [
+  {
+   "fieldname": "portal_page",
+   "fieldtype": "Link",
+   "label": "Portal Page",
+   "options": "Portal Page",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1,
+   "description": "The portal page where this carousel is displayed. One carousel per page."
+  },
   {
    "fieldname": "sb_settings",
    "fieldtype": "Section Break",
@@ -37,9 +49,8 @@
    "options": "Carousel Item"
   }
  ],
- "issingle": 1,
  "links": [],
- "modified": "2026-07-08 07:51:15.654461",
+ "modified": "2026-09-07 00:00:00",
  "modified_by": "Administrator",
  "module": "PW Subscription",
  "name": "Carousel",
@@ -57,7 +68,8 @@
   }
  ],
  "row_format": "Dynamic",
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": []
+ "sort_field": "portal_page",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "portal_page"
 }

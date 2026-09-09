@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "autoname": "field:portal_page",
+ "creation": "2026-09-07 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "portal_page",
+  "sb_features",
+  "plan_features",
+  "sb_plans",
+  "subscription_plans"
+ ],
+ "fields": [
+  {
+   "fieldname": "portal_page",
+   "fieldtype": "Link",
+   "label": "Portal Page",
+   "options": "Portal Page",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1,
+   "description": "The portal page where these plans are displayed. One Plans record per page."
+  },
+  {
+   "fieldname": "sb_features",
+   "fieldtype": "Section Break",
+   "label": "Global Plan Features"
+  },
+  {
+   "fieldname": "plan_features",
+   "fieldtype": "Small Text",
+   "label": "Plan Features (one per line)",
+   "description": "Default feature list shown on all plan cards that have no per-plan features defined."
+  },
+  {
+   "fieldname": "sb_plans",
+   "fieldtype": "Section Break",
+   "label": "Subscription Plans"
+  },
+  {
+   "fieldname": "subscription_plans",
+   "fieldtype": "Table",
+   "label": "Plans",
+   "options": "PW Subscription Plan"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-07 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PW Subscription",
+ "name": "Plans",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "portal_page",
+ "sort_order": "ASC",
+ "title_field": "portal_page"
+}
