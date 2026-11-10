@@ -23,3 +23,6 @@ venv/
 *.log
 node_modules/
 public/dist/
+
+# Tool caches
+.ruff_cache/
