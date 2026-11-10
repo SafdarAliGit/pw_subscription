@@ -1,7 +1,7 @@
 [project]
 name = "pw_subscription"
 authors = [{ name = "Safdar Ali", email = "safdar211@gmail.com" }]
-description = "SaaS Subscription Management for CureDesk"
+description = "SaaS Subscription Management for CoreLogics"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
@@ -14,3 +14,11 @@ build-backend = "flit_core.buildapi"
 [tool.ruff]
 line-length = 110
 target-version = "py310"
+
+[tool.ruff.lint]
+# Sensible ruleset for a production Frappe app.
+# BLE001 / S110 are intentionally allowed: this app wraps external
+# operations (bench commands, mail, realtime) in defensive try/except
+# blocks so a failure never breaks a customer-facing request.
+select = ["E", "F", "W", "I", "UP", "BLE", "S110", "PIE", "C408", "PLW"]
+ignore = ["BLE001", "S110"]

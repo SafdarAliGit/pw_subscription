@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Ruff
+        run: pip install ruff
+      - name: Ruff check
+        run: ruff check pw_subscription
+      - name: Python syntax check (all files)
+        run: python -m compileall -q pw_subscription
+      - name: JSON validity check (DocTypes & fixtures)
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          bad = []
+          for f in pathlib.Path("pw_subscription").rglob("*.json"):
+              try:
+                  json.loads(f.read_text())
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          if bad:
+              print("\n".join(bad)); raise SystemExit(1)
+          print("All JSON files valid")
+          PY
