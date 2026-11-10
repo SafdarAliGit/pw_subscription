@@ -1,4 +1,5 @@
 import frappe
+from frappe.rate_limiter import rate_limit
 from frappe.utils import add_days, add_months, date_diff, now, today
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -355,7 +356,7 @@ def get_cities_by_country(country):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=5, seconds=600)
+@rate_limit(limit=5, seconds=600)
 def send_email_otp(email):
     import random
     import re
@@ -404,7 +405,7 @@ def send_email_otp(email):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=10, seconds=600)
+@rate_limit(limit=10, seconds=600)
 def verify_email_otp(email, otp):
     email = (email or "").strip().lower()
     otp   = (otp or "").strip()
@@ -453,7 +454,7 @@ def _normalize_phone(phone):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=5, seconds=600)
+@rate_limit(limit=5, seconds=600)
 def send_phone_otp(phone):
     import re
 
@@ -490,7 +491,7 @@ def send_phone_otp(phone):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=10, seconds=600)
+@rate_limit(limit=10, seconds=600)
 def verify_phone_otp(phone, otp):
     import requests as _req
     otp = (otp or "").strip()
@@ -588,7 +589,7 @@ def check_email(email):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=10, seconds=3600)
+@rate_limit(limit=10, seconds=3600)
 def register_clinic(clinic_name, email, physician_name, password, contact, address,
                     country=None, city=None, clinic_mode="Clinic"):
     import re as _re
