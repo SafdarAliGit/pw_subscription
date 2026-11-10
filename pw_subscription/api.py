@@ -1,6 +1,5 @@
 import frappe
-from frappe.utils import today, add_days, add_months, now, date_diff, now_datetime
-
+from frappe.utils import add_days, add_months, date_diff, now, today
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -17,7 +16,8 @@ def _get_settings():
 
 def _read_maintenance_modes():
     """Return {site_name: bool} from each customer site's site_config.json."""
-    import json, os
+    import json
+    import os
     result = {}
     try:
         sites_dir = os.path.join(
@@ -321,7 +321,8 @@ def submit_payment_proof(email, subscription_name, plan_label, duration_months,
         pass
 
     return {"success": True, "proof_name": proof.name,
-            "message": "Payment proof submitted successfully. We will review and activate your subscription within a few hours."}
+            "message": "Payment proof submitted successfully. We will review and "
+                       "activate your subscription within a few hours."}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -354,8 +355,10 @@ def get_cities_by_country(country):
 
 
 @frappe.whitelist(allow_guest=True)
+@frappe.rate_limit(limit=5, seconds=600)
 def send_email_otp(email):
-    import random, re
+    import random
+    import re
     email = (email or "").strip().lower()
     if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
         frappe.throw("Invalid email address.")
@@ -374,11 +377,15 @@ def send_email_otp(email):
 
     subject = f"{app_name} — Your Email Verification Code"
     body = f"""
-<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:2rem;border:1px solid #e2e8f0;border-radius:12px">
+<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:2rem;
+            border:1px solid #e2e8f0;border-radius:12px">
   <h2 style="margin:0 0 1rem;color:#1e293b">Verify your email address</h2>
-  <p style="color:#475569;margin:0 0 1.5rem">Use the code below to complete your {app_name} registration. It expires in <strong>10 minutes</strong>.</p>
-  <div style="background:#f1f5f9;border-radius:8px;padding:1.5rem;text-align:center;font-size:2rem;font-weight:700;letter-spacing:.3em;color:#1d4ed8">{otp}</div>
-  <p style="color:#94a3b8;font-size:.85rem;margin:1.5rem 0 0">If you did not request this, please ignore this email.</p>
+  <p style="color:#475569;margin:0 0 1.5rem">Use the code below to complete your
+     {app_name} registration. It expires in <strong>10 minutes</strong>.</p>
+  <div style="background:#f1f5f9;border-radius:8px;padding:1.5rem;text-align:center;
+              font-size:2rem;font-weight:700;letter-spacing:.3em;color:#1d4ed8">{otp}</div>
+  <p style="color:#94a3b8;font-size:.85rem;margin:1.5rem 0 0">If you did not request
+     this, please ignore this email.</p>
 </div>""".strip()
 
     try:
@@ -397,8 +404,8 @@ def send_email_otp(email):
 
 
 @frappe.whitelist(allow_guest=True)
+@frappe.rate_limit(limit=10, seconds=600)
 def verify_email_otp(email, otp):
-    import re
     email = (email or "").strip().lower()
     otp   = (otp or "").strip()
 
@@ -432,7 +439,8 @@ def _msg91_settings():
     template_id = (s.msg91_template_id or "").strip()
     sender_id   = (s.msg91_sender_id or "OTPSMS").strip()
     if not auth_key or not template_id:
-        frappe.throw("MSG91 is not fully configured. Set Auth Key and Template ID in PW Subscription Settings.")
+        frappe.throw("MSG91 is not fully configured. "
+                     "Set Auth Key and Template ID in PW Subscription Settings.")
     return auth_key, template_id, sender_id
 
 
@@ -445,8 +453,11 @@ def _normalize_phone(phone):
 
 
 @frappe.whitelist(allow_guest=True)
+@frappe.rate_limit(limit=5, seconds=600)
 def send_phone_otp(phone):
-    import re, requests as _req
+    import re
+
+    import requests as _req
     phone = (phone or "").strip()
     raw_digits = re.sub(r"[\s\-().]", "", phone)
     if not re.match(r"^\+?[0-9]{7,15}$", raw_digits):
@@ -479,6 +490,7 @@ def send_phone_otp(phone):
 
 
 @frappe.whitelist(allow_guest=True)
+@frappe.rate_limit(limit=10, seconds=600)
 def verify_phone_otp(phone, otp):
     import requests as _req
     otp = (otp or "").strip()
@@ -531,7 +543,8 @@ def check_clinic_name(clinic_name):
     if '--' in clinic_name:
         return {"available": False, "message": "No consecutive hyphens allowed"}
     if not re.match(r'^[a-z][a-z0-9-]*$', clinic_name):
-        return {"available": False, "message": "Only lowercase letters (a–z), numbers (0–9) and hyphens (-) allowed"}
+        return {"available": False,
+                "message": "Only lowercase letters (a–z), numbers (0–9) and hyphens (-) allowed"}
 
     _reserved = {
         'www','mail','ftp','smtp','imap','pop','ns1','ns2','ns3','vpn','cdn',
@@ -575,6 +588,7 @@ def check_email(email):
 
 
 @frappe.whitelist(allow_guest=True)
+@frappe.rate_limit(limit=10, seconds=3600)
 def register_clinic(clinic_name, email, physician_name, password, contact, address,
                     country=None, city=None, clinic_mode="Clinic"):
     import re as _re
@@ -832,7 +846,7 @@ def get_status():
 
 @frappe.whitelist()
 def get_control_room_data():
-    frappe.only_for("System Manager")
+    _require_portal_access()
 
     subs = frappe.get_all(
         "PW Subscription",
@@ -976,8 +990,8 @@ def ping_site(site_url, timeout=None):
     if not site_url or not site_url.startswith("http"):
         return {"online": False, "message": "Invalid URL"}
 
-    import urllib.request
     import time
+    import urllib.request
     start = time.time()
     try:
         req = urllib.request.Request(site_url, method="HEAD")
@@ -993,7 +1007,7 @@ def ping_site(site_url, timeout=None):
 @frappe.whitelist()
 def get_provisioning_log(request_name):
     """Return the full provisioning log for a request — admin use."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     if not request_name:
         frappe.throw("request_name is required.")
     result = frappe.db.get_value(
@@ -1010,7 +1024,7 @@ def get_provisioning_log(request_name):
 @frappe.whitelist()
 def approve_payment(proof_name, admin_notes=None):
     """Approve a payment proof and activate the subscription."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     proof = frappe.get_doc("Payment Proof", proof_name)
     if proof.status != "Pending":
         frappe.throw(f"This proof is already {proof.status}.")
@@ -1057,7 +1071,7 @@ def approve_payment(proof_name, admin_notes=None):
 @frappe.whitelist()
 def reject_payment(proof_name, admin_notes=None):
     """Reject a payment proof."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     proof = frappe.get_doc("Payment Proof", proof_name)
     if proof.status != "Pending":
         frappe.throw(f"This proof is already {proof.status}.")
@@ -1077,7 +1091,7 @@ def reject_payment(proof_name, admin_notes=None):
 @frappe.whitelist()
 def activate_subscription(subscription_name=None, end_date=None, payment_reference=None,
                           notes=None, plan_label=None, duration_months=None):
-    frappe.only_for("System Manager")
+    _require_portal_access()
 
     # Support legacy call (no subscription_name) from old portal
     if not subscription_name:
@@ -1119,7 +1133,7 @@ def activate_subscription(subscription_name=None, end_date=None, payment_referen
 
 @frappe.whitelist()
 def extend_trial(subscription_name=None, extra_days=7):
-    frappe.only_for("System Manager")
+    _require_portal_access()
 
     if not subscription_name:
         from pw_subscription.subscription_check import get_current_subscription
@@ -1146,7 +1160,7 @@ def extend_trial(subscription_name=None, extra_days=7):
 
 @frappe.whitelist()
 def cancel_subscription(subscription_name, notes=None):
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     old_status = sub.status
     sub.status = "Cancelled"
@@ -1162,7 +1176,7 @@ def cancel_subscription(subscription_name, notes=None):
 
 @frappe.whitelist()
 def suspend_site(subscription_name, reason=None):
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if sub.is_suspended:
         frappe.throw("Site is already suspended.")
@@ -1197,7 +1211,7 @@ def suspend_site(subscription_name, reason=None):
 
 @frappe.whitelist()
 def unsuspend_site(subscription_name):
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.is_suspended:
         frappe.throw("Site is not suspended.")
@@ -1233,7 +1247,7 @@ def unsuspend_site(subscription_name):
 @frappe.whitelist()
 def send_reminder_manual(subscription_name):
     """Manually trigger a renewal reminder email for a specific subscription."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     try:
         s = _get_settings()
@@ -1252,7 +1266,7 @@ def send_reminder_manual(subscription_name):
 @frappe.whitelist()
 def delete_site_permanently(subscription_name, confirm_text=None):
     """Drop the site from bench and delete all related records. IRREVERSIBLE."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     if confirm_text != "DELETE":
         frappe.throw("Type DELETE to confirm permanent deletion.")
 
@@ -1265,8 +1279,9 @@ def delete_site_permanently(subscription_name, confirm_text=None):
             s = _get_settings()
             db_pass = s.get_password("mariadb_root_password") or ""
             if db_pass:
-                from pw_subscription.site_provisioning import _run, _bench_dir
                 import os
+
+                from pw_subscription.site_provisioning import _bench_dir, _run
                 site_dir = os.path.join(_bench_dir(), "sites", site_name)
                 if os.path.exists(site_dir):
                     _run(["drop-site", site_name, "--mariadb-root-password", db_pass, "--force"],
@@ -1292,7 +1307,7 @@ def delete_site_permanently(subscription_name, confirm_text=None):
 @frappe.whitelist()
 def backup_site(subscription_name):
     """Run bench backup --with-files for a managed site."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
@@ -1319,12 +1334,14 @@ def _fmt_backup_time(ts_str):
 @frappe.whitelist()
 def list_site_backups(subscription_name):
     """List available backup sets for a managed site (newest first, up to 10)."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
+    import glob as _glob
+    import os
+
     from pw_subscription.site_provisioning import _bench_dir
-    import os, glob as _glob
     backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
     if not os.path.exists(backup_dir):
         return {"backups": [], "site_name": sub.site_name}
@@ -1350,14 +1367,15 @@ def list_site_backups(subscription_name):
 @frappe.whitelist()
 def download_site_backup(subscription_name, filename):
     """Stream a backup file as a browser download (GET-friendly)."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name for this subscription.")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
         frappe.throw("Invalid filename.")
-    from pw_subscription.site_provisioning import _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir
     backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
     filepath = os.path.join(backup_dir, filename)
     if not os.path.isfile(filepath):
@@ -1371,15 +1389,16 @@ def download_site_backup(subscription_name, filename):
 @frappe.whitelist()
 def restore_site_backup(subscription_name, db_file, pub_file=None, priv_file=None):
     """Restore a managed site from a selected backup set. DESTRUCTIVE."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
     for fname in [db_file, pub_file, priv_file]:
         if fname and ("/" in fname or "\\" in fname or ".." in fname):
             frappe.throw("Invalid filename.")
-    from pw_subscription.site_provisioning import _run, _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir, _run
     backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
     db_path = os.path.join(backup_dir, db_file)
     if not os.path.isfile(db_path):
@@ -1412,7 +1431,7 @@ def restore_site_backup(subscription_name, db_file, pub_file=None, priv_file=Non
 @frappe.whitelist()
 def restore_from_uploaded_backup(subscription_name):
     """Restore a site from user-uploaded backup files. DESTRUCTIVE."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
@@ -1421,8 +1440,9 @@ def restore_from_uploaded_backup(subscription_name):
     if "db_file" not in request_files or not request_files["db_file"].filename:
         frappe.throw("Database backup file is required.")
 
-    from pw_subscription.site_provisioning import _run, _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir, _run
 
     backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
     os.makedirs(backup_dir, exist_ok=True)
@@ -1485,8 +1505,10 @@ def _emit_progress(job_id, user, status, line="", percent=None):
 
 def _run_streaming(args, job_id, user, timeout=600):
     """Run a bench command and emit each output line via realtime."""
-    from pw_subscription.site_provisioning import _find_bench, _bench_dir, _run_env
-    import subprocess, time
+    import subprocess
+    import time
+
+    from pw_subscription.site_provisioning import _bench_dir, _find_bench, _run_env
 
     bench_exe = _find_bench()
     env = _run_env()
@@ -1528,7 +1550,7 @@ def _run_streaming(args, job_id, user, timeout=600):
 @frappe.whitelist()
 def start_backup_job(subscription_name):
     """Enqueue a backup and return a job_id for progress tracking."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
@@ -1538,7 +1560,7 @@ def start_backup_job(subscription_name):
         "pw_subscription.api._job_backup",
         queue="default", timeout=600,
         subscription_name=subscription_name,
-        pw_job_id=job_id, user=frappe.session.user,
+        pw_pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name}
 
@@ -1574,15 +1596,16 @@ def _job_backup(subscription_name, pw_job_id, user):
 @frappe.whitelist()
 def start_restore_job(subscription_name, db_file, pub_file=None, priv_file=None):
     """Enqueue a restore from existing backup and return a job_id."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured.")
     for fname in [db_file, pub_file, priv_file]:
         if fname and ("/" in fname or "\\" in fname or ".." in fname):
             frappe.throw("Invalid filename.")
-    from pw_subscription.site_provisioning import _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir
     backup_dir = os.path.join(_bench_dir(), "sites", sub.site_name, "private", "backups")
     if not os.path.isfile(os.path.join(backup_dir, db_file)):
         frappe.throw("Database backup file not found.")
@@ -1593,14 +1616,15 @@ def start_restore_job(subscription_name, db_file, pub_file=None, priv_file=None)
         queue="default", timeout=900,
         subscription_name=subscription_name,
         db_file=db_file, pub_file=pub_file, priv_file=priv_file,
-        pw_job_id=job_id, user=frappe.session.user,
+        pw_pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name}
 
 
 def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, priv_file=None):
-    from pw_subscription.site_provisioning import _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir
     sub = frappe.get_doc("PW Subscription", subscription_name)
     site_name = sub.site_name
     backup_dir = os.path.join(_bench_dir(), "sites", site_name, "private", "backups")
@@ -1614,10 +1638,12 @@ def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, pri
         cmd = ["--site", site_name, "restore", os.path.join(backup_dir, db_file)]
         if pub_file:
             p = os.path.join(backup_dir, pub_file)
-            if os.path.isfile(p): cmd += ["--with-public-files", p]
+            if os.path.isfile(p):
+                cmd += ["--with-public-files", p]
         if priv_file:
             p = os.path.join(backup_dir, priv_file)
-            if os.path.isfile(p): cmd += ["--with-private-files", p]
+            if os.path.isfile(p):
+                cmd += ["--with-private-files", p]
         if db_pass:
             cmd += ["--mariadb-root-password", db_pass]
         _emit_progress(pw_job_id, user, "running",
@@ -1645,7 +1671,7 @@ def _job_restore(subscription_name, db_file, pw_job_id, user, pub_file=None, pri
 @frappe.whitelist()
 def start_install_job(subscription_name, app_name, repo_url=None, branch=None):
     """Enqueue an app install and return a job_id."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     import re as _re
     app_name = (app_name or "").strip()
     if not app_name or not _re.match(r'^[a-z][a-z0-9_-]*$', app_name):
@@ -1660,14 +1686,15 @@ def start_install_job(subscription_name, app_name, repo_url=None, branch=None):
         queue="default", timeout=900,
         subscription_name=subscription_name,
         app_name=app_name, repo_url=repo_url, branch=branch,
-        job_id=job_id, user=frappe.session.user,
+        pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name, "app_name": app_name}
 
 
 def _job_install(subscription_name, app_name, job_id, user, repo_url=None, branch=None):
-    from pw_subscription.site_provisioning import _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir
     sub = frappe.get_doc("PW Subscription", subscription_name)
     try:
         app_dir = os.path.join(_bench_dir(), "apps", app_name)
@@ -1699,7 +1726,7 @@ def _job_install(subscription_name, app_name, job_id, user, repo_url=None, branc
 @frappe.whitelist()
 def start_uninstall_job(subscription_name, app_name):
     """Enqueue an app uninstall and return a job_id."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     app_name = (app_name or "").strip()
     if not app_name or app_name == "frappe":
         frappe.throw("Cannot uninstall 'frappe'.")
@@ -1713,7 +1740,7 @@ def start_uninstall_job(subscription_name, app_name):
         queue="default", timeout=600,
         subscription_name=subscription_name,
         app_name=app_name,
-        job_id=job_id, user=frappe.session.user,
+        pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name, "app_name": app_name}
 
@@ -1739,7 +1766,7 @@ def _job_uninstall(subscription_name, app_name, job_id, user):
 @frappe.whitelist()
 def start_migrate_job(subscription_name):
     """Enqueue a bench migrate and return a job_id."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured.")
@@ -1749,27 +1776,10 @@ def start_migrate_job(subscription_name):
         "pw_subscription.api._job_migrate",
         queue="default", timeout=900,
         subscription_name=subscription_name,
-        job_id=job_id, user=frappe.session.user,
+        pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name}
 
-
-def _job_migrate(subscription_name, job_id, user):
-    sub = frappe.get_doc("PW Subscription", subscription_name)
-    try:
-        _emit_progress(job_id, user, "running",
-                       line=f"Running migrations on {sub.site_name}…", percent=5)
-        _run_streaming(
-            ["--site", sub.site_name, "migrate"],
-            job_id, user, timeout=650,
-        )
-        _log_action(sub.name, "Extended", f"Site {sub.site_name} migrated successfully.")
-        frappe.db.commit()
-        _emit_progress(job_id, user, "success",
-                       line=f"All migrations completed for {sub.site_name}.", percent=100)
-    except Exception as e:
-        _emit_progress(job_id, user, "error", line=str(e)[:600])
-        frappe.log_error(str(e), f"Migrate job {job_id}")
 
 
 # ── App Management ──────────────────────────────────────────────────────────
@@ -1777,7 +1787,7 @@ def _job_migrate(subscription_name, job_id, user):
 @frappe.whitelist()
 def list_site_apps(subscription_name):
     """List apps installed on a managed site using bench list-apps."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
@@ -1802,7 +1812,7 @@ def list_site_apps(subscription_name):
 @frappe.whitelist()
 def install_app(subscription_name, app_name, repo_url=None, branch=None):
     """Install a Frappe app on a managed site (fetches from repo if not in bench)."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     import re as _re
     app_name = (app_name or "").strip()
     if not app_name or not _re.match(r'^[a-z][a-z0-9_-]*$', app_name):
@@ -1810,8 +1820,9 @@ def install_app(subscription_name, app_name, repo_url=None, branch=None):
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
-    from pw_subscription.site_provisioning import _run, _bench_dir
     import os
+
+    from pw_subscription.site_provisioning import _bench_dir, _run
     app_dir = os.path.join(_bench_dir(), "apps", app_name)
     if not os.path.isdir(app_dir):
         if not repo_url:
@@ -1830,7 +1841,7 @@ def install_app(subscription_name, app_name, repo_url=None, branch=None):
 @frappe.whitelist()
 def uninstall_app(subscription_name, app_name):
     """Uninstall a Frappe app from a managed site."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     app_name = (app_name or "").strip()
     if not app_name or app_name == "frappe":
         frappe.throw("Cannot uninstall 'frappe' or invalid app name.")
@@ -1838,8 +1849,10 @@ def uninstall_app(subscription_name, app_name):
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
 
-    from pw_subscription.site_provisioning import _find_bench, _bench_dir, _run_env
-    import subprocess, re as _re
+    import re as _re
+    import subprocess
+
+    from pw_subscription.site_provisioning import _bench_dir, _find_bench, _run_env
 
     bench_exe = _find_bench()
     bd = _bench_dir()
@@ -1848,7 +1861,7 @@ def uninstall_app(subscription_name, app_name):
     result = subprocess.run(
         [bench_exe, "--site", sub.site_name, "uninstall-app", app_name, "--yes", "--no-backup"],
         cwd=bd, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-        env=env, timeout=300,
+        env=env, timeout=300, check=False,
     )
 
     if result.returncode != 0:
@@ -1857,7 +1870,7 @@ def uninstall_app(subscription_name, app_name):
         check = subprocess.run(
             [bench_exe, "--site", sub.site_name, "list-apps"],
             cwd=bd, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-            env=env, timeout=30,
+            env=env, timeout=30, check=False,
         )
         still_installed = any(
             line.split()[0] == app_name
@@ -1877,7 +1890,7 @@ def uninstall_app(subscription_name, app_name):
 @frappe.whitelist()
 def migrate_site(subscription_name):
     """Enqueue a bench migrate and return a job_id for progress tracking."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     sub = frappe.get_doc("PW Subscription", subscription_name)
     if not sub.site_name:
         frappe.throw("No site name configured for this subscription.")
@@ -1887,7 +1900,7 @@ def migrate_site(subscription_name):
         "pw_subscription.api._job_migrate",
         queue="default", timeout=700,
         subscription_name=subscription_name,
-        pw_job_id=job_id, user=frappe.session.user,
+        pw_pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name}
 
@@ -1993,7 +2006,7 @@ def _send_rejection_email(proof, admin_notes):
 @frappe.whitelist(allow_guest=False)
 def get_server_stats():
     """Collect system metrics and return to caller."""
-    frappe.only_for("System Manager")
+    _require_portal_access()
     stats = _collect_server_stats()
     return stats
 
@@ -2008,7 +2021,10 @@ def push_server_stats_realtime():
 
 
 def _collect_server_stats():
-    import psutil, os, time as _time
+    import os
+    import time as _time
+
+    import psutil
 
     now = _time.time()
 

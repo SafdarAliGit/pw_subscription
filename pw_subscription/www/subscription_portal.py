@@ -1,5 +1,4 @@
 import frappe
-from frappe.utils import today, date_diff
 
 
 def get_context(context):

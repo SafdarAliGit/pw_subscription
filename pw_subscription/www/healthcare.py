@@ -8,7 +8,7 @@ from frappe.utils import get_url
 def _public_image_url(file_path):
     if not file_path:
         return None
-    if file_path.startswith("http://") or file_path.startswith("https://"):
+    if file_path.startswith(("http://", "https://")):
         return file_path
     try:
         filename = os.path.basename(file_path)

@@ -3,7 +3,7 @@ import re
 import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
-from frappe.utils import today, add_days, now
+from frappe.utils import add_days, today
 
 
 class PWSubscription(Document):

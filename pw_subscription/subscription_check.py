@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import today, add_days, date_diff, now
+from frappe.utils import add_days, date_diff, now, today
 
 
 def get_current_subscription():
@@ -31,12 +31,10 @@ def update_subscription_statuses():
         grace_days = settings.grace_period_days or 3
         auto_suspend_trial = settings.auto_suspend_on_trial_expiry
         auto_suspend_sub = settings.auto_suspend_on_subscription_expiry
-        suspension_mode = settings.suspension_mode or "Soft Block"
     except Exception:
         grace_days = 3
         auto_suspend_trial = False
         auto_suspend_sub = False
-        suspension_mode = "Soft Block"
 
     for s in subs:
         new_status = None
@@ -144,13 +142,19 @@ def _send_reminder_email(sub, days_left, settings):
         elif days_left <= 3:
             urgency = f"URGENT — Only {days_left} Day(s) Left"
             color = "#F59E0B"
-            msg_line = f"Your subscription expires in <strong>{days_left} day(s)</strong>. Please renew immediately to avoid interruption."
+            msg_line = (f"Your subscription expires in <strong>{days_left} day(s)</strong>. "
+                        "Please renew immediately to avoid interruption.")
         else:
             urgency = f"Reminder — {days_left} Days Until Expiry"
             color = "#2563EB"
-            msg_line = f"Your subscription will expire in <strong>{days_left} day(s)</strong>. Please renew to continue uninterrupted access."
+            msg_line = (f"Your subscription will expire in <strong>{days_left} day(s)</strong>. "
+                        "Please renew to continue uninterrupted access.")
 
         subject = f"{app_name} Subscription — {urgency}"
+        bank_block = (
+            f'<pre style="background:#F1F5F9;padding:1rem;border-radius:8px">{bank_details}</pre>'
+            if bank_details else ""
+        )
         body = f"""
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1E293B">
   <h2 style="color:{color}">{app_name} — {urgency}</h2>
@@ -177,7 +181,7 @@ def _send_reminder_email(sub, days_left, settings):
     <li>Submit your payment proof at your subscription portal</li>
     <li>We will activate your subscription within a few hours</li>
   </ol>
-  {f'<pre style="background:#F1F5F9;padding:1rem;border-radius:8px">{bank_details}</pre>' if bank_details else ''}
+  {bank_block}
   <p>Need help? Contact us:</p>
   <ul>
     {f'<li>Email: <a href="mailto:{contact_email}">{contact_email}</a></li>' if contact_email else ''}

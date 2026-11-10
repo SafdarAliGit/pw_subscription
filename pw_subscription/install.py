@@ -1,9 +1,8 @@
 import frappe
-from frappe.utils import today, add_days
+from frappe.utils import add_days, today
 
 
 def after_install():
-    frappe.db.commit()
     frappe.clear_cache()
     create_settings()
     create_initial_subscription()
@@ -22,7 +21,13 @@ def create_settings():
             doc.grace_period_days = 3
             doc.contact_email = "safdar211@gmail.com"
             doc.contact_phone = "+92-XXX-XXXXXXX"
-            doc.bank_details = "Bank: [Your Bank Name]\nAccount Title: [Your Name]\nAccount No: [XXXXXXXXXX]\nIBAN: PK00XXXX0000000000000000\nBranch: [Branch Name]"
+            doc.bank_details = (
+                "Bank: [Your Bank Name]\n"
+                "Account Title: [Your Name]\n"
+                "Account No: [XXXXXXXXXX]\n"
+                "IBAN: PK00XXXX0000000000000000\n"
+                "Branch: [Branch Name]"
+            )
             doc.enforce_subscription = 1
             doc.save(ignore_permissions=True)
         print("  [✓] Subscription settings created")

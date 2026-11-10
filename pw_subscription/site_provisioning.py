@@ -1,10 +1,10 @@
-import frappe
+import glob
 import json
 import os
-import glob
 import subprocess
-from frappe.utils import now_datetime
 
+import frappe
+from frappe.utils import now_datetime
 
 STEP_STARTING   = 0
 STEP_BACKUP     = 1
@@ -82,6 +82,7 @@ def _run(args, request_name, step_label, timeout=600):
         text=True,
         env=_run_env(),
         timeout=timeout,
+        check=False,
     )
     if result.returncode != 0:
         err = (result.stderr or result.stdout or "Unknown error").strip()
@@ -274,7 +275,8 @@ def _provision_site(request_name):
             _run(
                 ["--site", site_name, "execute", "frappe.db.sql",
                  "--kwargs", json.dumps({
-                     "query": "UPDATE `tabPW Clinic Settings` SET clinic_mode=%s WHERE name='PW Clinic Settings'",
+                     "query": "UPDATE `tabPW Clinic Settings` SET clinic_mode=%s "
+                              "WHERE name='PW Clinic Settings'",
                      "values": [clinic_mode],
                      "auto_commit": 1,
                  })],
@@ -330,8 +332,10 @@ def _provision_site(request_name):
 
         _log(request_name, "Writing SSL certificate config to site_config.json...")
         try:
-            ssl_cert = (getattr(settings, "ssl_certificate", "") or "").strip() or "/etc/nginx/ssl/corelogics.uk.pem"
-            ssl_key  = (getattr(settings, "ssl_certificate_key", "") or "").strip() or "/etc/nginx/ssl/corelogics.uk.key"
+            ssl_cert = (getattr(settings, "ssl_certificate", "") or "").strip() \
+                or "/etc/nginx/ssl/corelogics.uk.pem"
+            ssl_key  = (getattr(settings, "ssl_certificate_key", "") or "").strip() \
+                or "/etc/nginx/ssl/corelogics.uk.key"
             missing = [p for p in [ssl_cert, ssl_key] if not os.path.exists(p)]
             if missing:
                 _log(request_name, f"⚠ SSL file(s) not found, skipping SSL config: {', '.join(missing)}")
@@ -360,13 +364,14 @@ def _provision_site(request_name):
             _log(request_name, "Reloading nginx...")
             _reload = subprocess.run(
                 ["sudo", "systemctl", "reload", "nginx"],
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, timeout=30, check=False,
             )
             if _reload.returncode == 0:
                 nginx_reloaded = True
                 _log(request_name, "✓ Nginx reloaded.")
             else:
-                _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {(_reload.stderr or '').strip()[:200]}")
+                _err = (_reload.stderr or "").strip()[:200]
+                _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {_err}")
         except Exception as _prod_exc:
             _log(request_name, f"⚠ bench setup nginx skipped: {str(_prod_exc)[:200]}")
 
@@ -400,12 +405,13 @@ def _provision_site(request_name):
             try:
                 _reload = subprocess.run(
                     ["sudo", "systemctl", "reload", "nginx"],
-                    capture_output=True, text=True, timeout=30,
+                    capture_output=True, text=True, timeout=30, check=False,
                 )
                 if _reload.returncode == 0:
                     _log(request_name, "✓ Nginx reloaded.")
                 else:
-                    _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {(_reload.stderr or '').strip()[:200]}")
+                    _err = (_reload.stderr or "").strip()[:200]
+                    _log(request_name, f"⚠ nginx reload exited {_reload.returncode}: {_err}")
             except Exception as _reload_exc:
                 _log(request_name, f"⚠ nginx reload skipped: {str(_reload_exc)[:200]}")
 
@@ -491,7 +497,7 @@ def _infer_step_from_log(log):
 def _last_log_line(log):
     if not log:
         return ""
-    lines = [l.strip() for l in log.strip().splitlines() if l.strip()]
+    lines = [line.strip() for line in log.strip().splitlines() if line.strip()]
     return lines[-1] if lines else ""
 
 
@@ -569,11 +575,11 @@ def _create_site_user_via_bench(site_name, email, first_name, last_name, passwor
 
 
 def _enqueue_provision(request_name):
-    kwargs = dict(
-        method="pw_subscription.site_provisioning._provision_site",
-        request_name=request_name,
-        timeout=1800,
-    )
+    kwargs = {
+        "method": "pw_subscription.site_provisioning._provision_site",
+        "request_name": request_name,
+        "timeout": 1800,
+    }
     try:
         frappe.enqueue(queue="long", **kwargs)
     except Exception:
