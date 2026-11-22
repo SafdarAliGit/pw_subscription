@@ -9,6 +9,7 @@
   "clinic_name",
   "physician_name",
   "clinic_mode",
+  "application_name",
   "contact_email",
   "cb_top",
   "status",
@@ -50,6 +51,7 @@
  "label": "Clinic Mode",
  "options": "Clinic\nHospital"
 },
+  {"fieldname":"application_name","fieldtype":"Data","label":"Application Name","description":"Application type selected during registration (e.g. CureDesk Clinic)"},
   {"fieldname":"contact_email","fieldtype":"Data","label":"Email","options":"Email"},
   {"fieldname":"cb_top","fieldtype":"Column Break"},
   {"fieldname":"status","fieldtype":"Select","in_list_view":1,"label":"Status","options":"Trial\nActive\nGrace Period\nExpired\nCancelled","default":"Trial","reqd":1},

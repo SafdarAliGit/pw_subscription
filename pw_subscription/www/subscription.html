@@ -33,7 +33,7 @@
   }
 
   html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', sans-serif; background: var(--light); color: var(--dark); line-height: 1.6; }
+  body { font-family: 'Inter', sans-serif; background: #152338; color: var(--dark); line-height: 1.6; }
 
   /* ── NAVBAR ── */
   .pw-nav {
@@ -826,24 +826,21 @@
             <div class="reg-hint" id="regPhysicianHint"></div>
           </div>
 
-          <!-- Practice Type -->
+          <!-- Application Type -->
           <div class="reg-field full">
-            <label class="reg-label">Practice Type <span class="req">*</span></label>
+            <label class="reg-label">Application Type <span class="req">*</span></label>
             <div class="pw-mode-picker">
-              <label class="pw-mode-card active" id="modeClinicCard" for="modeClinic">
-                <input type="radio" name="clinicMode" id="modeClinic" value="Clinic" checked>
-                <div class="pw-mode-card-icon">🏥</div>
-                <div class="pw-mode-card-title">Clinic</div>
-                <div class="pw-mode-card-sub">Single doctor<br>practice</div>
+              {% for app in app_types %}
+              <label class="pw-mode-card{% if loop.first %} active{% endif %}" {% if loop.first %}id="modeFirstCard"{% endif %}>
+                <input type="radio" name="clinicMode" value="{{ app.application_name }}"{% if loop.first %} checked{% endif %}>
+                <div class="pw-mode-card-icon">{{ app.icon or "🏥" }}</div>
+                <div class="pw-mode-card-title">{{ app.application_name }}</div>
+                <div class="pw-mode-card-sub">{{ app.description | replace("\n", "<br>") | safe }}</div>
                 <div class="pw-mode-card-check">✓</div>
               </label>
-              <label class="pw-mode-card" id="modeHospitalCard" for="modeHospital">
-                <input type="radio" name="clinicMode" id="modeHospital" value="Hospital">
-                <div class="pw-mode-card-icon">🏨</div>
-                <div class="pw-mode-card-title">Hospital</div>
-                <div class="pw-mode-card-sub">Multiple doctors<br>&amp; departments</div>
-                <div class="pw-mode-card-check">✓</div>
-              </label>
+              {% else %}
+              <p style="color:var(--muted);font-size:.85rem">No application types available.</p>
+              {% endfor %}
             </div>
           </div>
 
@@ -1879,7 +1876,7 @@
         body: JSON.stringify({
           clinic_name:    f.clinic.value.trim(),
           physician_name: f.physician.value.trim(),
-          clinic_mode:    (document.querySelector('input[name="clinicMode"]:checked') || {}).value || 'Clinic',
+          application_name: (document.querySelector('input[name="clinicMode"]:checked') || {}).value || '',
           email:          f.email.value.trim(),
           password:       f.password.value,
           contact:        f.contact.value.trim(),
@@ -1916,11 +1913,12 @@
       errBox.style.display = "block";
     }
 
-    // Practice Type card highlight
+    // Application Type card highlight
     document.querySelectorAll('input[name="clinicMode"]').forEach(function(radio) {
       radio.addEventListener('change', function() {
         document.querySelectorAll('.pw-mode-card').forEach(function(card) {
-          card.classList.toggle('active', card.querySelector('input[name="clinicMode"]').checked);
+          var r = card.querySelector('input[name="clinicMode"]');
+          if (r) card.classList.toggle('active', r.checked);
         });
       });
     });

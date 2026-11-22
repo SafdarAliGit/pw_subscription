@@ -22,7 +22,7 @@
     --shadow-lg:0 20px 40px rgba(0,0,0,.12);
   }
   html{scroll-behavior:smooth}
-  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);line-height:1.6}
+  body{font-family:'Inter',sans-serif;background:#152338;color:var(--dark);line-height:1.6}
 
   /* ── NAV ── */
   .site-nav{
@@ -2402,7 +2402,7 @@ function hcToast(msg, type){
       <div class="reg-portal-badge"><span class="reg-portal-badge-dot"></span>Free for {{ trial_days }} days &mdash; no payment required</div>
       <div class="reg-portal-logo">{{ app_name }}</div>
       <h2 class="reg-portal-title">Start Your Free Trial</h2>
-      <p class="reg-portal-sub">Set up your clinic in under 2 minutes.</p>
+      <p class="reg-portal-sub" id="hcRegSubtitle">Set up your clinic in under 2 minutes.</p>
     </div>
 
     <!-- Registration Form -->
@@ -2411,7 +2411,7 @@ function hcToast(msg, type){
         <div class="reg-grid">
 
           <div class="reg-field full">
-            <label class="reg-label" for="hcRegClinicName">Clinic / Practice Name <span class="req">*</span></label>
+            <label class="reg-label" for="hcRegClinicName" id="hcRegNameLabel">Clinic / Practice Name <span class="req">*</span></label>
             <div class="reg-iw">
               <input type="text" id="hcRegClinicName" class="has-badge" placeholder="e.g. City Medical Centre" autocomplete="off">
               <div class="reg-avail" id="hcRegAvail"></div>
@@ -2425,22 +2425,19 @@ function hcToast(msg, type){
           </div>
 
           <div class="reg-field full">
-            <label class="reg-label">Account Type <span class="req">*</span></label>
+            <label class="reg-label">Application Type <span class="req">*</span></label>
             <div class="pw-mode-picker">
-              <label class="pw-mode-card active" id="hcModeClinicCard">
-                <input type="radio" name="hcClinicMode" id="hcModeClinic" value="Clinic" checked>
-                <div class="pw-mode-card-icon">🏥</div>
-                <div class="pw-mode-card-title">Clinic</div>
-                <div class="pw-mode-card-sub">Single clinic</div>
+              {% for app in app_types %}
+              <label class="pw-mode-card{% if loop.first %} active{% endif %}">
+                <input type="radio" name="hcClinicMode" value="{{ app.application_name }}"{% if loop.first %} checked{% endif %}>
+                <div class="pw-mode-card-icon">{{ app.icon or "🏥" }}</div>
+                <div class="pw-mode-card-title">{{ app.application_name }}</div>
+                <div class="pw-mode-card-sub">{{ app.description | replace("\n", "<br>") | safe }}</div>
                 <div class="pw-mode-card-check">✓</div>
               </label>
-              <label class="pw-mode-card" id="hcModeHospitalCard">
-                <input type="radio" name="hcClinicMode" id="hcModeHospital" value="Hospital">
-                <div class="pw-mode-card-icon">🏨</div>
-                <div class="pw-mode-card-title">Hospital</div>
-                <div class="pw-mode-card-sub">Multiple clinics<br>&amp; branches</div>
-                <div class="pw-mode-card-check">✓</div>
-              </label>
+              {% else %}
+              <p style="color:var(--muted);font-size:.85rem">No application types available.</p>
+              {% endfor %}
             </div>
           </div>
 
@@ -2521,7 +2518,7 @@ function hcToast(msg, type){
           </div>
 
           <div class="reg-field full">
-            <label class="reg-label" for="hcRegAddress">Clinic Address <span class="req">*</span></label>
+            <label class="reg-label" for="hcRegAddress" id="hcRegAddressLabel">Clinic Address <span class="req">*</span></label>
             <div class="reg-iw"><textarea id="hcRegAddress" placeholder="Street, City, Province"></textarea></div>
             <div class="reg-hint" id="hcRegAddressHint"></div>
           </div>
@@ -2767,14 +2764,33 @@ function hcToast(msg, type){
     hcPollProv(reqName);
   }
 
-  /* Mode card toggle */
+  /* Mode card toggle + dynamic label update */
+  function hcUpdateAppLabels(){
+    var radio = document.querySelector('input[name="hcClinicMode"]:checked');
+    var appName = radio ? radio.value : 'Clinic';
+    var sub = document.getElementById('hcRegSubtitle');
+    if(sub) sub.textContent = 'Set up your '+appName+' in under 2 minutes.';
+    var nameLabel = document.getElementById('hcRegNameLabel');
+    if(nameLabel) nameLabel.innerHTML = appName+' Name <span class="req">*</span>';
+    var addrLabel = document.getElementById('hcRegAddressLabel');
+    if(addrLabel) addrLabel.innerHTML = appName+' Address <span class="req">*</span>';
+    var steps = ['Preparing','Creating your','Importing','Configuring'];
+    var suffixes = [' template',' site',' data',' settings'];
+    for(var i=0;i<4;i++){
+      var el = document.getElementById('hcPt'+i);
+      if(el) el.textContent = steps[i]+' '+appName+suffixes[i];
+    }
+  }
   document.querySelectorAll('input[name="hcClinicMode"]').forEach(function(radio){
     radio.addEventListener('change', function(){
-      document.querySelectorAll('[id^="hcMode"]').forEach(function(card){
-        if(card.tagName==='LABEL'){ var r=card.querySelector('input[name="hcClinicMode"]'); if(r) card.classList.toggle('active',r.checked); }
+      document.querySelectorAll('#regFormModal .pw-mode-card').forEach(function(card){
+        var r = card.querySelector('input[name="hcClinicMode"]');
+        if(r) card.classList.toggle('active', r.checked);
       });
+      hcUpdateAppLabels();
     });
   });
+  hcUpdateAppLabels();
 
   /* Clinic name availability */
   var clinicInp = document.getElementById('hcRegClinicName');
@@ -2862,7 +2878,7 @@ function hcToast(msg, type){
       country:        document.getElementById('hcRegCountry').value.trim(),
       city:           document.getElementById('hcRegCity').value.trim(),
       address:        document.getElementById('hcRegAddress').value.trim(),
-      clinic_mode:    (document.querySelector('input[name="hcClinicMode"]:checked')||{}).value||'Clinic',
+      application_name: (document.querySelector('input[name="hcClinicMode"]:checked')||{}).value||'',
     },true)
     .then(function(r){ hcReqName=r.request_name; hcShowProv(); hcStartProv(r.request_name); })
     .catch(function(err){

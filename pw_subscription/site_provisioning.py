@@ -154,15 +154,26 @@ def _provision_site(request_name):
 
     try:
         settings     = frappe.get_single("PW Subscription Settings")
-        master_site  = (settings.master_site_name or "").strip()
         db_root_pass = settings.get_password("mariadb_root_password") or ""
 
-        if not master_site:
-            raise ValueError("Master Site Name is not configured in PW Subscription Settings.")
         if not db_root_pass:
             raise ValueError("MariaDB Root Password is not configured in PW Subscription Settings.")
 
         doc            = frappe.get_doc("Site Provisioning Request", request_name)
+
+        app_name    = (doc.application_name or "").strip()
+        master_site = ""
+        if app_name:
+            for row in (settings.application_types or []):
+                if row.application_name == app_name and row.is_active:
+                    master_site = (row.master_site_name or "").strip()
+                    break
+
+        if not master_site:
+            raise ValueError(
+                f"No active master site found for application '{app_name or 'unknown'}'. "
+                "Please configure Application Types in PW Subscription Settings."
+            )
         site_name      = doc.site_name
         sub_doc        = frappe.get_doc("PW Subscription", doc.subscription)
         admin_pass     = (sub_doc.get_password("initial_password") or "").strip()
@@ -525,13 +536,25 @@ def _create_site_user_via_bench(site_name, email, first_name, last_name, passwor
       2. DELETE System Manager role added by step 1
       3. INSERT PW Doctor role if not already present  (idempotent on retry)
     """
-    _run(
-        ["--site", site_name, "add-system-manager", email,
-         "--first-name", first_name or "Doctor",
-         "--last-name", last_name or "",
-         "--password", password],
-        None, "add-system-manager", timeout=60,
-    )
+    try:
+        _run(
+            ["--site", site_name, "add-system-manager", email,
+             "--first-name", first_name or "Doctor",
+             "--last-name", last_name or "",
+             "--password", password],
+            None, "add-system-manager", timeout=60,
+        )
+    except RuntimeError as e:
+        err_str = str(e)
+        if "DuplicateEntryError" in err_str or "Duplicate entry" in err_str:
+            # User already exists on the site — safe to continue; password
+            # will be set by the update_password step below.
+            _log(None, f"ℹ User '{email}' already exists on {site_name}, skipping creation")
+        else:
+            raise RuntimeError(
+                f"Could not create user '{email}' on site '{site_name}'. "
+                f"Please check the email address and try again."
+            ) from e
     _run(
         ["--site", site_name, "execute", "frappe.db.sql",
          "--kwargs", json.dumps({

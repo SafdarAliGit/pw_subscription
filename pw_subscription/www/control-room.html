@@ -6,7 +6,7 @@
 <style>
   .navbar,.web-footer,footer.web-footer,.footer-main{display:none!important}
   *,*::before,*::after{box-sizing:border-box}
-  body{font-family:'Inter',sans-serif;background:#0F172A;min-height:100vh;color:#E2E8F0}
+  body{font-family:'Inter',sans-serif;background-color:#0b1828 !important;min-height:100vh;color:#E2E8F0}
 
   /* Break out of Frappe's container max-width */
   .page-content,.website-page-container,.container{max-width:100%!important;padding-left:0!important;padding-right:0!important;margin-left:0!important;margin-right:0!important}
@@ -14,9 +14,15 @@
   :root{
     --primary:#3B82F6;--primary-dark:#2563EB;--success:#10B981;--warning:#F59E0B;--danger:#EF4444;
     --info:#8B5CF6;--dark:#0F172A;--card:#1E293B;--card2:#243044;--border:#334155;
-    --text:#E2E8F0;--muted:#94A3B8;--radius:12px;
+    --text:#E2E8F0;--muted:#b3bcc8;--radius:12px;
   }
 
+  #cnsProvStatus {
+  color: black; 
+}
+#cnsProvSite {
+  color: black !important;
+}
   /* ── Layout ── */
   .cr-wrap{margin:0;padding:1.5rem 2rem 4rem}
 
@@ -472,13 +478,16 @@
   @media(max-width:540px){.cns-grid{grid-template-columns:1fr}.cns-full{grid-column:auto}}
   /* Practice Type picker (shared with subscription pages) */
   .pw-mode-picker{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
-  .pw-mode-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 10px 12px;border:2px solid rgba(51,65,85,.7);border-radius:13px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s;background:rgba(15,23,42,.5);text-align:center;user-select:none}
+  .pw-mode-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 10px 12px;border:2px solid rgba(51,65,85,.7);border-radius:13px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s;background:rgba(123, 141, 183, 0.5);text-align:center;user-select:none;color:#000;-webkit-tap-highlight-color:transparent}
   .pw-mode-card:hover{border-color:#3B82F6;background:rgba(37,99,235,.1)}
+  .pw-mode-card:active{color:#000}
   .pw-mode-card input[type=radio]{position:absolute;opacity:0;width:0;height:0}
   .pw-mode-card.active{border-color:#3B82F6;background:rgba(37,99,235,.15);box-shadow:0 0 0 3px rgba(37,99,235,.2)}
   .pw-mode-card-icon{font-size:24px;line-height:1}
-  .pw-mode-card-title{font-weight:700;font-size:13px;color:#E2E8F0}
+  .pw-mode-card-title{font-weight:700;font-size:13px;color:#221d1d}
+  .pw-mode-card:active .pw-mode-card-title{color:#1c1818}
   .pw-mode-card-sub{font-size:11px;color:var(--muted);line-height:1.3}
+  .pw-mode-card:active .pw-mode-card-sub{color:var(--muted)}
   .pw-mode-card-check{position:absolute;top:6px;right:6px;width:17px;height:17px;border-radius:50%;background:#3B82F6;color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:opacity .18s,transform .18s}
   .pw-mode-card.active .pw-mode-card-check{opacity:1;transform:scale(1)}
 </style>
@@ -1114,9 +1123,9 @@
     <div id="cnsFormPanel" class="modal-body">
       <div class="cns-grid">
 
-        <!-- Clinic Name — left column -->
+        <!-- Application Name — left column -->
         <div class="form-group" style="grid-column:1">
-          <label class="form-label">Clinic Name <span style="color:var(--danger)">*</span></label>
+          <label class="form-label" id="cnsClinicNameLabel">Clinic Name <span style="color:var(--danger)">*</span></label>
           <div class="cns-input-wrap">
             <input type="text" class="form-control cns-form-control-pr" id="cnsClinicName"
                    placeholder="e.g. sunrise-clinic" autocomplete="off" oninput="cnsDebouncedCheck()">
@@ -1132,24 +1141,21 @@
           <input type="text" class="form-control" id="cnsPhysician" placeholder="Dr. Ahmed Khan">
         </div>
 
-        <!-- Practice Type -->
+        <!-- Application Type -->
         <div class="form-group cns-full">
-          <label class="form-label">Practice Type <span style="color:var(--danger)">*</span></label>
+          <label class="form-label">Application Type <span style="color:var(--danger)">*</span></label>
           <div class="pw-mode-picker">
-            <label class="pw-mode-card active" id="cnsModeClinicCard">
-              <input type="radio" name="cnsPracticeMode" id="cnsModeClinic" value="Clinic" checked>
-              <div class="pw-mode-card-icon">🏥</div>
-              <div class="pw-mode-card-title">Clinic</div>
-              <div class="pw-mode-card-sub">Single doctor<br>practice</div>
+            {% for app in app_types %}
+            <label class="pw-mode-card{% if loop.first %} active{% endif %}">
+              <input type="radio" name="cnsPracticeMode" value="{{ app.application_name }}"{% if loop.first %} checked{% endif %}>
+              <div class="pw-mode-card-icon">{{ app.icon or "🏥" }}</div>
+              <div class="pw-mode-card-title">{{ app.application_name }}</div>
+              <div class="pw-mode-card-sub">{{ app.description | replace("\n", "<br>") | safe }}</div>
               <div class="pw-mode-card-check">✓</div>
             </label>
-            <label class="pw-mode-card" id="cnsModeHospitalCard">
-              <input type="radio" name="cnsPracticeMode" id="cnsModeHospital" value="Hospital">
-              <div class="pw-mode-card-icon">🏨</div>
-              <div class="pw-mode-card-title">Hospital</div>
-              <div class="pw-mode-card-sub">Multiple doctors<br>&amp; departments</div>
-              <div class="pw-mode-card-check">✓</div>
-            </label>
+            {% else %}
+            <p style="color:var(--muted);font-size:.85rem">No application types configured. Add rows in PW Subscription Settings → Application Types.</p>
+            {% endfor %}
           </div>
         </div>
 
@@ -1433,7 +1439,7 @@ function renderTable(sites) {
       </div>
 
       <div class="site-card-badges">
-        ${s.clinic_mode === 'Hospital' ? `<div class="badge-mode-hospital">🏨 Hospital</div>` : `<div class="badge-mode-clinic">🏥 Clinic</div>`}
+        <div class="badge-mode-clinic">${esc(s.application_name || s.clinic_mode || 'Clinic')}</div>
         ${statusBadge}${suspBadge}
       </div>
 
@@ -1714,7 +1720,7 @@ function openLog(name) {
   document.getElementById('logInfo').innerHTML = `
     <div class="info-box-row"><span class="info-box-label">Clinic</span><span class="info-box-val">${esc(s.clinic_name)}</span></div>
     <div class="info-box-row"><span class="info-box-label">Site</span><span class="info-box-val">${esc(s.site_name)}</span></div>
-    <div class="info-box-row"><span class="info-box-label">Mode</span><span class="info-box-val">${esc(s.clinic_mode || 'Clinic')}</span></div>
+    <div class="info-box-row"><span class="info-box-label">Application</span><span class="info-box-val">${esc(s.application_name || s.clinic_mode || 'Clinic')}</span></div>
     <div class="info-box-row"><span class="info-box-label">Prov. Status</span><span class="info-box-val">${esc(s.provisioning_status)}</span></div>`;
   document.getElementById('logContent').textContent = 'Loading...';
   const retryBtn = document.getElementById('retryBtn');
@@ -1968,13 +1974,22 @@ let cnsPollTimer = null;
 let cnsReqName = null;
 let cnsSiteName = null;
 
-// Practice Type card interaction
+// Practice Type card interaction + dynamic label update
+function cnsUpdateAppLabels() {
+  var radio = document.querySelector('input[name="cnsPracticeMode"]:checked');
+  var appName = radio ? radio.value : 'Clinic';
+  var label = document.getElementById('cnsClinicNameLabel');
+  if (label) label.innerHTML = appName + ' Name <span style="color:var(--danger)">*</span>';
+  var input = document.getElementById('cnsClinicName');
+  if (input) input.placeholder = 'e.g. sunrise-' + appName.toLowerCase().replace(/[\s_]+/g, '-');
+}
 document.querySelectorAll('input[name="cnsPracticeMode"]').forEach(function(radio) {
   radio.addEventListener('change', function() {
     document.querySelectorAll('#modalCreateSite .pw-mode-card').forEach(function(card) {
       var r = card.querySelector('input[name="cnsPracticeMode"]');
       if (r) card.classList.toggle('active', r.checked);
     });
+    cnsUpdateAppLabels();
   });
 });
 
@@ -1983,9 +1998,10 @@ function openCreateSite() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  // Reset Practice Type to Clinic
-  const clinicRadio = document.getElementById('cnsModeClinic');
-  if (clinicRadio) { clinicRadio.checked = true; clinicRadio.dispatchEvent(new Event('change')); }
+  // Reset Application Type to first option
+  const firstAppRadio = document.querySelector('#modalCreateSite input[name="cnsPracticeMode"]');
+  if (firstAppRadio) { firstAppRadio.checked = true; firstAppRadio.dispatchEvent(new Event('change')); }
+  cnsUpdateAppLabels();
   const avail = document.getElementById('cnsAvail');
   avail.textContent = ''; avail.className = 'cns-avail';
   document.getElementById('cnsClinicHint').textContent = 'Lowercase letters, numbers and hyphens only. Min 3 chars.';
@@ -2082,10 +2098,10 @@ async function doCreateSite() {
   const address        = (document.getElementById('cnsAddress').value || '').trim();
   const country        = (document.getElementById('cnsCountry').value || '').trim();
   const city           = (document.getElementById('cnsCity').value || '').trim();
-  const clinic_mode    = (document.querySelector('input[name="cnsPracticeMode"]:checked') || {}).value || 'Clinic';
+  const application_name = (document.querySelector('input[name="cnsPracticeMode"]:checked') || {}).value || '';
 
   if (!clinic_name || !cnsClinicOk) {
-    toast('Enter a valid, available clinic name.', 'warning', 'Invalid name'); return;
+    toast('Enter a valid, available ' + (application_name || 'clinic') + ' name.', 'warning', 'Invalid name'); return;
   }
   if (!physician_name) { toast('Physician name is required.', 'warning'); return; }
   if (!email) { toast('Email is required.', 'warning'); return; }
@@ -2111,7 +2127,7 @@ async function doCreateSite() {
   try {
     const result = await api('pw_subscription.api.register_clinic', {
       clinic_name, physician_name, email, password, contact, address,
-      country: country || '', city: city || '', clinic_mode,
+      country: country || '', city: city || '', application_name,
     });
 
     if (result && result.success) {

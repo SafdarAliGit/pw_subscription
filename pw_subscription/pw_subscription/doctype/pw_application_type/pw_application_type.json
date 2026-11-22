@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "application_name",
+  "master_site_name",
+  "icon",
+  "is_active",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "application_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Application Name",
+   "reqd": 1,
+   "bold": 1,
+   "description": "Display name shown on portals and registration form (e.g. CureDesk Clinic)"
+  },
+  {
+   "fieldname": "master_site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Master Site Name",
+   "reqd": 1,
+   "description": "Full bench site name to clone from (e.g. master-clinic.localhost)"
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Icon (Emoji)",
+   "description": "Emoji shown on the application type card (e.g. 🏥)"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Active",
+   "default": "1",
+   "description": "Only active application types are shown on portals"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "description": "Short subtitle shown on the card (e.g. Single doctor practice)"
+  }
+ ],
+ "idx": 0,
+ "istable": 1,
+ "module": "PW Subscription",
+ "modified": "2026-11-15 00:00:00",
+ "modified_by": "Administrator",
+ "name": "PW Application Type",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

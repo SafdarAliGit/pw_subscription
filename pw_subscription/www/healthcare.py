@@ -77,6 +77,15 @@ def get_context(context):
         context.allow_application_creation = bool(getattr(s, "allow_application_creation_by_website_user", 0))
         context.email_otp_enabled          = bool(getattr(s, "enable_email_otp", 0))
         context.phone_otp_enabled          = bool(getattr(s, "enable_phone_otp", 0))
+        context.app_types = [
+            {
+                "application_name": r.application_name,
+                "icon": r.icon or "",
+                "description": r.description or "",
+            }
+            for r in (s.application_types or [])
+            if r.is_active
+        ]
     except Exception:
         context.company_logo       = ""
         context.company_name       = "CoreLogics"
@@ -91,6 +100,7 @@ def get_context(context):
         context.allow_application_creation = False
         context.email_otp_enabled          = False
         context.phone_otp_enabled          = False
+        context.app_types = []
 
     try:
         context.plan_features, context.subscription_plans = get_plans_for_page("Healthcare")

@@ -15,6 +15,21 @@ def _get_settings():
     return frappe.get_single("PW Subscription Settings")
 
 
+@frappe.whitelist(allow_guest=True)
+def get_application_types():
+    """Return active application types for portal card rendering."""
+    settings = _get_settings()
+    result = []
+    for row in (settings.application_types or []):
+        if row.is_active:
+            result.append({
+                "application_name": row.application_name,
+                "icon": row.icon or "",
+                "description": row.description or "",
+            })
+    return result
+
+
 def _read_maintenance_modes():
     """Return {site_name: bool} from each customer site's site_config.json."""
     import json
@@ -591,14 +606,15 @@ def check_email(email):
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=10, seconds=3600)
 def register_clinic(clinic_name, email, physician_name, password, contact, address,
-                    country=None, city=None, clinic_mode="Clinic"):
+                    country=None, city=None, clinic_mode="Clinic", application_name=None):
     import re as _re
-    clinic_name    = (clinic_name or "").strip()
-    email          = (email or "").strip()
-    physician_name = (physician_name or "").strip()
-    contact        = (contact or "").strip()
-    address        = (address or "").strip()
-    country        = (country or "").strip()
+    clinic_name      = (clinic_name or "").strip()
+    email            = (email or "").strip()
+    physician_name   = (physician_name or "").strip()
+    contact          = (contact or "").strip()
+    address          = (address or "").strip()
+    country          = (country or "").strip()
+    application_name = (application_name or "").strip()
     city           = (city or "").strip()
 
     missing = [f for f, v in [
@@ -672,6 +688,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
         "city": city or None,
         "address": address,
         "clinic_mode": clinic_mode or "Clinic",
+        "application_name": application_name or "",
         "initial_password": password,
         "site_name": site_name,
         "status": "Trial",
@@ -693,6 +710,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
         "site_name": site_name,
         "subscription": sub_doc.name,
         "clinic_mode": clinic_mode or "Clinic",
+        "application_name": application_name or "",
         "status": "Pending",
     })
     prov_doc.insert(ignore_permissions=True)
@@ -723,6 +741,7 @@ def register_clinic(clinic_name, email, physician_name, password, contact, addre
             "provisioning_url": "",
             "prov_error": "",
             "clinic_mode": clinic_mode or "Clinic",
+            "application_name": application_name or "",
         })
     except Exception:
         pass
@@ -854,7 +873,7 @@ def get_control_room_data():
         fields=["name", "clinic_name", "physician_name", "contact_email",
                 "contact_phone", "site_name", "status", "is_suspended",
                 "trial_start", "trial_end", "subscription_start", "subscription_end",
-                "grace_end", "payment_reference", "creation", "clinic_mode"],
+                "grace_end", "payment_reference", "creation", "clinic_mode", "application_name"],
         order_by="creation desc",
         limit=0,
         ignore_permissions=True,
@@ -954,6 +973,7 @@ def get_control_room_data():
             "payment_reference": sub.payment_reference or "",
             "creation": str(sub.creation)[:10] if sub.creation else "",
             "clinic_mode": sub.clinic_mode or "Clinic",
+            "application_name": sub.application_name or "",
             "provisioning_status": prov.status if prov else "None",
             "provisioning_request": prov.name if prov else "",
             "provisioning_url": prov.site_url if prov else "",

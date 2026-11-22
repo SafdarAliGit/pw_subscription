@@ -9,6 +9,7 @@
   "clinic_name",
   "physician_name",
   "clinic_mode",
+  "application_name",
   "contact_email",
   "contact_phone",
   "cb_top",
@@ -46,6 +47,12 @@
    "fieldtype": "Select",
    "label": "Clinic Mode",
    "options": "Clinic\nHospital"
+  },
+  {
+   "fieldname": "application_name",
+   "fieldtype": "Data",
+   "label": "Application Name",
+   "description": "Application type selected during registration (e.g. CureDesk Clinic)"
   },
   {
    "fieldname": "contact_email",

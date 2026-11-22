@@ -19,11 +19,21 @@ def get_context(context):
         context.ping_timeout = settings.ping_timeout or 5
         context.phone_otp_enabled = bool(settings.get("enable_phone_otp"))
         context.email_otp_enabled = bool(settings.get("enable_email_otp"))
+        context.app_types = [
+            {
+                "application_name": r.application_name,
+                "icon": r.icon or "",
+                "description": r.description or "",
+            }
+            for r in (settings.application_types or [])
+            if r.is_active
+        ]
     except Exception:
         context.app_name = "CoreLogics"
         context.enable_site_ping = True
         context.ping_timeout = 5
         context.phone_otp_enabled = False
         context.email_otp_enabled = False
+        context.app_types = []
 
     return context
