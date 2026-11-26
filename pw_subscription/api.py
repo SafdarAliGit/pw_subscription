@@ -1921,7 +1921,7 @@ def migrate_site(subscription_name):
         "pw_subscription.api._job_migrate",
         queue="default", timeout=700,
         subscription_name=subscription_name,
-        pw_pw_job_id=job_id, user=frappe.session.user,
+        pw_job_id=job_id, user=frappe.session.user,
     )
     return {"job_id": job_id, "site_name": sub.site_name}
 
